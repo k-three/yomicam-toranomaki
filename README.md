@@ -2,7 +2,7 @@
 
 よみたん放課後キャンパスの送迎運行計画を、メンバーが閲覧するためのページです。
 
-- 公開URL: https://k-three.github.io/yomicam-haifu/
+- 公開URL: https://k-three.github.io/yomicam-toranomaki/
 - 特定の日を直接開く: 末尾に `#d2026-09-08` のように日付を付ける
 - 閲覧にはメンバー共有のパスワードが必要です（運行管理担当にお問い合わせください）
 
