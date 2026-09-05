@@ -114,22 +114,43 @@ button{width:100%;margin-top:10px;border:none;border-radius:10px;padding:10px;fo
 var SALT=${JSON.stringify(saltHex)},ITER=${ITER},DATA=${JSON.stringify(data)};
 function hex2buf(h){var a=new Uint8Array(h.length/2);for(var i=0;i<a.length;i++)a[i]=parseInt(h.substr(i*2,2),16);return a}
 function b642buf(b){var s=atob(b),a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a}
+function render(html){
+  // document.write は「読み込み中」に呼ぶと既存DOMを消さずに追記されてしまい、
+  // ロック画面が残ったまま本文が下に出る。DOMを明示的に差し替える。
+  var doc=new DOMParser().parseFromString(html,'text/html');
+  if(doc.title)document.title=doc.title;
+  document.head.innerHTML=doc.head.innerHTML;
+  var l=document.head.querySelector('link[rel="stylesheet"]');
+  if(l)l.media='all';
+  document.body.innerHTML=doc.body.innerHTML;
+  // innerHTML で入れた <script> は実行されないので作り直して実行する
+  var olds=document.body.querySelectorAll('script');
+  for(var i=0;i<olds.length;i++){
+    var s=document.createElement('script');
+    if(olds[i].src)s.src=olds[i].src;else s.textContent=olds[i].textContent;
+    olds[i].parentNode.replaceChild(s,olds[i]);
+  }
+}
 async function open2(rawKey){
   var key=await crypto.subtle.importKey('raw',rawKey,'AES-GCM',false,['decrypt']);
   var raw=b642buf(DATA);
   var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(0,12)},key,raw.slice(12));
-  var html=new TextDecoder().decode(pt);
-  document.open();document.write(html);document.close();
+  render(new TextDecoder().decode(pt));
 }
 async function derive(pw){
   var km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);
   var bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:hex2buf(SALT),iterations:ITER,hash:'SHA-256'},km,256);
   return new Uint8Array(bits);
 }
-(async function(){
-  try{var kh=localStorage.getItem('tora-key');if(kh){await open2(hex2buf(kh))}}
-  catch(e){try{localStorage.removeItem('tora-key')}catch(_){}}
-})();
+function ready(fn){
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fn);else fn();
+}
+ready(function(){
+  (async function(){
+    try{var kh=localStorage.getItem('tora-key');if(kh){await open2(hex2buf(kh))}}
+    catch(e){try{localStorage.removeItem('tora-key')}catch(_){}}
+  })();
+});
 document.getElementById('f').addEventListener('submit',async function(ev){
   ev.preventDefault();
   var err=document.getElementById('err'),busy=document.getElementById('busy');
