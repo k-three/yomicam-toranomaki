@@ -57,7 +57,7 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .ev{cursor:default}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>読谷放課後キャンパス 運行計画（閲覧用）</small></div></div></header>
+<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>よみたん放課後キャンパス運営虎の巻（閲覧用）</small></div></div></header>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
 <p class="snapnote">閲覧専用／${now} 更新。最新の変更は運行管理担当からの連絡を確認してください。</p>
@@ -90,6 +90,9 @@ if (password) {
   const data = Buffer.concat([iv, ct]).toString('base64');
   out = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>よみキャン運営虎の巻（デイリー）</title>
 <style>
 :root{color-scheme:light dark;--bg:#F6F4ED;--surface:#FFF;--ink:#22302E;--muted:#68766F;--line:#DFDBCC;--accent:#0E7C7B;--alert:#C1442E}
