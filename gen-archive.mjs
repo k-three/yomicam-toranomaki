@@ -47,7 +47,7 @@ const secHtml = sections.map(s =>
 const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
 const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>よみたん虎の巻 配布版</title>
+<title>よみキャン運営虎の巻（デイリー）</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
 <style>${style}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
@@ -57,7 +57,7 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .ev{cursor:default}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみたん送迎虎の巻</h1><small>読谷放課後キャンパス 運行計画（閲覧用）</small></div></div></header>
+<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>読谷放課後キャンパス 運行計画（閲覧用）</small></div></div></header>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
 <p class="snapnote">閲覧専用／${now} 更新。最新の変更は運行管理担当からの連絡を確認してください。</p>
@@ -90,7 +90,7 @@ if (password) {
   const data = Buffer.concat([iv, ct]).toString('base64');
   out = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>よみたん虎の巻 配布版</title>
+<title>よみキャン運営虎の巻（デイリー）</title>
 <style>
 :root{color-scheme:light dark;--bg:#F6F4ED;--surface:#FFF;--ink:#22302E;--muted:#68766F;--line:#DFDBCC;--accent:#0E7C7B;--alert:#C1442E}
 @media (prefers-color-scheme:dark){:root{--bg:#101D1B;--surface:#182926;--ink:#E6EFEA;--muted:#93A49C;--line:#2B3F3A;--accent:#3AA79F;--alert:#E0705B}}
@@ -105,7 +105,7 @@ button{width:100%;margin-top:10px;border:none;border-radius:10px;padding:10px;fo
 #busy{color:var(--muted);font-size:13px;margin-top:10px}
 [hidden]{display:none!important}
 </style></head><body>
-<div class="card"><div class="mark">🚐🔒</div><h1>よみたん送迎虎の巻</h1>
+<div class="card"><div class="mark">🚐🔒</div><h1>よみキャン運営虎の巻（デイリー）</h1>
 <p>メンバー共有のパスワードを入力してください</p>
 <form id="f"><input id="pw" type="password" autocomplete="current-password" placeholder="パスワード" autofocus>
 <button type="submit">開く</button></form>
