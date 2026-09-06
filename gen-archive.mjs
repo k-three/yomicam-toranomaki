@@ -53,7 +53,7 @@ const secHtml = sections.map(s =>
 const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
 const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>よみキャン運営虎の巻（デイリー）</title>
+<title>よみキャン運営虎の巻（閲覧用）</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
 <style>${style}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
@@ -66,7 +66,7 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 @media print{.reqbtn{display:none!important}}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみキャン運営虎の巻（デイリー）</h1></div></div>
+<div><h1>よみキャン運営虎の巻（閲覧用）</h1></div></div>
 <div class="spacer"></div>
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="daynav" id="dayNav">${nav}</nav>
@@ -104,7 +104,7 @@ if (password) {
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>よみキャン運営虎の巻（デイリー）</title>
+<title>よみキャン運営虎の巻（閲覧用）</title>
 <style>
 :root{color-scheme:light dark;--bg:#F6F4ED;--surface:#FFF;--ink:#22302E;--muted:#68766F;--line:#DFDBCC;--accent:#0E7C7B;--alert:#C1442E}
 @media (prefers-color-scheme:dark){:root{--bg:#101D1B;--surface:#182926;--ink:#E6EFEA;--muted:#93A49C;--line:#2B3F3A;--accent:#3AA79F;--alert:#E0705B}}
@@ -119,7 +119,7 @@ button{width:100%;margin-top:10px;border:none;border-radius:10px;padding:10px;fo
 #busy{color:var(--muted);font-size:13px;margin-top:10px}
 [hidden]{display:none!important}
 </style></head><body>
-<div class="card"><div class="mark">🚐🔒</div><h1>よみキャン運営虎の巻（デイリー）</h1>
+<div class="card"><div class="mark">🚐🔒</div><h1>よみキャン運営虎の巻（閲覧用）</h1>
 <p>メンバー共有のパスワードを入力してください</p>
 <form id="f"><input id="pw" type="password" autocomplete="current-password" placeholder="パスワード" autofocus>
 <button type="submit">開く</button></form>

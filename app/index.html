@@ -184,6 +184,17 @@ body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
+/* 未確定バー（当日調整・送迎の調整・保護者連絡は「決定」で確定） */
+#stageBar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:2px solid var(--warn);box-shadow:0 -6px 20px rgba(0,0,0,.14)}
+.sbInner{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sbText{flex:1;min-width:200px}
+#stageCount{color:var(--warn);font-size:14px}
+.sbHint{color:var(--muted);font-size:12px;margin-left:8px}
+.sbList{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.stagechip{background:var(--surface2);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--muted)}
+.sbWarn{color:var(--alert);font-size:12px;font-weight:700;margin-top:5px}
+.sbBtns{display:flex;gap:8px;flex-shrink:0}
+body.staging{padding-bottom:110px}
 [hidden]{display:none!important}
 /* ログイン画面（GitHub Pages版・Firebase接続時のみ表示） */
 #login{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;padding:24px}
@@ -261,7 +272,7 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：保護者連絡 ＞ 特別下校時刻 ＞ 通常の下校時刻。適用日は要注意事項に表示されます。</p>
+    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：保護者連絡 ＞ 特別下校時刻 ＞ 通常の下校時刻。適用日は要注意事項に表示されます。<br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。</p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -275,6 +286,12 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
     <select id="schoolSel" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:700"></select>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap" style="margin-top:10px"><table class="grid" id="disTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>学校別 待ち合わせ場所</h2>
+    <p class="help">こどもを迎えに行ったときに合流する場所です。虎の巻のタイムライン（各校の到着）にも自動で表示されます。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="meetTable"></table></div>
   </div>
   <div class="card">
     <h2>特別下校時刻（日付指定の変更）</h2>
@@ -444,6 +461,21 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
   </div>
 </div>
 
+<div id="stageBar" class="noprint" hidden>
+  <div class="sbInner">
+    <div class="sbText">
+      <b id="stageCount">未確定の変更</b>
+      <span class="sbHint">「決定」を押すまで、ほかのメンバーには反映されません。</span>
+      <div id="stageList" class="sbList"></div>
+      <div id="stageWarn" class="sbWarn" hidden>⚠ 編集中にほかの人がこの日のデータを変更しました。「決定」するとその変更を上書きします。「取り消し」を押すと相手の変更が反映されます。</div>
+    </div>
+    <div class="sbBtns">
+      <button class="btn" id="stageCancel">↩ 取り消し</button>
+      <button class="btn primary" id="stageCommit">✅ 決定して反映</button>
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
 /* ========== 定数・ユーティリティ ========== */
@@ -463,11 +495,11 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 /* ========== 初期データ ========== */
 const SCHOOL_DEFS=[
   {id:"ydm",name:"読谷小",short:"読谷",color:"#2C6FAF",meet:"校舎（郵便局側）と校舎（体育館側）の間にあるガーデンテーブル付近"},
-  {id:"tks",name:"渡慶次小",short:"渡慶次",color:"#0E7C7B",meet:"正面校門入ってすぐ右手「ゆうひの広場」（屋根とベンチのある場所）"},
+  {id:"tks",name:"渡慶次小",short:"渡慶次",color:"#0E7C7B",meet:"正面の校門入ってすぐ右手にある「ゆうひの広場（屋根とベンチのある場所）」"},
   {id:"kin",name:"喜名小",short:"喜名",color:"#9A5FA8",meet:"低学年用の靴箱出入口横にあるガーデンテーブル付近"},
   {id:"frg",name:"古堅小",short:"古堅",color:"#C07F1E",meet:"児童玄関横にあるガーデンテーブル付近"},
   {id:"fgm",name:"古堅南小",short:"古堅南",color:"#C1442E",meet:"児童玄関前付近"},
-  {id:"szn",name:"よみたん自然学校",short:"自然学校",color:"#3E8552",meet:"準備ができたらスタッフから声かけ"},
+  {id:"szn",name:"よみたん自然学校",short:"自然学校",color:"#3E8552",meet:"銭湯ゆーふる前のベンチ"},
   {id:"ocsi",name:"OCSI（沖縄クリスチャンスクール）",short:"OCSI",color:"#6B7A76",meet:"送迎対象外（保護者送迎）"},
 ];
 function seedDismissal(){
@@ -578,28 +610,82 @@ function migrate(){
     }
     state._v=6;
   }
+  if(state._v<9){
+    // 学校別の待ち合わせ場所を最新の運用に合わせる（未入力の学校にも既定値を入れる）
+    const MEET=Object.fromEntries(SCHOOL_DEFS.map(s=>[s.id,s.meet]));
+    const OLD=["正面校門入ってすぐ右手「ゆうひの広場」（屋根とベンチのある場所）","準備ができたらスタッフから声かけ"];
+    (state.schools||[]).forEach(sc=>{
+      if(MEET[sc.id]&&(!sc.meet||OLD.includes(sc.meet)))sc.meet=MEET[sc.id];
+    });
+    state._v=9;
+  }
   save();
 }
 /* 保護者連絡（欠席・スポット・時刻変更）ヘルパー */
 function notesOn(ds){return (state.parentNotes||[]).filter(n=>n.date===ds)}
 function getNote(ds,cid,kind){return (state.parentNotes||[]).find(n=>n.date===ds&&n.childId===cid&&n.kind===kind)}
 const KIND_LABEL={absent:"欠席",spot:"スポット参加",time:"下校時刻の変更"};
-const childName=cid=>{const c=(state.children||[]).find(x=>x.id===cid);return c?(c.kana||c.name):cid};
+const childName=cid=>{if(!cid)return "（こども未選択）";const c=(state.children||[]).find(x=>x.id===cid);return c?(c.kana||c.name):cid};
 function setNote(ds,cid,kind,fields){
   let n=getNote(ds,cid,kind);
   const isNew=!n;
   if(!n){n={id:uid(),date:ds,childId:cid,kind,memo:""};state.parentNotes.push(n)}
-  Object.assign(n,fields||{});save();
-  logChange("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}を${isNew?"登録":"更新"}${n.time?`（${n.time}）`:""}${n.memo?`「${n.memo}」`:""}`,ds);
+  Object.assign(n,fields||{});
+  stage("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}を${isNew?"登録":"更新"}${n.time?`（${n.time}）`:""}${n.memo?`「${n.memo}」`:""}`,ds);
 }
 function removeNote(ds,cid,kind){
   const had=!!getNote(ds,cid,kind);
-  state.parentNotes=(state.parentNotes||[]).filter(n=>!(n.date===ds&&n.childId===cid&&n.kind===kind));save();
-  if(had)logChange("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}を取り消し`,ds);
+  state.parentNotes=(state.parentNotes||[]).filter(n=>!(n.date===ds&&n.childId===cid&&n.kind===kind));
+  if(had)stage("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}を取り消し`,ds);
 }
 function save(){
   try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
   pushShared();
+}
+
+/* ========== 日別データは「決定」を押すまで保留（誤操作対策） ==========
+   当日調整・送迎の調整・保護者連絡・タイムライン編集は、画面には即座に反映して
+   結果を確認できるようにしつつ、共有データへの書き込みは「決定」まで行わない。
+   「取り消し」を押すと、最後に確定した内容へ丸ごと戻す。
+   マスタ（こども・メンバー・下校時刻など／管理者のみ）は従来どおり即時保存。 */
+let staged=false, stageBase=null, stageLog=[], stageRemote=null;
+const stageSnap=()=>JSON.stringify({days:state.days||{},parentNotes:state.parentNotes||[]});
+function stage(kind,text,ds){
+  if(!staged){staged=true}
+  if(kind)stageLog.push({kind,text,ds:ds||currentDate});
+  try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+  renderStageBar();
+}
+function renderStageBar(){
+  const bar=document.getElementById("stageBar"); if(!bar)return;
+  bar.hidden=!staged;
+  document.body.classList.toggle("staging",staged);
+  if(!staged)return;
+  document.getElementById("stageCount").textContent=
+    stageLog.length?`未確定の変更が ${stageLog.length}件 あります`:"未確定の変更があります";
+  document.getElementById("stageList").innerHTML=
+    stageLog.slice(-5).map(l=>`<span class="stagechip">${esc(l.kind)}：${esc(l.text)}</span>`).join("");
+  document.getElementById("stageWarn").hidden=!stageRemote;
+}
+function commitStage(){
+  if(!staged)return;
+  staged=false;
+  const logs=stageLog; stageLog=[]; stageRemote=null;
+  save();
+  logs.forEach(l=>logChange(l.kind,l.text,l.ds));
+  renderStageBar();
+  rerenderAll();
+}
+function cancelStage(){
+  if(!staged)return;
+  if(!confirm(`未確定の変更（${stageLog.length}件）を取り消して、確定済みの内容に戻します。よろしいですか？`))return;
+  staged=false;
+  try{const b=JSON.parse(stageBase||"{}");state.days=b.days||{};state.parentNotes=b.parentNotes||[]}catch(e){}
+  const rem=stageRemote; stageRemote=null; stageLog=[];
+  try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+  if(rem)adoptPart(rem,DAY_KEYS);
+  renderStageBar();
+  rerenderAll();
 }
 
 /* ========== 共有データ（アーティファクトDB）========== */
@@ -646,7 +732,7 @@ function pushShared(){
       dbNS.doc("app/masters").set({rev:mastersRev,updatedAt:Date.now(),state:pick(MASTER_KEYS)}).catch(()=>setSync("error"));
     },800);
   }
-  if(canDays){
+  if(canDays&&!staged){
     clearTimeout(pushDTimer);
     pushDTimer=setTimeout(()=>{
       daysRev++;
@@ -771,7 +857,10 @@ async function connectShared(){
   },()=>setSync("error"));
   dbNS.doc("shared/days").onSnapshot(snap=>{
     const d=snap.exists?snap.data():null;
-    if(d&&d.state&&(d.rev||0)>daysRev&&!snap.metadata.hasPendingWrites){daysRev=d.rev;adoptPart(d,DAY_KEYS);rerenderAll();}
+    if(d&&d.state&&(d.rev||0)>daysRev&&!snap.metadata.hasPendingWrites){
+      daysRev=d.rev;
+      if(staged){stageRemote=d;renderStageBar();return}   // 編集中は取り込まず、決定/取消まで待つ
+      adoptPart(d,DAY_KEYS);rerenderAll();}
   },()=>setSync("error"));
   // 要望の購読（全員が読める・投稿できる）
   try{
@@ -1380,7 +1469,7 @@ function applyRoleUI(){
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
-  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable"].forEach(id=>{
+  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
   });
@@ -1400,6 +1489,7 @@ function renderPlan(){
   }
 }
 function renderPlanInner(){
+  if(!staged)stageBase=stageSnap();   // 確定済みの日別データ（取り消しの戻り先）
   const ds=currentDate;
   const plan=planDay(ds);
   if(!plan.weekend) applyEvEdits(plan,plan.day);
@@ -1505,6 +1595,7 @@ function renderDayEdit(plan){
       <span style="font-size:12px;color:var(--muted);font-weight:500">（スクリレ・保護者連絡をここに反映 → 虎の巻が自動更新）</span>
     </h2>
     <div id="dayEditBody" ${collapsed?"hidden":""}>
+    <p class="help" style="margin-top:0">変更はこの画面ですぐ確認できますが、<b>画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません</b>。間違って触ったときは「↩ 取り消し」で元に戻せます。</p>
     <h3 style="margin-top:6px">こども（チェック＝参加）</h3>
     ${rows.join("")||'<p class="help">この曜日の固定参加はいません。</p>'}
     <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -1568,8 +1659,8 @@ function renderDayEdit(plan){
   });
   document.querySelectorAll("[data-soff]").forEach(el=>el.onchange=()=>{
     const id=el.dataset.soff;const day=getDay(currentDate);
-    day.staffOff=day.staffOff.filter(x=>x!==id); if(!el.checked)day.staffOff.push(id); save();
-    logChange("当日調整",`${state.staff.find(s=>s.id===id)?.name||id}：${el.checked?"出勤":"休み"}に変更`);
+    day.staffOff=day.staffOff.filter(x=>x!==id); if(!el.checked)day.staffOff.push(id);
+    stage("当日調整",`${state.staff.find(s=>s.id===id)?.name||id}：${el.checked?"出勤":"休み"}に変更`);
     renderPlan();
   });
   document.querySelectorAll("[data-stf],[data-stt]").forEach(el=>el.onchange=()=>{
@@ -1577,47 +1668,45 @@ function renderDayEdit(plan){
     const wt=day.staffTimes[id]??={};
     if(el.dataset.stf!=null)wt.from=el.value;else wt.to=el.value;
     if(!wt.from&&!wt.to)delete day.staffTimes[id];
-    save();
-    logChange("当日調整",`${state.staff.find(s=>s.id===id)?.name||id}：勤務時間を ${wt.from||"13:00"}〜${wt.to||"19:00"} に変更`);
+    stage("当日調整",`${state.staff.find(s=>s.id===id)?.name||id}：勤務時間を ${wt.from||"13:00"}〜${wt.to||"19:00"} に変更`);
     renderPlan();
   });
   document.getElementById("staffExtraSel").onchange=e=>{
     if(!e.target.value)return;
     const day=getDay(currentDate);
-    day.staffExtra.push(e.target.value);save();
-    logChange("当日調整",`${state.staff.find(s=>s.id===e.target.value)?.name||e.target.value}：臨時出勤を追加`);
+    day.staffExtra.push(e.target.value);
+    stage("当日調整",`${state.staff.find(s=>s.id===e.target.value)?.name||e.target.value}：臨時出勤を追加`);
     renderPlan();
   };
   document.querySelectorAll("[data-sxrm]").forEach(el=>el.onclick=()=>{
     const day=getDay(currentDate);
     day.staffExtra=day.staffExtra.filter(x=>x!==el.dataset.sxrm);
     delete day.staffTimes[el.dataset.sxrm];
-    save();
-    logChange("当日調整",`${state.staff.find(s=>s.id===el.dataset.sxrm)?.name||el.dataset.sxrm}：臨時出勤を取り消し`);
+    stage("当日調整",`${state.staff.find(s=>s.id===el.dataset.sxrm)?.name||el.dataset.sxrm}：臨時出勤を取り消し`);
     renderPlan();
   });
   document.getElementById("spotSel").onchange=e=>{
     if(!e.target.value)return; setNote(currentDate,e.target.value,"spot"); renderPlan();
   };
-  document.getElementById("taxiOn").onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;save();
-    logChange("当日調整",`第一交通（タクシー）を${e.target.checked?"使う":"使わない"}に変更`);renderPlan()};
+  document.getElementById("taxiOn").onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;
+    stage("当日調整",`第一交通（タクシー）を${e.target.checked?"使う":"使わない"}に変更`);renderPlan()};
   document.querySelectorAll("[data-unvisit]").forEach(el=>el.onclick=()=>{
     const day=getDay(currentDate);const v=day.visits[Number(el.dataset.unvisit)];
-    day.visits.splice(Number(el.dataset.unvisit),1);save();
-    logChange("当日調整",`来訪予定を削除（${v?.from||""}〜${v?.to||""} ${v?.label||""}）`);renderPlan();
+    day.visits.splice(Number(el.dataset.unvisit),1);
+    stage("当日調整",`来訪予定を削除（${v?.from||""}〜${v?.to||""} ${v?.label||""}）`);renderPlan();
   });
   document.getElementById("vAdd").onclick=()=>{
     const from=document.getElementById("vFrom").value,to=document.getElementById("vTo").value;
     const label=document.getElementById("vLabel").value.trim(),host=document.getElementById("vHost").value;
     if(!from||!to||toMin(to)<=toMin(from)){alert("開始・終了時刻を正しく入力してください");return}
-    getDay(currentDate).visits.push({from,to,label,host});save();
-    logChange("当日調整",`来訪予定を追加（${from}〜${to} ${label||""}／対応：${state.staff.find(s=>s.id===host)?.name||"未設定"}）`);
+    getDay(currentDate).visits.push({from,to,label,host});
+    stage("当日調整",`来訪予定を追加（${from}〜${to} ${label||""}／対応：${state.staff.find(s=>s.id===host)?.name||"未設定"}）`);
     renderPlan();
   };
-  document.getElementById("venueInput").onchange=e=>{getDay(currentDate).venue=e.target.value;save();
-    logChange("当日調整",`会場を「${e.target.value||"曜日の既定"}」に変更`);renderPlan()};
-  document.getElementById("dayNotes").onchange=e=>{getDay(currentDate).notes=e.target.value;save();
-    logChange("当日調整",`連絡メモを更新：${(e.target.value||"（空）").replace(/\n+/g," / ")}`);renderPlan()};
+  document.getElementById("venueInput").onchange=e=>{getDay(currentDate).venue=e.target.value;
+    stage("当日調整",`会場を「${e.target.value||"曜日の既定"}」に変更`);renderPlan()};
+  document.getElementById("dayNotes").onchange=e=>{getDay(currentDate).notes=e.target.value;
+    stage("当日調整",`連絡メモを更新：${(e.target.value||"（空）").replace(/\n+/g," / ")}`);renderPlan()};
 }
 
 function renderRuns(plan){
@@ -1628,7 +1717,7 @@ function renderRuns(plan){
     <p class="help" style="margin:6px 0 0">乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください。</p>
   </div>`).join("");
   const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
-    <b style="font-size:12.5px">📌 担当の固定（手動調整）：</b>
+    <b style="font-size:12.5px">📌 担当の固定（手動調整）：</b><span style="font-size:11.5px;color:var(--muted)">変更は「✅ 決定して反映」を押すまで共有されません</span>
     ${plan.schoolsToday.map(sc=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(sc).short)}
       <select data-pin="${sc}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
         <option value="">自動</option>
@@ -1668,28 +1757,30 @@ function renderRuns(plan){
     host.querySelectorAll("[data-pin]").forEach(el=>el.onchange=()=>{
       const day=getDay(currentDate);
       if(el.value) day.pins[el.dataset.pin]=el.value; else delete day.pins[el.dataset.pin];
-      save();
-      logChange("送迎の調整",`${schoolOf(el.dataset.pin).short}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
+      stage("送迎の調整",`${schoolOf(el.dataset.pin).short}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
       renderPlan();
     });
     const addCr=host.querySelector("#addCr");
-    if(addCr)addCr.onclick=()=>{getDay(currentDate).customRuns.push({id:uid(),driver:"",schools:[]});save();
-      logChange("送迎の調整","手動の便を追加");renderPlan()};
+    if(addCr)addCr.onclick=()=>{getDay(currentDate).customRuns.push({id:uid(),driver:"",schools:[]});
+      stage("送迎の調整","手動の便を追加");renderPlan()};
     host.querySelectorAll("[data-crdrv]").forEach(el=>el.onchange=()=>{
-      getDay(currentDate).customRuns[Number(el.dataset.crdrv)].driver=el.value;save();renderPlan();
+      const cr0=getDay(currentDate).customRuns[Number(el.dataset.crdrv)];cr0.driver=el.value;
+      stage("送迎の調整",`手動の便の担当を${state.staff.find(s=>s.id===el.value)?.name||"未設定"}に変更`);renderPlan();
     });
     host.querySelectorAll("[data-cradd]").forEach(el=>el.onchange=()=>{
       if(!el.value)return;
       const cr=getDay(currentDate).customRuns[Number(el.dataset.cradd)];
-      (cr.schools??=[]).push(el.value);save();renderPlan();
+      (cr.schools??=[]).push(el.value);
+      stage("送迎の調整",`手動の便に${schoolOf(el.value).short}を追加`);renderPlan();
     });
     host.querySelectorAll("[data-crdel]").forEach(el=>el.onclick=()=>{
       const[i,j]=el.dataset.crdel.split(":").map(Number);
-      getDay(currentDate).customRuns[i].schools.splice(j,1);save();renderPlan();
+      const rmSc=getDay(currentDate).customRuns[i].schools.splice(j,1)[0];
+      stage("送迎の調整",`手動の便から${schoolOf(rmSc).short}を削除`);renderPlan();
     });
     host.querySelectorAll("[data-crrm]").forEach(el=>el.onclick=()=>{
-      getDay(currentDate).customRuns.splice(Number(el.dataset.crrm),1);save();
-      logChange("送迎の調整","手動の便を削除");renderPlan();
+      getDay(currentDate).customRuns.splice(Number(el.dataset.crrm),1);
+      stage("送迎の調整","手動の便を削除");renderPlan();
     });
   }
   if(!plan.runs.length&&!unCards){host.innerHTML=`<h2>送迎便</h2>${adjBar}<p class="help">この日は送迎便がありません（参加児童なし、または下校時刻未設定）。</p>`;bindPins();return}
@@ -1781,21 +1872,23 @@ document.getElementById("edSave").onclick=()=>{
   }else{
     day.evEdits[editorKey]={label,s,e,lane,...(type?{type}:{})};
   }
-  save();document.getElementById("detail").hidden=true;renderPlan();
+  stage("タイムライン編集",`${label}（${fmt(s)}〜${fmt(e)}）を${editorKey?"変更":"追加"}`);
+  document.getElementById("detail").hidden=true;renderPlan();
 };
 document.getElementById("edDel").onclick=()=>{
   if(!editorKey)return;
   const day=getDay(currentDate);
   if(editorKey.startsWith("custom:")) day.evCustom=day.evCustom.filter(x=>"custom:"+x.id!==editorKey);
   else day.evEdits[editorKey]={del:true};
-  save();document.getElementById("detail").hidden=true;renderPlan();
+  stage("タイムライン編集","予定を1件削除");
+  document.getElementById("detail").hidden=true;renderPlan();
 };
 document.getElementById("addEvBtn").onclick=()=>openEditor(null);
 document.getElementById("resetEvBtn").onclick=()=>{
   if(!confirm("この日のタイムライン手動編集をすべて解除して、自動計算の表示に戻します。よろしいですか？"))return;
   const day=getDay(currentDate);
   day.evEdits={};day.evCustom=[];
-  save();renderPlan();
+  stage("タイムライン編集","この日の手動編集をすべて解除");renderPlan();
 };
 
 function renderWarnings(plan){
@@ -1863,29 +1956,29 @@ function renderParentNotes(){
   const t=document.getElementById("pnTable");
   state.parentNotes??=[];
   const kinds={absent:"欠席",spot:"スポット参加",time:"下校時刻変更"};
-  const list=[...state.parentNotes].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||a.childId.localeCompare(b.childId));
+  const list=[...state.parentNotes].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||String(a.childId||"").localeCompare(String(b.childId||"")));
   const today=todayStr();
   t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th>メモ</th><th></th></tr></thead><tbody>${
-    list.map(n=>`<tr data-id="${n.id}" style="${n.date<today?"opacity:.55":""}">
-      <td><input type="date" value="${esc(n.date||"")}" data-f="date"></td>
-      <td><select data-f="childId">${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
+    list.map(n=>{const half=!n.date||!n.childId;
+      return `<tr data-id="${n.id}" style="${half?"background:var(--warn-soft)":(n.date<today?"opacity:.55":"")}">
+      <td><input type="date" value="${esc(n.date||"")}" data-f="date" ${n.date?"":'style="border-color:var(--warn)"'}></td>
+      <td><select data-f="childId" ${n.childId?"":'style="border-color:var(--warn)"'}><option value="">こどもを選択…</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
       <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select></td>
       <td><input type="time" value="${esc(n.time||"")}" data-f="time" ${n.kind==="absent"?"disabled":""}></td>
       <td><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
-      <td><button class="del" data-del>✕</button></td></tr>`).join("")
+      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
     ||'<tr><td colspan="6" style="color:var(--muted)">連絡なし</td></tr>'}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const n=state.parentNotes.find(x=>x.id===tr.dataset.id); if(!n)return;
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       n[el.dataset.f]=el.value;
       if(el.dataset.f==="kind"&&n.kind==="absent")n.time="";
-      save();
-      logChange("保護者連絡",`${childName(n.childId)}：${KIND_LABEL[n.kind]||n.kind}（${n.date}${n.time?" "+n.time:""}）を編集`,n.date);
+      stage("保護者連絡",`${childName(n.childId)}：${KIND_LABEL[n.kind]||n.kind}（${n.date}${n.time?" "+n.time:""}）を編集`,n.date);
       renderParentNotes();renderPlan();
     });
     tr.querySelector("[data-del]").onclick=()=>{
-      state.parentNotes=state.parentNotes.filter(x=>x.id!==n.id);save();
-      logChange("保護者連絡",`${childName(n.childId)}：${KIND_LABEL[n.kind]||n.kind}（${n.date}）を削除`,n.date);
+      state.parentNotes=state.parentNotes.filter(x=>x.id!==n.id);
+      stage("保護者連絡",`${childName(n.childId)}：${KIND_LABEL[n.kind]||n.kind}（${n.date}）を削除`,n.date);
       renderParentNotes();renderPlan();
     };
   });
@@ -1905,9 +1998,23 @@ function renderDismissal(){
     logChange("下校時刻",`${schoolOf(sc).short} ${DOWS[dow]}曜 ${g}年 → ${el.value||"（空）"}`);renderPlan();
   });
   sel.onchange=renderDismissal;
+  renderMeet();
   renderVenues();
   renderSpecials();
   lockMasterTables();
+}
+function renderMeet(){
+  const t=document.getElementById("meetTable"); if(!t)return;
+  t.innerHTML=`<thead><tr><th style="width:9em">学校</th><th>待ち合わせ場所</th></tr></thead><tbody>${
+    state.schools.map(sc=>`<tr>
+      <td><b style="color:${esc(sc.color||"#888")}">${esc(sc.name)}</b></td>
+      <td><input type="text" data-meet="${sc.id}" value="${esc(sc.meet||"")}" style="width:100%;min-width:18em" placeholder="例：児童玄関前付近"></td>
+    </tr>`).join("")}</tbody>`;
+  t.querySelectorAll("[data-meet]").forEach(el=>el.onchange=()=>{
+    const sc=state.schools.find(x=>x.id===el.dataset.meet); if(!sc)return;
+    sc.meet=el.value;save();
+    logChange("待ち合わせ場所",`${sc.short}：「${el.value||"（空）"}」に変更`);renderPlan();
+  });
 }
 function renderSpecials(){
   const t=document.getElementById("spTable");
@@ -2059,13 +2166,22 @@ document.getElementById("addKid").onclick=()=>{
   const rows=document.querySelectorAll('#kidsTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
 };
+document.getElementById("stageCommit").onclick=commitStage;
+document.getElementById("stageCancel").onclick=cancelStage;
+window.addEventListener("beforeunload",ev=>{
+  if(!staged)return;
+  ev.preventDefault();ev.returnValue="";   // 未確定の変更が残っています
+});
 document.getElementById("histDate").onchange=()=>renderHistory();
 document.getElementById("histClear").onclick=()=>{document.getElementById("histDate").value="";renderHistory()};
 document.getElementById("histReload").onclick=()=>renderHistory(true);
 document.getElementById("whoBtn").onclick=()=>askWho(true);
 document.getElementById("addPn").onclick=()=>{
-  state.parentNotes.push({id:uid(),date:currentDate,childId:state.children[0]?.id||"",kind:"time",time:"",memo:""});
-  save();renderParentNotes();
+  // 日付・こどもは空欄で追加（既存の連絡と見分けがつかなくなるのを防ぐ）
+  state.parentNotes.push({id:uid(),date:"",childId:"",kind:"time",time:"",memo:""});
+  stage();renderParentNotes();
+  const rows=document.querySelectorAll('#pnTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="date"]')?.focus();
 };
 document.getElementById("addSp").onclick=()=>{
   state.specialTimes.push({id:uid(),date:currentDate,school:state.schools[0].id,grades:[],time:"",memo:""});
