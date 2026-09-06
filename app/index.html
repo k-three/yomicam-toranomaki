@@ -1,0 +1,2036 @@
+<title>よみたん送迎虎の巻</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#F6F4ED; --surface:#FFFFFF; --surface2:#EFEDE3; --ink:#22302E; --muted:#68766F;
+  --line:#DFDBCC; --accent:#0E7C7B; --accent-soft:#DDEEEA; --accent-ink:#FFFFFF;
+  --drive:#2C6FAF; --drive-soft:#DCE8F5; --drive-ink:#1B4B7C;
+  --base:#3E8552; --base-soft:#DFEDDD; --base-ink:#2A5E3A;
+  --kids:#9A5FA8; --kids-soft:#EEE2F1; --kids-ink:#6E3E7A;
+  --warn:#C07F1E; --warn-soft:#F6E8CC; --alert:#C1442E; --alert-soft:#F6DCD4;
+  --chip:#ECE9DE; --shadow:0 2px 10px rgba(34,48,46,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101D1B; --surface:#182926; --surface2:#13221F; --ink:#E6EFEA; --muted:#93A49C;
+    --line:#2B3F3A; --accent:#3AA79F; --accent-soft:#1C3B37; --accent-ink:#08201D;
+    --drive:#5E9BD6; --drive-soft:#1E3247; --drive-ink:#BCD7F0;
+    --base:#6BAE79; --base-soft:#1E3626; --base-ink:#C4E3C9;
+    --kids:#BC85C9; --kids-soft:#39273F; --kids-ink:#E3CBEA;
+    --warn:#D9A44A; --warn-soft:#3D311E; --alert:#E0705B; --alert-soft:#452019;
+    --chip:#223732; --shadow:0 2px 10px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101D1B; --surface:#182926; --surface2:#13221F; --ink:#E6EFEA; --muted:#93A49C;
+  --line:#2B3F3A; --accent:#3AA79F; --accent-soft:#1C3B37; --accent-ink:#08201D;
+  --drive:#5E9BD6; --drive-soft:#1E3247; --drive-ink:#BCD7F0;
+  --base:#6BAE79; --base-soft:#1E3626; --base-ink:#C4E3C9;
+  --kids:#BC85C9; --kids-soft:#39273F; --kids-ink:#E3CBEA;
+  --warn:#D9A44A; --warn-soft:#3D311E; --alert:#E0705B; --alert-soft:#452019;
+  --chip:#223732; --shadow:0 2px 10px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New",system-ui,sans-serif;font-size:14px;line-height:1.6;margin:0}
+h1,h2,h3{font-family:"Zen Maru Gothic",system-ui,sans-serif;line-height:1.3;text-wrap:balance}
+h2{font-size:17px;margin:0 0 10px}
+h3{font-size:15px;margin:18px 0 8px}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 60px}
+header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 0 10px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:20px}
+.brand h1{font-size:19px;margin:0;font-weight:900}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:500;letter-spacing:.08em}
+.spacer{flex:1}
+.datebox{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow)}
+.datebox input{border:none;background:none;font-weight:700;font-variant-numeric:tabular-nums}
+.datebox input:focus{outline:2px solid var(--accent);border-radius:6px}
+.dowchip{font-weight:900;font-family:"Zen Maru Gothic";background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:99px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
+.btn:hover{border-color:var(--accent)}
+.btn:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 18px;border-bottom:2px solid var(--line);padding-bottom:0}
+.tab{border:none;background:none;padding:9px 14px;cursor:pointer;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;font-family:"Zen Maru Gothic"}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+/* こども名の折りたたみ */
+.kidsbox{margin:0}
+.kidsbox>summary{list-style:none;cursor:pointer;user-select:none}
+.kidsbox>summary::-webkit-details-marker{display:none}
+.kidsbox>summary::after{content:"▾";font-size:10px;opacity:.75;margin-left:2px}
+.kidsbox[open]>summary::after{content:"▴"}
+.kidsbox[open]{flex:1 1 100%}
+.kidsnames{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 2px}
+.kidname{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:2px 9px;font-size:12.5px;font-weight:700}
+.kidname small{font-weight:500;color:var(--muted);font-size:10.5px}
+.kidname em{font-style:normal;font-size:10.5px;font-weight:700;border-radius:5px;padding:0 5px;background:var(--chip);color:var(--muted)}
+.kidname em.kf-spot{background:var(--accent-soft);color:var(--accent)}
+.kidname em.kf-self{background:var(--base-soft);color:var(--base-ink)}
+.kidname em.kf-np{background:var(--alert-soft);color:var(--alert)}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:700}
+.chip .num{font-size:15px;font-variant-numeric:tabular-nums}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.alert{background:var(--alert-soft);color:var(--alert)}
+.chip.kids{background:var(--kids-soft);color:var(--kids-ink)}
+.chip.drive{background:var(--drive-soft);color:var(--drive-ink)}
+.chip.base{background:var(--base-soft);color:var(--base-ink)}
+/* run cards */
+.runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.run{border:1px solid var(--line);border-left:5px solid var(--drive);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.run.taxi{border-left-color:var(--warn)}
+.run h3{margin:0 0 6px;display:flex;align-items:center;gap:8px;font-size:15px}
+.run .veh{font-size:12px;color:var(--muted);font-weight:500}
+.stops{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:8px 0 6px;font-weight:700;font-size:13px}
+.stop{background:var(--drive-soft);color:var(--drive-ink);border-radius:8px;padding:3px 9px;line-height:1.35}
+.stop small{display:block;font-size:10.5px;font-weight:500;opacity:.85;font-variant-numeric:tabular-nums}
+.stop.home{background:var(--chip);color:var(--ink)}
+.arrow{color:var(--muted)}
+.cap{display:flex;gap:3px;margin-top:6px;align-items:center}
+.cap i{width:14px;height:14px;border-radius:4px;background:var(--chip);display:inline-block}
+.cap i.full{background:var(--drive)}
+.cap span{font-size:11.5px;color:var(--muted);margin-left:6px}
+/* timeline */
+.tl-scroll{overflow-x:auto}
+.tl{display:grid;min-width:680px;position:relative}
+.tl .colhead{position:sticky;top:0;background:var(--surface);z-index:3;padding:6px 4px;text-align:center;font-family:"Zen Maru Gothic";font-weight:900;border-bottom:2px solid var(--line);font-size:13px}
+.tl .colhead small{display:block;font-weight:500;color:var(--muted);font-size:10.5px}
+.tlcol{position:relative;border-left:1px dashed var(--line)}
+.gut{position:relative}
+.gut .hr{position:absolute;right:6px;transform:translateY(-7px);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+.hline{position:absolute;left:0;right:0;border-top:1px solid var(--line);opacity:.6;pointer-events:none}
+.hline.half{border-top-style:dotted;opacity:.4}
+.ev{position:absolute;left:3px;right:3px;border-radius:7px;padding:1px 6px;font-size:11px;line-height:1.25;overflow:hidden;cursor:pointer;border:1px solid transparent}
+.ev b{font-variant-numeric:tabular-nums;font-weight:700;margin-right:3px;font-size:10px;opacity:.8}
+.ev.sm{font-size:9.5px;line-height:1.1;padding:0 4px;border-radius:5px}
+.ev.sm b{font-size:9px}
+.ev.t-drive{background:var(--drive);color:#fff}
+.ev.t-pick{background:var(--drive-soft);color:var(--drive-ink);border-color:var(--drive)}
+.ev.t-wait{background:var(--drive-soft);color:var(--drive-ink);border-style:dashed;border-color:var(--drive)}
+.ev.t-check{background:var(--surface2);color:var(--muted);border:1px dashed var(--muted)}
+.ev.t-base{background:var(--base-soft);color:var(--base-ink)}
+.ev.t-fixed{background:var(--base);color:#fff}
+.ev.t-kids{background:var(--kids-soft);color:var(--kids-ink)}
+.ev.t-kmove{background:var(--kids);color:#fff}
+.ev.t-alert{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+.ev.t-visit{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+.ev.t-away{background:repeating-linear-gradient(45deg,var(--surface2),var(--surface2) 6px,var(--bg) 6px,var(--bg) 12px);color:var(--muted);border:1px dashed var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:10px}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:4px}
+/* warnings */
+.wlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.wlist li{display:flex;gap:10px;align-items:flex-start;background:var(--warn-soft);border-radius:10px;padding:8px 12px;font-weight:500}
+.wlist li.alert{background:var(--alert-soft)}
+.wlist li .tag{font-size:11px;font-weight:900;padding:1px 8px;border-radius:99px;background:var(--warn);color:#fff;white-space:nowrap;margin-top:2px}
+.wlist li.alert .tag{background:var(--alert)}
+.wlist li.info{background:var(--accent-soft)} .wlist li.info .tag{background:var(--accent)}
+/* attendee editor */
+.att{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.att:last-child{border-bottom:none}
+.att .nm{font-weight:700;min-width:8em}
+.att input[type=time]{border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:var(--surface);font-variant-numeric:tabular-nums}
+.schooltag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;color:#fff}
+.toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:700}
+/* tables */
+table.grid{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.grid th,table.grid td{border:1px solid var(--line);padding:5px 8px;text-align:left;font-size:13px}
+table.grid th{background:var(--surface2);font-family:"Zen Maru Gothic";font-size:12.5px}
+table.grid input[type=time],table.grid input[type=number]{width:6.2em;border:1px solid var(--line);border-radius:6px;padding:2px 4px;background:var(--surface)}
+table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:var(--surface)}
+.tblwrap{overflow-x:auto}
+.daycheck{display:inline-flex;gap:4px}
+.daycheck label{width:26px;height:26px;border-radius:8px;background:var(--chip);display:grid;place-items:center;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
+.daycheck input{display:none}
+.daycheck input:checked+span{color:var(--accent-ink)}
+.daycheck label:has(input:checked){background:var(--accent)}
+.help{color:var(--muted);font-size:12.5px;margin:4px 0 10px}
+.del{border:none;background:none;color:var(--alert);cursor:pointer;font-weight:900}
+/* detail popover */
+#detail{position:fixed;right:18px;bottom:18px;max-width:340px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:20}
+#detail h3{margin:0 0 6px}
+#detail .cls{position:absolute;top:6px;right:10px;border:none;background:none;cursor:pointer;font-size:16px;color:var(--muted)}
+/* chronological table view */
+.rowtable td:first-child{font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rowtable td{vertical-align:top}
+.viewswitch{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.viewswitch button{border:none;background:var(--surface);padding:6px 14px;cursor:pointer;font-weight:700}
+.viewswitch button.on{background:var(--accent);color:var(--accent-ink)}
+/* algorithm tab */
+.algo{max-width:72ch}
+.algo ol,.algo ul{padding-left:1.4em}
+.algo li{margin:4px 0}
+.steps{counter-reset:s;display:grid;gap:10px;margin:12px 0}
+.step{display:flex;gap:12px;background:var(--surface2);border-radius:12px;padding:10px 14px}
+.step::before{counter-increment:s;content:counter(s);font-family:"Zen Maru Gothic";font-weight:900;font-size:18px;color:var(--accent);min-width:1.2em}
+.kbd{background:var(--chip);border-radius:6px;padding:0 6px;font-size:12px;font-weight:700}
+.prov{color:var(--warn);font-weight:700}
+@media print{
+  body{background:#fff}
+  header.app .btn, nav.tabs, .noprint, #detail{display:none !important}
+  .card{box-shadow:none;break-inside:avoid}
+  .tl-scroll{overflow:visible}
+}
+/* マスタ閲覧のみモード（当日調整モードの閲覧メンバー） */
+.mroNote{display:none;color:var(--warn);font-size:12.5px;font-weight:700;margin:0 0 8px}
+body.mro .mroNote{display:block}
+body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,body.mro #addKid,
+body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
+body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
+body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label,
+body.mro #resetBtn{pointer-events:none;opacity:.55}
+[hidden]{display:none!important}
+/* ログイン画面（GitHub Pages版・Firebase接続時のみ表示） */
+#login{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;padding:24px}
+#login .box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px 26px;max-width:340px;width:100%;text-align:center;box-shadow:var(--shadow)}
+#login .mark{font-size:34px}
+#login h2{margin:8px 0 4px;font-size:18px}
+#login p{color:var(--muted);font-size:12.5px;margin:4px 0 16px}
+#login input{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:16px;background:var(--bg);color:var(--ink)}
+#login button{width:100%;margin-top:10px;border:none;border-radius:10px;padding:10px;font-size:15px;font-weight:700;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+#loginErr{color:var(--alert);font-weight:700;font-size:12.5px;margin-top:10px}
+#loginBusy{color:var(--muted);font-size:12.5px;margin-top:10px}
+</style>
+
+<div id="login" hidden><div class="box"><div class="mark">🚐🔒</div>
+  <h2>よみキャン運営虎の巻</h2>
+  <p>メンバー共有のパスワードを入力してください<br>（管理者パスワードを入れるとマスタも編集できます）</p>
+  <form id="loginForm"><input id="loginPw" type="password" autocomplete="current-password" placeholder="パスワード">
+  <button type="submit">開く</button></form>
+  <div id="loginBusy" hidden>確認中…</div><div id="loginErr" hidden>パスワードが違います</div>
+</div></div>
+
+<div class="wrap">
+<header class="app">
+  <div class="brand">
+    <div class="mark">🚐</div>
+    <div><h1>よみたん送迎虎の巻</h1><small>読谷放課後キャンパス 運行計画</small></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="chip" id="syncChip" title="データ保存の状態">…</span>
+  <div class="datebox">📅 <input type="date" id="dateInput"> <span class="dowchip" id="dowChip">–</span></div>
+  <button class="btn" id="slackBtn" title="Slack・LINE投稿用の運行概要テキストをコピー">📣 投稿文</button>
+  <button class="btn" id="snapBtn" title="この日の虎の巻を1枚のHTMLファイルとして保存（LINE・メール等で配布用）">📤 配布用</button>
+  <button class="btn" id="printBtn">🖨 印刷</button>
+  <button class="btn" id="resetBtn">初期データに戻す</button>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab on" data-tab="plan">📋 虎の巻</button>
+  <button class="tab" data-tab="kids">👧 こども</button>
+  <button class="tab" data-tab="times">🏫 下校時刻</button>
+  <button class="tab" data-tab="staff">🧑‍🤝‍🧑 メンバー・車両</button>
+  <button class="tab" data-tab="travel">🗺 移動時間</button>
+  <button class="tab" data-tab="algo">🧭 アルゴリズム</button>
+  <button class="tab" data-tab="req" id="reqTab">📮 要望</button>
+</nav>
+
+<!-- ============ 虎の巻 (plan) ============ -->
+<section id="tab-plan">
+  <div class="card" id="summaryCard"></div>
+  <div class="card noprint" id="dayEditCard"></div>
+  <div class="card" id="runsCard"></div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h2 style="margin:0">メンバー別タイムライン</h2>
+      <div class="spacer"></div>
+      <button class="btn noprint" id="addEvBtn">＋ ブロック追加</button>
+      <button class="btn noprint" id="resetEvBtn" hidden>✎ 編集リセット</button>
+    </div>
+    <div id="tlHost" class="tl-scroll" style="margin-top:10px"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+  <div class="card" id="warnCard"></div>
+</section>
+
+<!-- ============ こども ============ -->
+<section id="tab-kids" hidden>
+  <div class="card">
+    <h2>こどもマスタ</h2>
+    <p class="help">出典：<b>利用申込書兼同意書（確定情報）</b>。曜日固定の参加曜日にチェック。スポット参加・欠席・個別の下校時刻変更（保護者連絡）は「虎の巻」タブの当日調整で行います。📷撮影不可＝写真・動画の掲載を希望しない児童（虎の巻に自動表示）。🚫送迎不要＝保護者が送迎する児童（OCSIなど。送迎便の計算から除外され、参加人数には含まれます）。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="kidsTable"></table></div>
+    <button class="btn" id="addKid" style="margin-top:10px">＋ こどもを追加</button>
+  </div>
+  <div class="card">
+    <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
+    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：保護者連絡 ＞ 特別下校時刻 ＞ 通常の下校時刻。適用日は要注意事項に表示されます。</p>
+    <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
+    <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
+  </div>
+</section>
+
+<!-- ============ 下校時刻 ============ -->
+<section id="tab-times" hidden>
+  <div class="card">
+    <h2>学校別・曜日別・学年別 下校時刻</h2>
+    <p class="help">スクリレの連絡が届いたらここを更新（<span class="prov">初期値はすべて暫定</span>）。空欄＝その曜日は対象児童なし／不明。</p>
+    <select id="schoolSel" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:700"></select>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap" style="margin-top:10px"><table class="grid" id="disTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>特別下校時刻（日付指定の変更）</h2>
+    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="spTable"></table></div>
+    <button class="btn" id="addSp" style="margin-top:10px">＋ 変更を追加</button>
+  </div>
+  <div class="card">
+    <h2>曜日別の会場</h2>
+    <p class="help">前半だけ別会場の場合（例：火曜は15:00まで図書館）、「前半会場」と「切替時刻」を入力。虎の巻に集合場所・会場移動（点呼）・便の到着先が自動反映されます。「移動時間」タブの拠点＝当日の会場（会場間は近距離の想定）。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="venueTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ メンバー ============ -->
+<section id="tab-staff" hidden>
+  <div class="card">
+    <h2>運営メンバー・車両</h2>
+    <p class="help">「在館」は拠点で受け入れ・見守り担当。「送迎」は運転担当。第一交通（タクシー）は当日調整でONにした日だけ使われ、<b>1回1校→拠点の運用（巡回なし）・2営業日前までに依頼</b>です。定員は<b>こどもの乗車可能数</b>。「関連こども」＝メンバーのこどもが参加する日は、そのこどもの学校便をこのメンバーが優先担当します（余裕がなければこの限りではありません）。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="staffTable"></table></div>
+    <button class="btn" id="addStaff" style="margin-top:10px">＋ メンバーを追加</button>
+    <h3>車両の前提</h3>
+    <ul class="help" style="font-size:13px">
+      <li>ハイエース：こども6名まで。<b>14:00までよみたん自然学校にあり使用不可</b>（14:00以降の学校到着のみ割当）。</li>
+      <li>自家用車・タクシー：こども3名まで。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 移動時間 ============ -->
+<section id="tab-travel" hidden>
+  <div class="card">
+    <h2>移動時間マトリクス（分）</h2>
+    <p class="help">拠点＝当日の会場。設計方針により<b>各移動は余裕をもって一律20分枠</b>を初期値にしています。実測が貯まって短縮したい区間は値を変えて「実測」にチェック。未実測の値を使った計画には警告が付きます。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="travelTable"></table></div>
+  </div>
+</section>
+
+<!-- ============ アルゴリズム ============ -->
+<section id="tab-algo" hidden>
+  <div class="card algo">
+    <h2>ルート探索の考え方とベストプラクティス</h2>
+
+    <h3>0. 前提条件（この計画が守る数字と要件）</h3>
+    <div class="tblwrap"><table class="grid">
+      <tbody>
+      <tr><th>開所時間</th><td>平日 13:00〜19:00（保護者お迎えは原則18:00まで。虎の巻には記載しない）</td></tr>
+      <tr><th>集合</th><td>13:00 当日の会場に集合（会場は曜日別。火曜は図書館→15:00に健康増進センターへ移動）</td></tr>
+      <tr><th>学校での待機</th><td>下校時刻から<b>最低20分</b>（学校発＝下校＋20分。遅れて来る子はここで吸収）</td></tr>
+      <tr><th>移動時間</th><td>余裕をもって<b>一律20分枠</b>（実測が貯まった区間から「移動時間」タブで短縮可）</td></tr>
+      <tr><th>学校到着</th><td>下校の5分前を目標に到着</td></tr>
+      <tr><th>乗車＋待ち時間</th><td>こども1人あたり<b>80分以内</b>（自校出発→会場到着）</td></tr>
+      <tr><th>巡回</th><td>第一交通以外は1便で2校巡回OK（毎回拠点へ戻らなくてよい）。<b>第一交通は1回1校→拠点のみ</b></td></tr>
+      <tr><th>直行</th><td>13:00集合からでは間に合わない便は拠点を経由せず学校へ直行（運行前チェックは出発地で実施・虎の巻に表示）</td></tr>
+      <tr><th>車両</th><td>ハイエース：こども6名・<b>14:00まで自然学校にあり使用不可</b>／自家用車・タクシー：3名</td></tr>
+      <tr><th>行先担当</th><td><b>自然学校は基本ハイエースが対応</b>、難しければこの限りでない。メンバーのこどもが参加する日はその学校をそのメンバー優先（同じく余裕なければこの限りでない）</td></tr>
+      <tr><th>情報締切</th><td>2営業日前（スクリレ・保護者連絡・第一交通への依頼も同じ。9月は本永さんの予定も確認）</td></tr>
+      <tr><th>見守り</th><td>在館2名以上を維持。1名以下になる時間帯は自動警告（頻発時は事務局へ応援依頼）</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>1. この問題の正体</h3>
+    <p>これは<b>時間枠つき配車問題（VRPTW）</b>、特に「スクールバス・ルーティング問題」と呼ばれる型です。制約は次の通りです。</p>
+    <ul>
+      <li><b>時間枠</b>：各学校の下校時刻までに到着していなければならない（早く着いて待つのは可、遅刻は不可）</li>
+      <li><b>定員</b>：ハイエース6名／その他3名</li>
+      <li><b>車両の利用可能時間</b>：ハイエースは14:00以降のみ</li>
+      <li><b>運転手のシフト</b>：曜日ごとに使えるメンバーが違う</li>
+    </ul>
+
+    <h3>2. この規模なら「厳密解」より「確実な貪欲法」</h3>
+    <p>学校は最大6か所、車両は1日2〜3台。組合せは高々数百通りで、汎用ソルバーは不要です。本アプリは<b>時刻順の貪欲法＋連結（チェイニング）</b>を使います。</p>
+    <div class="steps">
+      <div class="step">参加児童を確定（曜日固定＋スポット−欠席）。下校時刻は「保護者連絡の個別時刻 ＞ 学校×曜日×学年の時刻」の優先順で決める</div>
+      <div class="step">同じ学校で下校時刻が10分以内の児童は1回のお迎えにまとめる（遅い方の時刻に合わせる）</div>
+      <div class="step"><b>各学校で下校時刻から最低20分の待機</b>を計画に組み込む（学校発＝下校＋20分）。先生への相談や友達との会話で遅れてくる子は、この待機で吸収する</div>
+      <div class="step">お迎え仕事を時刻の早い順に並べる</div>
+      <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>20分待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
+      <div class="step">巡回候補と新規便候補をスコアで比較して割り当てる。<b>自然学校は基本ハイエースが対応</b>し、ハイエースで難しい場合のみ他の車で対応。メンバーのこどもが参加する日はそのこどもの学校をそのメンバー優先（余裕がなければこの限りではない）。少人数は自家用車を先に使いハイエースの枠を温存</div>
+      <div class="step">自動算出の結果は<b>「担当の固定」で手動調整できる</b>（送迎便カードの上）。学校ごとに担当メンバーを固定すると、残りは自動のまま全体を再計算する。固定した担当で時間が成立しない場合は未割当として警告</div>
+      <div class="step">定員が足りなければ便を分割。それでも足りなければ第一交通（タクシー）を提案。第一交通は<b>1回1校→拠点（巡回させない）</b>、依頼は<b>2営業日前まで</b>（9月は本永さんのサポート予定も確認）</div>
+    </div>
+    <p>出発時刻は<b>逆算</b>します：下校時刻 −「学校到着の余裕（5分）」−「移動時間」＝会場出発。学校からの出発は「下校時刻＋20分」に固定。逆算の結果が13:00の集合より前になる便は、拠点を経由せず<b>学校へ直行</b>とし、虎の巻に直行フラグを表示します。</p>
+
+    <h3>3. 遅れてくる子は「計画の待機20分」で吸収する</h3>
+    <p>このアプリは<b>計画（虎の巻づくり）だけ</b>を扱います。当日の細かい判断は現場・拠点の運用の話として切り分け、計画側では次の2つで遅れに備えます。</p>
+    <ul>
+      <li><b>各校で最低20分の待機</b>：学校発は必ず下校＋20分。ふつうの遅れはここで吸収され、後続の学校に影響しません。</li>
+      <li><b>余白のない巡回は組まない</b>：20分待機を含めて次校の下校に間に合わない連結は計画に載せません。巡回便には参考として「次校に間に合う出発期限」と余裕分数を表示します。</li>
+      <li><b>常態化したら計画側を直す</b>：特定の学校でいつも20分を超えて遅れるなら、その学校の下校時刻マスタを実態に合わせて更新し、翌週の虎の巻に反映します（実測主義）。</li>
+    </ul>
+
+    <h3>4. ベストプラクティス</h3>
+    <ul>
+      <li><b>制約の優先順位を固定する</b>：安全（点呼・残留チェック・在館2名）＞ 時間枠（下校に間に合う）＞ 定員 ＞ 効率（便数・距離）。効率のために上位を崩さない。</li>
+      <li><b>バッファを明示する</b>：到着余裕5分・各校での待機20分・帰着後の残留ダブルチェック5分を計画に組み込む。バッファを削って成立する計画は「成立していない」。</li>
+      <li><b>会場ルールも計画に載せる</b>：曜日で会場が変わる・前半だけ別会場（火曜の図書館→健康増進センター）といった「個々の動き」に関わる条件はマスタ化し、集合場所・会場移動（点呼）・便の到着先まで虎の巻に自動で出す。</li>
+      <li><b>暫定値を暫定と分かる形で持つ</b>：移動時間は実測するまで「暫定」フラグ付き。虎の巻にも警告として出し、運行のたびに実測して更新する（9/2版の「未実測」運用と同じ）。</li>
+      <li><b>情報の締切を決める</b>：2営業日前までの情報（スクリレ＋保護者連絡）で確定版を作る。それ以降の変更は赤字・電話連絡扱いで、翌週版に反映。</li>
+      <li><b>単一障害点を可視化する</b>：在館スタッフが1名になる時間帯は自動で警告。「緊急事態ではないが持ち場を離れない」運用ルールとセットで扱う。</li>
+      <li><b>車内のこどもを降ろさない</b>：2校巡回の待機中、先に乗った児童は運転者の視界内で着席のまま。</li>
+      <li><b>連絡の定型化</b>：各便は「出発／学校到着／乗車完了／拠点到着」の4点でSlack一報。大人1名＋こども1名の便はこの運用でカバー。</li>
+      <li><b>人が抜ける予定も計画に載せる</b>：私用の定期外出（毎週決まった曜日に抜けるメンバー）や見学対応（1名専任）はメンバー・当日調整に登録。見守りが1名以下になる時間帯は自動アラートを出し、頻発するなら事務局へ応援を依頼する。</li>
+    </ul>
+
+    <h3>5. 規模が大きくなったら</h3>
+    <p>学校10か所・車両5台を超えたら貪欲法では品質が落ちます。次の順で強化します。</p>
+    <ol>
+      <li><b>Clarke-Wright savings法</b>：2便を1便に統合したときの「節約量」が大きい順に統合。実装が軽く品質が高い定番。</li>
+      <li><b>2-opt / or-opt 局所探索</b>：できたルートの訪問順を入れ替えて改善。</li>
+      <li><b>Google OR-Tools（CP-SATルーティング）</b>：時間枠・定員・車両別コストを宣言的に書ける無償ソルバー。この規模の決定版。</li>
+    </ol>
+    <p class="help">いずれの場合も「暫定値の管理」「バッファ」「制約の優先順位」という運用側の作法は変わりません。アルゴリズムより先に、移動時間の実測データを貯めることが計画の質を最も上げます。</p>
+  </div>
+</section>
+
+<!-- ============ 要望 ============ -->
+<section id="tab-req" hidden>
+  <div class="card">
+    <h2>改善要望・連絡</h2>
+    <p class="help">アプリやマスタデータの修正が必要なときは、ここに要望を投稿してください（閲覧メンバーも投稿できます）。データやコードの変更は管理者が対応します。</p>
+    <div style="display:grid;gap:8px;max-width:560px;margin-bottom:16px">
+      <input type="text" id="reqName" placeholder="なまえ" style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);width:12em">
+      <textarea id="reqText" rows="3" placeholder="要望・連絡の内容（例：◯◯小の待ち合わせ場所が変わりました）" style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);font:inherit"></textarea>
+      <div><button class="btn primary" id="reqSend">送信</button></div>
+    </div>
+    <h3>これまでの要望</h3>
+    <div id="reqList"></div>
+  </div>
+</section>
+</div>
+
+<div id="detail" hidden><button class="cls" id="detailClose">✕</button><h3 id="detailTitle"></h3><div id="detailBody" style="font-size:13px"></div>
+  <div id="detailEditor" class="noprint" style="margin-top:10px;display:grid;gap:6px;border-top:1px dashed var(--line);padding-top:10px">
+    <input id="edLabel" placeholder="内容（表示テキスト）" style="border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--surface)">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <input type="time" id="edS" style="border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface)">〜
+      <input type="time" id="edE" style="border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface)">
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <select id="edLane" style="padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"></select>
+      <select id="edType" style="padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <option value="">色：元のまま</option><option value="t-drive">移動（青）</option><option value="t-pick">乗車（青枠）</option>
+        <option value="t-base">在館（緑）</option><option value="t-fixed">予定（濃緑）</option>
+        <option value="t-alert">注意（橙）</option><option value="t-kids">こども（紫）</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn primary" id="edSave">保存</button>
+      <button class="btn" id="edDel" style="color:var(--alert)">削除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ========== 定数・ユーティリティ ========== */
+const DOWS=["日","月","火","水","木","金","土"];
+const GRADES=[1,2,3,4,5,6];
+const DAY_START=750, DAY_END=1155; // 12:30 - 19:15
+const PXM=2; // px per minute
+const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80};
+// board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）
+// maxRide=80: こどもの乗車＋待ち時間（学校出発→会場到着）の上限
+const kanaOf=c=>c.kana||c.name;
+const toMin=s=>{if(!s)return null;const[a,b]=s.split(":").map(Number);return a*60+b};
+const fmt=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+/* ========== 初期データ ========== */
+const SCHOOL_DEFS=[
+  {id:"ydm",name:"読谷小",short:"読谷",color:"#2C6FAF",meet:"校舎（郵便局側）と校舎（体育館側）の間にあるガーデンテーブル付近"},
+  {id:"tks",name:"渡慶次小",short:"渡慶次",color:"#0E7C7B",meet:"正面校門入ってすぐ右手「ゆうひの広場」（屋根とベンチのある場所）"},
+  {id:"kin",name:"喜名小",short:"喜名",color:"#9A5FA8",meet:"低学年用の靴箱出入口横にあるガーデンテーブル付近"},
+  {id:"frg",name:"古堅小",short:"古堅",color:"#C07F1E",meet:"児童玄関横にあるガーデンテーブル付近"},
+  {id:"fgm",name:"古堅南小",short:"古堅南",color:"#C1442E",meet:"児童玄関前付近"},
+  {id:"szn",name:"よみたん自然学校",short:"自然学校",color:"#3E8552",meet:"準備ができたらスタッフから声かけ"},
+  {id:"ocsi",name:"OCSI（沖縄クリスチャンスクール）",short:"OCSI",color:"#6B7A76",meet:"送迎対象外（保護者送迎）"},
+];
+function seedDismissal(){
+  // 利用申込書兼同意書＋確定下校時間情報のみ入力。空欄＝未確認
+  const d={};
+  for(const s of ["ydm","tks","kin","frg","fgm","szn","ocsi"]){
+    d[s]={};for(let w=1;w<=5;w++){d[s][w]={};for(let g=1;g<=6;g++)d[s][w][g]="";}
+  }
+  // 渡慶次小 1年
+  d.tks[1][1]="14:00";d.tks[2][1]="14:00";d.tks[3][1]="14:00";d.tks[4][1]="14:00";d.tks[5][1]="13:00";
+  // 渡慶次小 3年
+  d.tks[1][3]="14:10";d.tks[3][3]="14:20";d.tks[5][3]="14:10";
+  // 古堅小 2年
+  d.frg[3][2]="14:15";d.frg[4][2]="14:40";d.frg[5][2]="14:40";
+  // よみたん自然学校：統一15:00
+  for(let w=1;w<=5;w++)for(let g=1;g<=6;g++)d.szn[w][g]="15:00";
+  return d;
+}
+function seedTravel(){
+  // 設計方針：各移動は余裕をもって一律20分枠（実測が貯まったら短縮可）
+  const m={}; const ids=["base","ydm","tks","kin","frg","fgm","szn","ocsi"];
+  ids.forEach(a=>{m[a]={};ids.forEach(b=>{m[a][b]=a===b?0:20})});
+  return m;
+}
+function confirmedChildren(){
+  // このファイルは公開ページとして配信されるため、個人情報は一切持たせない。
+  // 実際のこどもマスタは共有データベース（Firestore／アーティファクトDB）にあり、
+  // 管理者が「👧 こども」タブから編集する。
+  return [];
+}
+function defaultState(){
+  return {
+    schools:SCHOOL_DEFS,
+    dismissal:seedDismissal(),
+    travel:seedTravel(),
+    travelMeasured:{},   // "a|b": true
+    staff:[], // 実データは共有データベース側（管理者がメンバータブで編集）
+    venues:{
+      1:{main:"文化センター",early:"",switch:""},
+      2:{main:"健康増進センター スタジオ",early:"図書館",switch:"15:00"},
+      3:{main:"文化センター",early:"",switch:""},
+      4:{main:"文化センター",early:"",switch:""},
+      5:{main:"文化センター",early:"",switch:""},
+    },
+    children:confirmedChildren(),
+    shareUrl:"https://k-three.github.io/yomicam-toranomaki/",
+    specialTimes:[], // 日付指定の下校時刻変更 {id,date,school,grades[],time,memo}
+    parentNotes:[],  // 保護者連絡 {id,date,childId,kind:absent|spot|time,time?,memo}
+    days:{}, // dateStr -> {venue,absent[],spots[],timeOverrides{},staffOff[],taxiOn,notes}
+  };
+}
+
+/* ========== 永続化 ========== */
+let state;
+function loadState(){
+  try{const raw=localStorage.getItem("toranomaki-v1"); if(raw){state=JSON.parse(raw);migrate();return}}catch(e){}
+  state=defaultState();
+}
+function migrate(){
+  state.staff.forEach(s=>s.awayTimes??=[]);
+  Object.values(state.days||{}).forEach(d=>d.visits??=[]);
+  if(!state._v||state._v<2){
+    const apo=state.staff.find(s=>s.id==="apo");
+    if(apo&&!apo.awayTimes.length) apo.awayTimes=[{dow:2,from:"16:30",to:"17:15",label:"自分のこどもの送迎"}];
+    state._v=2;
+  }
+  if(state._v<3){
+    state.venues??={1:{main:"文化センター",early:"",switch:""},2:{main:"健康増進センター スタジオ",early:"図書館",switch:"15:00"},3:{main:"文化センター",early:"",switch:""},4:{main:"文化センター",early:"",switch:""},5:{main:"文化センター",early:"",switch:""}};
+    Object.values(state.days||{}).forEach(d=>{if(d.venue==="読谷村文化センター")d.venue=""});
+    state._v=3;
+  }
+  if(state._v<4){
+    // 利用申込書兼同意書（確定情報）でこどもマスタ・下校時刻を更新／移動時間は一律20分枠の方針に
+    state.children=confirmedChildren();
+    state.dismissal=seedDismissal();
+    state.travel=seedTravel();
+    state.travelMeasured={};
+    state.schools=SCHOOL_DEFS;
+    const pope=state.staff.find(s=>s.id==="pope"); if(pope)pope.childId="c-pope";
+    state._v=4;
+  }
+  if(state._v<5){
+    // よびな未設定のこどもは名前をそのまま表示（よびなはこどもタブで設定）
+    state._v=5;
+  }
+  state.specialTimes??=[];
+  state.parentNotes??=[];
+  if(state._v<8){
+    // Slack表記は個人情報のためソースには持たせない（メンバータブで設定）
+    state.shareUrl??="https://k-three.github.io/yomicam-toranomaki/";
+    state._v=8;
+  }
+  if(state._v<7){
+    if(!state.schools.some(x=>x.id==="ocsi"))
+      state.schools.push({id:"ocsi",name:"OCSI（沖縄クリスチャンスクール）",short:"OCSI",color:"#6B7A76",meet:"送迎対象外（保護者送迎）"});
+    const ids7=["base",...state.schools.map(x=>x.id)];
+    ids7.forEach(a=>{state.travel[a]??={};ids7.forEach(b=>{if(state.travel[a][b]==null)state.travel[a][b]=a===b?0:20})});
+    if(!state.dismissal.ocsi){state.dismissal.ocsi={};for(let w=1;w<=5;w++){state.dismissal.ocsi[w]={};for(let g=1;g<=6;g++)state.dismissal.ocsi[w][g]="";}}
+    state._v=7;
+  }
+  if(state._v<6){
+    // 既存の日別調整（欠席・スポット・個別時刻）を保護者連絡マスタへ移行
+    for(const[ds,d]of Object.entries(state.days||{})){
+      (d.absent||[]).forEach(cid=>state.parentNotes.push({id:uid(),date:ds,childId:cid,kind:"absent",memo:""}));
+      (d.spots||[]).forEach(cid=>state.parentNotes.push({id:uid(),date:ds,childId:cid,kind:"spot",memo:""}));
+      Object.entries(d.timeOverrides||{}).forEach(([cid,t])=>{if(t)state.parentNotes.push({id:uid(),date:ds,childId:cid,kind:"time",time:t,memo:""})});
+      d.absent=[];d.spots=[];d.timeOverrides={};
+    }
+    state._v=6;
+  }
+  save();
+}
+/* 保護者連絡（欠席・スポット・時刻変更）ヘルパー */
+function notesOn(ds){return (state.parentNotes||[]).filter(n=>n.date===ds)}
+function getNote(ds,cid,kind){return (state.parentNotes||[]).find(n=>n.date===ds&&n.childId===cid&&n.kind===kind)}
+function setNote(ds,cid,kind,fields){
+  let n=getNote(ds,cid,kind);
+  if(!n){n={id:uid(),date:ds,childId:cid,kind,memo:""};state.parentNotes.push(n)}
+  Object.assign(n,fields||{});save();
+}
+function removeNote(ds,cid,kind){state.parentNotes=(state.parentNotes||[]).filter(n=>!(n.date===ds&&n.childId===cid&&n.kind===kind));save()}
+function save(){
+  try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+  pushShared();
+}
+
+/* ========== 共有データ（アーティファクトDB）========== */
+/* データは2層：
+   - マスタ（こども・メンバー・下校時刻・移動時間・会場・特別下校時刻）… 編集は admin/所有者のみ
+   - 日別データ（当日調整・担当固定・手動便・タイムライン編集・保護者連絡）… 閲覧メンバーも編集可 */
+const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","shareUrl","_v"];
+const DAY_KEYS=["days","parentNotes"];
+let dbNS=null, adopting=false;
+let mastersRev=0, daysRev=0, canMasters=false, canDays=false;
+let pushMTimer=null, pushDTimer=null;
+let requestsCache=[];
+function pick(keys){const o={};keys.forEach(k=>{if(state[k]!==undefined)o[k]=state[k]});return o}
+function setSync(mode){
+  const el=document.getElementById("syncChip"); if(!el)return;
+  if(mode==="shared"){el.textContent="☁ 共有データ（管理者）";el.className="chip acc";el.title="すべてのデータを編集できます（メンバー全員に共有）"}
+  else if(mode==="days"){el.textContent="📝 当日調整モード";el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
+  else if(mode==="readonly"){el.textContent="👀 閲覧モード";el.className="chip warn";el.title="閲覧権限のため、編集は保存されません。連絡は「📮 要望」タブからどうぞ"}
+  else if(mode==="error"){el.textContent="⚠ 同期エラー";el.className="chip alert";el.title="共有データと同期できません。再読み込みしてください"}
+  else{el.textContent="💾 この端末のみ";el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
+  document.body.classList.toggle("mro",!!dbNS&&!canMasters);
+}
+function setSyncMode(){
+  if(!dbNS)return setSync("local");
+  setSync(canMasters?"shared":canDays?"days":"readonly");
+}
+function adoptPart(doc,keys){
+  const part=JSON.parse(JSON.stringify(doc.state||{}));
+  adopting=true;
+  try{
+    keys.forEach(k=>{if(part[k]!==undefined)state[k]=part[k]});
+    const vBefore=state._v;
+    migrate();
+    try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+    if(state._v!==vBefore){adopting=false;pushShared()}
+  }finally{adopting=false}
+}
+function pushShared(){
+  if(!dbNS||adopting)return;
+  if(canMasters){
+    clearTimeout(pushMTimer);
+    pushMTimer=setTimeout(()=>{
+      mastersRev++;
+      dbNS.doc("app/masters").set({rev:mastersRev,updatedAt:Date.now(),state:pick(MASTER_KEYS)}).catch(()=>setSync("error"));
+    },800);
+  }
+  if(canDays){
+    clearTimeout(pushDTimer);
+    pushDTimer=setTimeout(()=>{
+      daysRev++;
+      dbNS.doc("shared/days").set({rev:daysRev,updatedAt:Date.now(),state:pick(DAY_KEYS)}).catch(()=>setSync("error"));
+    },800);
+  }
+}
+function rerenderAll(){
+  renderPlan();
+  if(curTab!=="plan") showTab(curTab);
+}
+/* ---- Firebase版（GitHub Pages で公開する場合）----
+   FB_CONFIG が設定されていて claude 環境でないときは Firestore に接続する。
+   閲覧用／管理者用の2つの共有アカウントでログインし、
+   マスタを書き換えられるのは管理者だけ（Firestoreのセキュリティルールでサーバー側が強制）。 */
+const FB_CONFIG={
+  apiKey:"AIzaSyDm8fkfGNdFe7WbAv8Al53FoLPxYC1OlOQ",
+  authDomain:"yomicam-toranomaki.firebaseapp.com",
+  projectId:"yomicam-toranomaki",
+  storageBucket:"yomicam-toranomaki.firebasestorage.app",
+  messagingSenderId:"214321029718",
+  appId:"1:214321029718:web:4e4f63ac713c8fe378d1f7"
+};
+const FB_VIEWER_EMAIL="viewer@yomicam-toranomaki.web.app";
+const FB_ADMIN_EMAIL="admin@yomicam-toranomaki.web.app";
+const FB_SDK="https://www.gstatic.com/firebasejs/10.14.1/";
+function loadScript(src){return new Promise((ok,ng)=>{const e=document.createElement("script");e.src=src;e.onload=ok;e.onerror=()=>ng(new Error("読み込み失敗: "+src));document.head.appendChild(e)})}
+let fbAuth=null;
+async function initFirebase(){
+  if(!FB_CONFIG.apiKey) return false;
+  for(const f of ["firebase-app-compat.js","firebase-auth-compat.js","firebase-firestore-compat.js"])
+    await loadScript(FB_SDK+f);
+  firebase.initializeApp(FB_CONFIG);
+  fbAuth=firebase.auth();
+  try{await fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)}catch(e){}
+  const user=await new Promise(res=>{const un=fbAuth.onAuthStateChanged(u=>{un();res(u)})});
+  if(!user){ showLogin(); return "login"; }
+  applyFbUser(user);
+  return true;
+}
+function applyFbUser(user){
+  dbNS=firebase.firestore();
+  canMasters=(user.email||"").toLowerCase()===FB_ADMIN_EMAIL;
+  canDays=true;
+  const chip=document.getElementById("syncChip");
+  if(chip){
+    chip.style.cursor="pointer";
+    chip.onclick=async()=>{
+      if(!confirm("ログアウトしますか？（別のパスワードで入り直せます）"))return;
+      try{await fbAuth.signOut()}catch(e){}
+      location.reload();
+    };
+  }
+}
+function showLogin(){
+  const box=document.getElementById("login"); if(!box)return;
+  box.hidden=false;
+  const err=document.getElementById("loginErr"),busy=document.getElementById("loginBusy");
+  document.getElementById("loginForm").onsubmit=async ev=>{
+    ev.preventDefault();
+    err.hidden=true;busy.hidden=false;
+    let pw=document.getElementById("loginPw").value.trim();
+    try{pw=pw.normalize("NFKC")}catch(e){} // 全角入力でも通す
+    let user=null;
+    for(const mail of [FB_ADMIN_EMAIL,FB_VIEWER_EMAIL]){
+      try{const c=await fbAuth.signInWithEmailAndPassword(mail,pw);user=c.user;break}catch(e){}
+    }
+    busy.hidden=true;
+    if(!user){err.hidden=false;return}
+    box.hidden=true;
+    applyFbUser(user);
+    await connectShared();
+  };
+}
+async function initShared(){
+  setSync("local");
+  if(typeof claude!=="undefined"&&claude?.use){
+    try{dbNS=await claude.use("db")}catch(e){dbNS=null}
+    if(!dbNS) return;
+    // 書き込み権限の確認
+    try{await dbNS.doc("app/probe").set({t:Date.now()});canMasters=true}catch(e){canMasters=false}
+    try{await dbNS.doc("shared/probe").set({t:Date.now()});canDays=true}catch(e){canDays=false}
+  }else{
+    let r;
+    try{r=await initFirebase()}catch(e){console.error(e);setSync("error");return}
+    if(r!==true) return; // 未設定（この端末のみ）／ログイン待ち
+  }
+  await connectShared();
+}
+async function connectShared(){
+  try{
+    const [mSnap,dSnap,legacy]=await Promise.all([
+      dbNS.doc("app/masters").get(),dbNS.doc("shared/days").get(),dbNS.doc("app/state").get()]);
+    const m=mSnap.exists?mSnap.data():null, d=dSnap.exists?dSnap.data():null, lg=legacy.exists?legacy.data():null;
+    if(!m&&lg&&lg.state){ // 旧形式（単一ドキュメント）からの移行
+      adopting=true;try{state=JSON.parse(JSON.stringify(lg.state));migrate();}finally{adopting=false}
+      try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+      if(canMasters){mastersRev=1;daysRev=1;
+        await dbNS.doc("app/masters").set({rev:1,updatedAt:Date.now(),state:pick(MASTER_KEYS)});
+        await dbNS.doc("shared/days").set({rev:1,updatedAt:Date.now(),state:pick(DAY_KEYS)});}
+      rerenderAll();
+    }else{
+      if(m&&m.state){mastersRev=m.rev||0;adoptPart(m,MASTER_KEYS);}
+      else if(canMasters){mastersRev=1;await dbNS.doc("app/masters").set({rev:1,updatedAt:Date.now(),state:pick(MASTER_KEYS)});}
+      if(d&&d.state){daysRev=d.rev||0;adoptPart(d,DAY_KEYS);}
+      else if(canDays){daysRev=1;await dbNS.doc("shared/days").set({rev:1,updatedAt:Date.now(),state:pick(DAY_KEYS)});}
+      rerenderAll();
+    }
+    setSyncMode();
+  }catch(e){ console.error(e); setSync("error"); return; }
+  dbNS.doc("app/masters").onSnapshot(snap=>{
+    const d=snap.exists?snap.data():null;
+    if(d&&d.state&&(d.rev||0)>mastersRev&&!snap.metadata.hasPendingWrites){mastersRev=d.rev;adoptPart(d,MASTER_KEYS);rerenderAll();}
+  },()=>setSync("error"));
+  dbNS.doc("shared/days").onSnapshot(snap=>{
+    const d=snap.exists?snap.data():null;
+    if(d&&d.state&&(d.rev||0)>daysRev&&!snap.metadata.hasPendingWrites){daysRev=d.rev;adoptPart(d,DAY_KEYS);rerenderAll();}
+  },()=>setSync("error"));
+  // 要望の購読（全員が読める・投稿できる）
+  try{
+    dbNS.collection("requests").orderBy("createdAt","desc").limit(200).onSnapshot(s=>{
+      requestsCache=s.docs.map(d=>({id:d.id,...d.data()}));
+      updateReqBadge();
+      if(curTab==="req")renderRequests();
+    },()=>{});
+  }catch(e){}
+}
+function updateReqBadge(){
+  const openN=requestsCache.filter(r=>r.status!=="done").length;
+  const tab=document.getElementById("reqTab");
+  if(tab)tab.textContent=`📮 要望${openN?`（${openN}）`:""}`;
+}
+function renderRequests(){
+  const host=document.getElementById("reqList"); if(!host)return;
+  if(!dbNS){host.innerHTML='<p class="help">共有データに接続していないため、要望の送信・閲覧はできません（公開ページから開いてください）。</p>';return}
+  host.innerHTML=requestsCache.length?requestsCache.map(r=>`
+    <div class="att" style="align-items:flex-start;gap:10px">
+      <span class="chip ${r.status==="done"?"base":"warn"}" style="margin-top:2px">${r.status==="done"?"対応済":"未対応"}</span>
+      <div style="flex:1;min-width:200px"><b>${esc(r.name||"名無し")}</b>
+        <span style="color:var(--muted);font-size:11px">${r.createdAt?new Date(r.createdAt).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):""}</span>
+        <div style="white-space:pre-wrap">${esc(r.text||"")}</div></div>
+      <button class="btn noprint" data-reqdone="${r.id}" style="padding:2px 8px;font-size:11px">${r.status==="done"?"再開":"対応済み"}</button>
+      <button class="del noprint" data-reqdel="${r.id}">✕</button>
+    </div>`).join(""):'<p class="help">要望はまだありません。</p>';
+  host.querySelectorAll("[data-reqdone]").forEach(el=>el.onclick=async()=>{
+    const r=requestsCache.find(x=>x.id===el.dataset.reqdone); if(!r)return;
+    try{await dbNS.doc("requests/"+r.id).update({status:r.status==="done"?"open":"done"})}
+    catch(e){alert("更新できませんでした（権限がない可能性があります）")}
+  });
+  host.querySelectorAll("[data-reqdel]").forEach(el=>el.onclick=async()=>{
+    if(!confirm("この要望を削除しますか？"))return;
+    try{await dbNS.doc("requests/"+el.dataset.reqdel).delete()}
+    catch(e){alert("削除できませんでした（権限がない可能性があります）")}
+  });
+}
+function getDay(ds){
+  if(!state.days[ds]) state.days[ds]={venue:"",absent:[],spots:[],timeOverrides:{},staffOff:[],taxiOn:false,notes:"",visits:[],pins:{}};
+  state.days[ds].visits??=[];
+  state.days[ds].pins??={};
+  state.days[ds].evEdits??={};
+  state.days[ds].evCustom??=[];
+  state.days[ds].customRuns??=[];
+  state.days[ds].staffExtra??=[];
+  state.days[ds].staffTimes??={};
+  return state.days[ds];
+}
+const schoolOf=id=>state.schools.find(s=>s.id===id)||{id,name:String(id),short:String(id),color:"#888",meet:""};
+const travelOf=(a,b)=>{const v=state.travel[a]?.[b];return (v==null||v==="")?null:Number(v)};
+const measured=(a,b)=>state.travelMeasured[[a,b].sort().join("|")];
+
+/* ========== プランナー ========== */
+function planDay(ds){
+  const d=new Date(ds+"T12:00:00");
+  const dow=d.getDay();
+  const day=getDay(ds);
+  const warnings=[];
+  const res={dow,day,warnings,attendees:[],runs:[],events:{},staffOnDuty:[],weekend:(dow===0||dow===6)};
+  if(res.weekend) return res;
+
+  // --- 会場（曜日既定＋当日上書き） ---
+  const vm=state.venues?.[dow]||{main:"文化センター"};
+  res.venue={
+    main:(day.venue||"").trim()||vm.main,
+    early:(vm.early||"").trim()||null,
+    switchMin:vm.switch?toMin(vm.switch):null,
+  };
+  if(res.venue.early&&res.venue.switchMin)
+    warnings.push({lv:"info",tag:"会場",text:`13:00〜${vm.switch}は${res.venue.main}が利用できないため${res.venue.early}に集合。${vm.switch}に${res.venue.main}へ移動します（出発前と到着後に点呼・こどもを一人にしない）`});
+
+  // --- 参加児童（時刻の優先順：保護者連絡の個別時刻＞特別下校時刻＞通常マスタ） ---
+  const specials=(state.specialTimes||[]).filter(x=>x.date===ds&&x.time);
+  const specialOf=(school,grade)=>{const h=specials.filter(x=>x.school===school&&(x.grades||[]).includes(grade));return h.length?h[h.length-1]:null};
+  const appliedSp=new Map();
+  const dayNotes=notesOn(ds);
+  const noteFor=(cid,kind)=>dayNotes.find(n=>n.childId===cid&&n.kind===kind);
+  for(const c of state.children){
+    const absent=!!noteFor(c.id,"absent");
+    const spotN=noteFor(c.id,"spot");
+    const fixed=c.days.includes(dow), spot=!!spotN;
+    if(!(fixed||spot)||absent) continue;
+    const tn=noteFor(c.id,"time");
+    const ov=tn?.time||spotN?.time||"";
+    const sp=ov?null:specialOf(c.school,c.grade);
+    const t=ov||sp?.time||state.dismissal[c.school]?.[dow]?.[c.grade]||"";
+    if(sp){const e=appliedSp.get(sp.id)||{sp,kids:[]};e.kids.push(c);appliedSp.set(sp.id,e)}
+    res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp});
+    if(!t&&!c.selfTransport) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
+  }
+  for(const {sp,kids} of appliedSp.values())
+    warnings.push({lv:"warn",tag:"特別時刻",text:`${schoolOf(sp.school).short}${sp.grades.join("・")}年は特別下校時刻 ${sp.time} を適用${sp.memo?`（${sp.memo}）`:""}。対象：${kids.map(kanaOf).join("・")}`});
+  const noteTxt=dayNotes.map(n=>{
+    const c=state.children.find(x=>x.id===n.childId);if(!c)return null;
+    const memo=n.memo?`（${n.memo}）`:"";
+    if(n.kind==="absent")return`${kanaOf(c)}＝欠席${memo}`;
+    if(n.kind==="spot")return`${kanaOf(c)}＝スポット参加${n.time?` ${n.time}下校`:""}${memo}`;
+    return n.time?`${kanaOf(c)}＝${n.time}下校に変更${memo}`:null;
+  }).filter(Boolean);
+  if(noteTxt.length) warnings.push({lv:"info",tag:"保護者連絡",text:noteTxt.join("、")});
+  if((day.notes||"").trim()) warnings.push({lv:"info",tag:"連絡",text:day.notes.trim().replace(/\n+/g," ／ ")});
+  {
+    const nmOf=id=>state.staff.find(s=>s.id===id)?.name||id;
+    const ex=(day.staffExtra||[]).filter(id=>!day.staffOff.includes(id));
+    if(ex.length) warnings.push({lv:"info",tag:"臨時出勤",text:`臨時出勤：${ex.map(nmOf).join("・")}`});
+    const wt=Object.entries(day.staffTimes||{}).filter(([id,v])=>(v.from||v.to));
+    if(wt.length) warnings.push({lv:"info",tag:"勤務変更",text:wt.map(([id,v])=>`${nmOf(id)}＝${v.from||"13:00"}〜${v.to||"19:00"}`).join("、")});
+  }
+  const noPhotoKids=res.attendees.filter(a=>a.noPhoto);
+  if(noPhotoKids.length)
+    warnings.push({lv:"warn",tag:"撮影不可",text:`📷 写真・動画の掲載不可：${noPhotoKids.map(kanaOf).join("・")}。撮影・SNS掲載時に写り込みに注意してください`});
+
+  // --- 手動の便（自由編成）第1段階：対象児童の確定 ---
+  const customRunsRaw=(day.customRuns||[]).filter(cr=>cr.driver&&(cr.schools||[]).length);
+  const coveredIds=new Set();
+  const customPlans=[];
+  for(const cr of customRunsRaw){
+    const seen=new Set();const stops=[];
+    for(const sc of cr.schools||[]){
+      if(seen.has(sc))continue;seen.add(sc);
+      const cand=res.attendees.filter(a=>a.school===sc&&a.time&&!a.selfTransport&&!coveredIds.has(a.id));
+      if(!cand.length)continue;
+      const maxT=Math.max(...cand.map(k=>toMin(k.time)));
+      const kids=cand.filter(k=>toMin(k.time)>=maxT-30); // 下校が大きく離れる児童は自動割当に残す
+      kids.forEach(k=>coveredIds.add(k.id));
+      stops.push({school:sc,kids,time:maxT});
+    }
+    if(stops.length)customPlans.push({cr,stops});
+  }
+
+  // --- お迎えジョブ（学校×時刻クラスタ） ---
+  const bySchool={};
+  res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
+  const selfKids=res.attendees.filter(a=>a.selfTransport);
+  if(selfKids.length) warnings.push({lv:"info",tag:"保護者送迎",text:`送迎不要（保護者が送迎）：${selfKids.map(kanaOf).join("・")}。到着時刻は保護者と個別に確認`});
+  const jobs=[];
+  for(const [sc,list] of Object.entries(bySchool)){
+    list.sort((a,b)=>toMin(a.time)-toMin(b.time));
+    let cur=null;
+    for(const a of list){
+      if(cur&&toMin(a.time)-cur.time<=SET.mergeGap){cur.kids.push(a);cur.time=Math.max(cur.time,toMin(a.time))}
+      else{cur={school:sc,kids:[a],time:toMin(a.time)};jobs.push(cur)}
+    }
+  }
+  jobs.sort((a,b)=>a.time-b.time);
+  res.schoolsToday=[...new Set(jobs.map(j=>j.school))];
+
+  // --- 運転手（担当固定＝手動調整を考慮） ---
+  const pins=day.pins||{};
+  const pinnedIds=new Set(Object.values(pins).filter(Boolean));
+  const onDuty=state.staff.filter(s=>(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id))&&!day.staffOff.includes(s.id));
+  res.staffOnDuty=onDuty.filter(s=>s.role!=="taxi"||day.taxiOn||pinnedIds.has(s.id));
+  const drivers=onDuty.filter(s=>s.role==="drive"||(s.role==="taxi"&&(day.taxiOn||pinnedIds.has(s.id))));
+  // 固定先が当日使えない場合は警告して自動扱いに
+  const activePins={};
+  for(const [sc,sid] of Object.entries(pins)){
+    if(!sid) continue;
+    if(drivers.some(s=>s.id===sid)) activePins[sc]=sid;
+    else{
+      const nm=state.staff.find(s=>s.id===sid)?.name||sid;
+      warnings.push({lv:"alert",tag:"担当固定",text:`${schoolOf(sc).short}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。この学校は自動割当に戻して計算しています`});
+    }
+  }
+  if(Object.keys(activePins).length)
+    warnings.push({lv:"info",tag:"手動調整",text:`担当を固定中：${Object.entries(activePins).map(([sc,sid])=>`${schoolOf(sc).short}＝${state.staff.find(s=>s.id===sid)?.name}`).join("、")}（自動に戻すには送迎便の「担当の固定」で「自動」を選択）`});
+  // 固定された学校を最優先で割り当て、担当者を確保する（そのあと残りを自動配分）
+  jobs.sort((a,b)=>((activePins[a.school]?0:1)-(activePins[b.school]?0:1))||a.time-b.time);
+
+  // --- 不在時間帯・来訪対応（運転手の使えない時間） ---
+  const dayVisits=(day.visits||[]).map(v=>({s:toMin(v.from),e:toMin(v.to),host:v.host,label:v.label}))
+    .filter(v=>v.s!=null&&v.e!=null&&v.e>v.s);
+  function driverBlocks(sid){
+    const s=state.staff.find(x=>x.id===sid); if(!s)return[];
+    const bl=(s.awayTimes||[]).filter(w=>Number(w.dow)===dow).map(w=>({s:toMin(w.from),e:toMin(w.to)}));
+    dayVisits.filter(v=>v.host===sid).forEach(v=>bl.push({s:v.s,e:v.e}));
+    const wt=day.staffTimes?.[sid];
+    if(wt?.from&&toMin(wt.from)!=null)bl.push({s:0,e:toMin(wt.from)});
+    if(wt?.to&&toMin(wt.to)!=null)bl.push({s:toMin(wt.to),e:1441});
+    return bl.filter(b=>b.s!=null&&b.e!=null);
+  }
+  const overlaps=(a,b,list)=>list.some(w=>a<w.e&&w.s<b);
+
+  // --- 割当（貪欲＋チェイニング） ---
+  const routes=[]; // {driver,cap,stops:[{school,kids,arrive,time,end}],onboard,hiace}
+  const unassigned=[];
+  const unmeasuredUsed=new Set();
+  function useTravel(a,b){
+    if(a===b) return 0;
+    const v=travelOf(a,b);
+    if(v==null){warnings.push({lv:"alert",tag:"移動時間なし",text:`${a==="base"?"拠点":schoolOf(a).short} → ${b==="base"?"拠点":schoolOf(b).short} の移動時間が未入力です（移動時間タブ）`});return 15}
+    if(!measured(a,b)) unmeasuredUsed.add(`${a==="base"?"拠点":schoolOf(a).short}→${b==="base"?"拠点":schoolOf(b).short} ${v}分`);
+    return v;
+  }
+  // --- 手動の便 第2段階：時刻を計算してルート化（ルール違反は警告に落とす） ---
+  for(const {cr,stops} of customPlans){
+    const drv=state.staff.find(s=>s.id===cr.driver);
+    if(!drv) continue;
+    if(!onDuty.some(s=>s.id===drv.id))
+      warnings.push({lv:"alert",tag:"手動便",text:`手動の便の担当 ${drv.name} は当日出勤していません（出勤チェック・勤務曜日を確認）`});
+    const hi=drv.vehicle==="hiace";
+    let prev="base",cursor=0,depart=0;
+    for(const st of stops){
+      const tv=useTravel(prev,st.school);
+      let arrive;
+      if(prev==="base"){
+        arrive=st.time-SET.preArrival;
+        if(hi)arrive=Math.max(arrive,SET.hiaceFrom);
+        depart=arrive-tv;cursor=depart;
+      }else arrive=cursor+tv;
+      st.arrive=arrive;st.from=prev;
+      st.end=Math.max(st.time+SET.board,arrive+5);
+      for(const k of st.kids){
+        const w=arrive-toMin(k.time);
+        if(w>SET.board)warnings.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）：${kanaOf(k)}は${schoolOf(st.school).short}で約${w}分待ち（待機20分を超過）。承知の上で運用してください`});
+      }
+      if(hi&&arrive<SET.hiaceFrom)warnings.push({lv:"warn",tag:"手動便",text:`ハイエースは14:00まで使用不可ですが、手動の便の${schoolOf(st.school).short}到着が${fmt(arrive)}です`});
+      prev=st.school;cursor=st.end;
+    }
+    const backAt=cursor+useTravel(prev,"base");
+    const onboard=stops.reduce((n,s)=>n+s.kids.length,0);
+    if(onboard>drv.cap)
+      warnings.push({lv:"alert",tag:"手動便",text:`手動の便（${drv.name}）の乗車${onboard}名が定員${drv.cap}名を超えています`});
+    for(const st of stops){
+      const ride=backAt-st.end;
+      if(ride>SET.maxRide)warnings.push({lv:"warn",tag:"手動便",text:`手動の便：${schoolOf(st.school).short}出発からの乗車＋待ち時間が約${ride}分（上限80分を超過）`});
+    }
+    if(overlaps(depart-SET.preCheck,backAt+SET.unload,driverBlocks(drv.id)))
+      warnings.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）が不在時間帯・来訪対応と重なっています`});
+    routes.push({driver:drv,cap:drv.cap,hiace:hi,taxi:drv.role==="taxi",manual:true,
+      depart,checkAt:depart-SET.preCheck,stops,onboard,backAt});
+  }
+
+  for(const job of jobs){
+    let remain=[...job.kids];
+    let guard=0;
+    const pin=activePins[job.school]||"";
+    while(remain.length&&guard++<20){
+      let best=null;
+      // 既存ルートの延長
+      for(const r of routes){
+        if(r.manual) continue; // 手動の便には自動で追加しない
+        if(pin&&r.driver.id!==pin) continue; // 担当固定
+        if(r.taxi) continue; // 第一交通は1回1校→拠点の運用（巡回させない）
+        const last=r.stops[r.stops.length-1];
+        const free=r.cap-r.onboard;
+        if(free<=0) continue;
+        const tv=travelOf(last.school,job.school); if(tv==null) continue;
+        let arr=last.end+tv;
+        if(r.hiace) arr=Math.max(arr,SET.hiaceFrom);
+        if(arr>job.time) continue;
+        // こどもの乗車＋待ち時間（学校出発→会場到着）が80分を超える連結はしない
+        const backTv=travelOf(job.school,"base"); if(backTv==null) continue;
+        const projBack=job.time+SET.board+backTv;
+        if(r.stops.some(st=>projBack-st.end>SET.maxRide)) continue;
+        if(overlaps(r.checkAt,projBack+SET.unload,driverBlocks(r.driver.id))) continue;
+        // 延長すると同じ運転手の別の便（手動便含む）と重なる場合は不可
+        if(routes.some(o=>o!==r&&o.driver.id===r.driver.id&&r.checkAt<o.backAt+SET.unload&&o.checkAt<projBack+SET.unload)) continue;
+        let score=1000-Math.abs(job.time-SET.preArrival-arr); // 5分前到着に近いほど高スコア
+        if(free>=remain.length) score+=50; // 分乗せず全員乗せられる車を優先
+        if(job.school==="szn"&&!r.hiace) score-=400; // 自然学校は基本ハイエース対応（難しければこの限りでない）
+        if(!best||score>best.score) best={kind:"extend",r,arr,free,score,tv};
+      }
+      // 新しい便（巡回候補と同時に比較。基本は巡回が優先されるスコア差）
+      {
+        for(const s of drivers){
+          if(pin&&s.id!==pin) continue; // 担当固定
+          const tv=travelOf("base",job.school); if(tv==null) continue;
+          const hi=s.vehicle==="hiace";
+          const backTv0=travelOf(job.school,"base"); if(backTv0==null) continue;
+          // 既存の便（手動便含む）の空き時間帯に差し込めるかを探す
+          let arr=Math.max(job.time-SET.preArrival, hi?SET.hiaceFrom:0), fits=true;
+          const spanE=job.time+SET.board+backTv0+SET.unload;
+          for(let iter=0;iter<5;iter++){
+            const spanS=arr-tv-5;
+            const conf=routes.find(r=>r.driver.id===s.id&&spanS<r.backAt+SET.unload&&r.checkAt<spanE);
+            if(!conf) break;
+            const na=conf.backAt+SET.unload+tv;
+            if(na>job.time||na<=arr){fits=false;break}
+            arr=na;
+          }
+          if(!fits||arr>job.time) continue;
+          if(overlaps(arr-tv-5, spanE, driverBlocks(s.id))) continue;
+          const free=s.cap;
+          let score=500;
+          if(hi){ if(job.school==="szn"||remain.length>3) score+=200; else score-=100; } // 自然学校・大人数はハイエース優先
+          if(!hi&&job.school==="szn") score-=200; // 自然学校は基本ハイエース対応
+          if(s.childId&&remain.some(k=>k.id===s.childId)) score+=250; // メンバーのこどもが乗る便はそのメンバー優先
+          if(s.role==="taxi") score-=150;
+          if(free>=remain.length) score+=50;
+          if(!best||score>best.score) best={kind:"new",driver:s,arr,free,score,tv};
+        }
+      }
+      if(!best){ unassigned.push({job,kids:remain,pin}); break; }
+      const take=remain.slice(0,best.free);
+      remain=remain.slice(best.free);
+      if(best.kind==="extend"){
+        const r=best.r;
+        r.stops.push({school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+SET.board,tv:best.tv,from:r.stops[r.stops.length-1].school});
+        r.onboard+=take.length;
+        const back=useTravel(job.school,"base"); // count usage
+        r.backAt=job.time+SET.board+back;
+        useTravel(r.stops[r.stops.length-2].school,job.school);
+      }else{
+        const back=useTravel(job.school,"base");
+        useTravel("base",job.school);
+        const depart=best.arr-best.tv;
+        routes.push({driver:best.driver,cap:best.driver.cap,hiace:best.driver.vehicle==="hiace",taxi:best.driver.role==="taxi",
+          depart,checkAt:depart-SET.preCheck,
+          stops:[{school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+SET.board,tv:best.tv,from:"base"}],
+          onboard:take.length, backAt:job.time+SET.board+back});
+      }
+    }
+  }
+  routes.sort((a,b)=>a.depart-b.depart);
+  // 運転手ごとに時系列で並べ、初便＝運行前チェック20分・2便目以降＝出発前確認5分に整理
+  const byDrvR={};
+  routes.forEach(r=>{(byDrvR[r.driver.id]??=[]).push(r)});
+  for(const list of Object.values(byDrvR))
+    list.forEach((r,i)=>{
+      r.second=i>0;
+      r.checkAt=i===0?r.depart-SET.preCheck:Math.max(r.depart-5,list[i-1].backAt+SET.unload);
+    });
+  routes.forEach((r,i)=>{r.no=i+1;r.direct=r.depart<780});
+  res.unassigned=unassigned;
+  // 巡回便の「出発リミット」（次校の下校時刻−移動時間）
+  for(const r of routes)
+    for(let i=0;i<r.stops.length-1;i++){
+      const tv=travelOf(r.stops[i].school,r.stops[i+1].school);
+      if(tv!=null) r.stops[i].deadline=r.stops[i+1].time-tv;
+    }
+  res.runs=routes;
+
+  // --- 警告 ---
+  if(unassigned.length){
+    for(const u of unassigned){
+      const names=u.kids.map(kanaOf).join("・");
+      const pinNote=u.pin?`担当を${state.staff.find(s=>s.id===u.pin)?.name}に固定していますが、時間の制約で成立しません。固定を「自動」に戻すか他の便を調整してください`:"第一交通をONにする／在館メンバーが送迎に出る／時刻調整を検討してください";
+      warnings.push({lv:"alert",tag:"車両不足",text:`${schoolOf(u.job.school).short} ${fmt(u.job.time)}下校の ${names} を乗せる車がありません。${pinNote}`});
+    }
+  }
+  if(unmeasuredUsed.size)
+    warnings.push({lv:"warn",tag:"暫定値",text:`未実測の移動時間を使用：${[...unmeasuredUsed].join("、")}。運行後に実測し「移動時間」タブへ反映してください`});
+  for(const r of routes){
+    if(r.direct) warnings.push({lv:"info",tag:"直行",text:`第${r.no}便（${r.driver.name}）は13:00の集合前に出発するため、拠点を経由せず学校へ直行（${fmt(r.depart)}発）。運行前チェックは出発地で実施し、出発をSlackで一報`});
+    for(const st of r.stops){
+      if(st.from!==st.school&&st.arrive>st.time-SET.preArrival&&st.arrive<=st.time)
+        warnings.push({lv:"warn",tag:"余裕なし",text:`${r.driver.name}便の${schoolOf(st.school).short}到着が下校${fmt(st.time)}の${st.time-st.arrive}分前。余裕が5分未満です`});
+    }
+    const distinct=new Set(r.stops.map(s=>s.school));
+    if(distinct.size>1){
+      const dls=r.stops.filter(s=>s.deadline!=null&&s.school!==r.stops[r.stops.indexOf(s)+1]?.school).map(s=>`${schoolOf(s.school).short}${fmt(s.end)}発（次校まで余裕${s.deadline-s.end}分）`).join("、");
+      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋20分の待機を含む計画${dls?`：${dls}`:""}。待機中、先に乗った児童は降車させず運転者の視界内で`});
+    }else if(r.stops.length>1){
+      warnings.push({lv:"info",tag:"同校2回",text:`第${r.no}便（${r.driver.name}）は${schoolOf(r.stops[0].school).short}で${r.stops.map(s=>fmt(s.time)).join("と")}の下校をまとめて受け取り（現地で待機を継続）`});
+    }
+    if(r.onboard===1&&r.stops.reduce((n,s)=>n+s.kids.length,0)===1)
+      warnings.push({lv:"info",tag:"1対1",text:`第${r.no}便（${r.driver.name}）は大人1名＋こども1名。出発／到着／乗車完了／拠点到着の4点をSlackで一報`});
+  }
+  // 来訪予定の警告
+  for(const v of day.visits||[]){
+    if(!v.from||!v.to) continue;
+    const host=state.staff.find(s=>s.id===v.host);
+    if(!host) warnings.push({lv:"alert",tag:"来訪",text:`${v.from}〜${v.to} ${v.label||"来訪"}：対応者が未設定です。当日調整で対応メンバーを選んでください`});
+    else if(!onDuty.some(s=>s.id===host.id)) warnings.push({lv:"alert",tag:"来訪",text:`${v.from}〜${v.to} ${v.label||"来訪"}：対応者の${host.name}は当日出勤していません`});
+    else warnings.push({lv:"info",tag:"来訪",text:`${v.from}〜${v.to} ${v.label||"来訪"}（対応：${host.name}・1名専任）。見学者と児童が1対1にならないよう、必ず運営メンバーの視界内で`});
+  }
+  // 見守り人数チェック（送迎・私用外出・来訪対応で抜ける人を除く）
+  const baseStaff=onDuty.filter(s=>s.role==="base"||s.role==="drive");
+  const kidsArrivals=routes.map(r=>r.backAt+SET.unload);
+  const firstKids=kidsArrivals.length?Math.min(...kidsArrivals):null;
+  if(firstKids!=null){
+    let lowSpans=[],cur=null;
+    for(let t=firstKids;t<=1080;t+=5){ // 〜18:00
+      let n=0;const reasons=new Set();
+      for(const s of baseStaff){
+        const wt=day.staffTimes?.[s.id];
+        if(wt&&((wt.from&&t<toMin(wt.from))||(wt.to&&t>=toMin(wt.to)))){reasons.add(`${s.name}：勤務時間外`);continue}
+        if(routes.some(r=>r.driver.id===s.id&&t>=r.checkAt&&t<r.backAt+SET.unload)){reasons.add(`${s.name}：送迎`);continue}
+        const aw=(s.awayTimes||[]).find(w=>Number(w.dow)===dow&&toMin(w.from)!=null&&t>=toMin(w.from)&&t<toMin(w.to));
+        if(aw){reasons.add(`${s.name}：${aw.label||"外出"}`);continue}
+        const vv=dayVisits.find(v=>v.host===s.id&&t>=v.s&&t<v.e);
+        if(vv){reasons.add(`${s.name}：来訪対応`);continue}
+        n++;
+      }
+      if(n<=1){ if(!cur)cur={s:t,e:t,n,reasons:new Set()};cur.e=t+5;cur.n=Math.min(cur.n,n);reasons.forEach(x=>cur.reasons.add(x));}
+      else if(cur){lowSpans.push(cur);cur=null}
+    }
+    if(cur)lowSpans.push(cur);
+    for(const sp of lowSpans){
+      const why=sp.reasons.size?`（${[...sp.reasons].join("、")}）`:"";
+      warnings.push({lv:sp.n===0?"alert":"warn",tag:sp.n===0?"見守り0名":"見守り1名",
+        text:sp.n===0
+          ?`${fmt(sp.s)}〜${fmt(sp.e)} こどもの見守りが不在になります${why}。便の組み替え、来訪時間の調整、または事務局への応援依頼が必要です`
+          :`${fmt(sp.s)}〜${fmt(sp.e)} 見守りが1名になります${why}。該当メンバーは玄関・受付から持ち場を離れないでください。頻発する曜日は事務局に応援を依頼してください`});
+    }
+  }
+  // 情報締切（2営業日前）
+  const today=new Date();today.setHours(0,0,0,0);
+  let freeze=new Date(d);freeze.setHours(0,0,0,0);
+  let bd=0;while(bd<2){freeze.setDate(freeze.getDate()-1);const w=freeze.getDay();if(w!==0&&w!==6)bd++}
+  const freezeTxt=`${freeze.getMonth()+1}/${freeze.getDate()}`;
+  if(today>freeze) warnings.push({lv:"info",tag:"締切済",text:`この日の情報締切（2営業日前＝${freezeTxt}）は過ぎています。以降の変更は電話連絡・赤字扱いで運用してください`});
+  if(routes.some(r=>r.taxi))
+    warnings.push({lv:"warn",tag:"第一交通",text:`第一交通の便があります。2営業日前（${freezeTxt}）までに依頼してください。9月は本永さんのサポート予定も確認`});
+
+  buildEvents(res);
+  return res;
+}
+
+/* ========== イベント生成（タイムライン用） ========== */
+function buildEvents(res){
+  const ev={}; const push=(id,e)=>{(ev[id]??=[]).push(e)};
+  const runs=res.runs;
+  const S=schoolOf;
+  const V=res.venue||{main:"拠点"};
+  const venueAt=m=>(V.early&&V.switchMin&&m<V.switchMin)?V.early:V.main;
+  const dow=res.dow;
+  const dayVisits=(res.day.visits||[]).map(v=>({s:toMin(v.from),e:toMin(v.to),host:v.host,label:v.label}))
+    .filter(v=>v.s!=null&&v.e!=null&&v.e>v.s);
+
+  // --- 全体レーン（全員共通の動き） ---
+  const all=[];
+  all.push({s:780,e:800,type:"t-fixed",label:`集合・会場準備（${V.early||V.main}）`,detail:`${V.early||V.main}に集合／使用エリア確認（座席・こどもの居場所・トイレ・出入口）／出迎え位置を決めて待機`});
+  const inkan="在館（見守り・記録・保護者窓口／出迎え・コドモン入館打刻）。送迎・外出・来訪対応のメンバーはその時間だけ抜ける";
+  if(V.early&&V.switchMin){
+    const sw=V.switchMin;
+    all.push({s:800,e:sw-15,type:"t-base",label:`在館（${V.early}）`,detail:inkan+`。${V.early}は公共の場：声の大きさ・館内の移動に注意`});
+    all.push({s:sw-15,e:sw,type:"t-fixed",label:"移動準備",detail:`${V.early}の片付け・忘れ物確認／こどもへ移動の見通しを伝える`});
+    all.push({s:sw,e:sw+15,type:"t-fixed",label:`会場移動 ${V.early}→${V.main}`,detail:"出発前と到着後に点呼。移動中も必ず大人2名以上の視界内に。送迎中のメンバーは新会場へ直接戻る"});
+    all.push({s:sw+15,e:1060,type:"t-base",label:`在館（${V.main}）`,detail:inkan});
+  }else{
+    all.push({s:800,e:1060,type:"t-base",label:"在館",detail:inkan});
+  }
+  all.push({s:1060,e:1080,type:"t-fixed",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
+  all.push({s:1080,e:1140,type:"t-base",label:"片付け・ふりかえり",detail:"備品を倉庫へ／忘れ物確認／アルコールチェック様式・運行日報を回収／施錠依頼"});
+  ev["_all"]=all;
+
+  // --- 送迎便（運転担当の個別レーン：移動と乗車だけのシンプル表示） ---
+  for(const r of runs){
+    const id=r.driver.id;
+    let cursor=r.depart, prev="base";
+    for(const st of r.stops){
+      const ps=Math.max(st.time,st.arrive??st.time); // 到着が下校より遅い手動便にも対応
+      if(prev!==st.school&&ps>cursor){
+        const from=prev==="base"?(r.direct?"直行":venueAt(r.depart)):S(prev).short;
+        push(id,{s:cursor,e:ps,type:"t-drive",label:`${from}→${S(st.school).short}`,
+          detail:`${fmt(cursor)}出発（Slackで一報）→${fmt(st.arrive)}頃到着${st.arrive<st.time?"、待ち合わせ場所で待機":""}。<br>待ち合わせ：${S(st.school).meet||"指定場所"}${prev==="base"&&r.direct?"<br>拠点を経由せず直行。運行前チェック（点検・健康確認・アルコール検知・名簿確定）は出発地で実施":""}`});
+      }
+      const names=st.kids.map(kanaOf).join("・");
+      const dl=st.deadline!=null?`<br>⏱ 次校に間に合う出発期限：${fmt(st.deadline)}（計画上の出発は${fmt(st.end)}）`:"";
+      push(id,{s:ps,e:st.end,type:"t-pick",label:`乗車：${names}`,
+        detail:`下校${fmt(st.time)}〜${fmt(st.end)}発。${st.arrive>st.time?`到着${fmt(st.arrive)}（児童は学校で待機）`:"待機20分を含む（遅れはここで吸収）"}。氏名点呼・座席・シートベルト・施錠確認、乗車完了を一報。${r.onboard>st.kids.length?"<br>車内の児童は降車させない（着席のまま視界内）":""}${dl}`});
+      cursor=st.end; prev=st.school;
+    }
+    const dest=venueAt(r.backAt);
+    push(id,{s:cursor,e:r.backAt,type:"t-drive",label:`${S(prev).short}→${dest}`,detail:`当日の会場（${dest}）へ。到着を一報し、車内残留のダブルチェック→在館スタッフへ引き渡し`});
+  }
+
+  // --- 個別の外出・来訪対応 ---
+  for(const s of res.staffOnDuty){
+    if(s.role==="taxi") continue;
+    const id=s.id;
+    for(const w of (s.awayTimes||[]).filter(w=>Number(w.dow)===dow&&toMin(w.from)!=null&&toMin(w.to)!=null))
+      push(id,{s:toMin(w.from),e:toMin(w.to),type:"t-away",label:w.label||"外出",detail:`私用等で不在（毎週${DOWS[w.dow]}）。この間は見守り・送迎に入れません`});
+    for(const v of dayVisits.filter(v=>v.host===id))
+      push(id,{s:v.s,e:v.e,type:"t-visit",label:`来訪対応：${v.label||"来訪"}`,detail:"ご案内・説明・質疑に専任。見学者と児童が1対1にならないよう、必ず運営メンバーの視界内で"});
+    const wt=res.day.staffTimes?.[id];
+    if(wt?.from&&toMin(wt.from)>780) push(id,{s:780,e:toMin(wt.from),type:"t-away",label:"出勤前",detail:`この日の勤務：${wt.from||"13:00"}〜${wt.to||"19:00"}`});
+    if(wt?.to&&toMin(wt.to)<1140) push(id,{s:toMin(wt.to),e:1140,type:"t-away",label:"退勤",detail:`この日の勤務：${wt.from||"13:00"}〜${wt.to||"19:00"}`});
+  }
+
+  // --- こども・来訪レーン ---
+  const kidsEv=[];
+  const backs=runs.map(r=>r.backAt).sort((a,b)=>a-b);
+  const firstArr=backs.length?backs[0]:null;
+  for(const r of runs){
+    for(const st of r.stops)
+      kidsEv.push({s:st.time,e:st.end,type:"t-kids",label:`${S(st.school).short}下校（${st.kids.map(kanaOf).join("・")}）`,detail:`第${r.no}便（${r.driver.name}）に乗車。下校＋20分待機を含む`});
+    kidsEv.push({s:r.backAt,e:r.backAt+5,type:"t-kmove",label:`${venueAt(r.backAt)}着（${r.stops.flatMap(st=>st.kids).map(kanaOf).join("・")}）`,detail:`第${r.no}便到着。出迎え・コドモン入館打刻（保護者へ自動通知）`});
+  }
+  if(firstArr!=null){
+    if(V.early&&V.switchMin){
+      const sw=V.switchMin;
+      if(firstArr+5<sw-15) kidsEv.push({s:firstArr+5,e:sw-15,type:"t-kids",label:`活動（${V.early}）`,detail:"集まり→活動。到着した児童から順に合流"});
+      kidsEv.push({s:sw,e:sw+15,type:"t-kmove",label:"会場移動",detail:`${V.early}→${V.main}。出発前と到着後に点呼`});
+      kidsEv.push({s:sw+15,e:1060,type:"t-kids",label:`活動（${V.main}）`,detail:"集まり→活動"});
+    }else{
+      kidsEv.push({s:firstArr+5,e:1060,type:"t-kids",label:"活動時間",detail:"集まり→活動。到着した児童から順に合流"});
+    }
+    kidsEv.push({s:1060,e:1080,type:"t-kids",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
+  }
+  for(const u of res.unassigned||[])
+    kidsEv.push({s:u.job.time,e:u.job.time+SET.board,type:"t-alert",label:`❗未割当 ${S(u.job.school).short}下校（${u.kids.map(kanaOf).join("・")}）`,detail:"乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください"});
+  for(const v of dayVisits){
+    const hn=state.staff.find(s=>s.id===v.host)?.name||"未定";
+    kidsEv.push({s:v.s,e:v.e,type:"t-visit",label:`来訪：${v.label||""}`,detail:`対応：${hn}。見学者と児童が1対1にならないように`});
+  }
+  ev["_kids"]=kidsEv;
+  res.events=ev;
+}
+
+/* ========== タイムラインの手動編集（表示の上書き・追加・削除） ========== */
+function applyEvEdits(res,day){
+  if(res.weekend) return;
+  const edits=day.evEdits||{}, customs=day.evCustom||[];
+  const out={};
+  for(const [lane,list] of Object.entries(res.events)){
+    for(const e of list){
+      const key=`${lane}|${e.s}|${e.label}`;
+      const ed=edits[key];
+      if(ed?.del) continue;
+      const ne={...e,key,lane};
+      if(ed){
+        if(ed.label)ne.label=ed.label;
+        if(ed.s!=null)ne.s=ed.s;
+        if(ed.e!=null)ne.e=ed.e;
+        if(ed.lane)ne.lane=ed.lane;
+        if(ed.type)ne.type=ed.type;
+        ne.edited=true;
+      }
+      (out[ne.lane]??=[]).push(ne);
+    }
+  }
+  for(const c of customs)
+    (out[c.lane]??=[]).push({s:c.s,e:c.e,label:c.label,detail:"手動で追加したブロック",type:c.type||"t-fixed",key:"custom:"+c.id,lane:c.lane,edited:true});
+  res.events=out;
+  res.editCount=Object.keys(edits).length+customs.length;
+  if(res.editCount)
+    res.warnings.push({lv:"info",tag:"手動編集",text:`タイムラインに手動編集が${res.editCount}件あります（当日調整や担当変更で自動計算が変わっても、編集内容は上書きされません。「✎ 編集リセット」で全解除）`});
+}
+
+/* ========== 描画 ========== */
+let currentDate=todayStr();
+let ui={};try{ui=JSON.parse(localStorage.getItem("toranomaki-ui")||"{}")}catch(e){}
+if(!ui||typeof ui!=="object")ui={};
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+
+function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" style="background:${s.color}">${esc(s.short)}</span>`}
+
+function renderPlan(){
+  try{renderPlanInner()}
+  catch(err){
+    console.error(err);
+    const loc=(err&&err.stack||"").split("\n").slice(0,3).join(" / ");
+    document.getElementById("summaryCard").innerHTML=
+      `<h2>表示エラー</h2><p class="help">計画の描画中にエラーが発生しました：<b>${esc(String(err&&err.message||err))}</b><br><span style="font-size:11px;color:var(--muted)">${esc(loc)}</span><br>ページを再読み込みしても直らない場合は、この画面のスクリーンショットを「📮 要望」または管理者に送ってください。</p>`;
+  }
+}
+function renderPlanInner(){
+  const ds=currentDate;
+  const plan=planDay(ds);
+  if(!plan.weekend) applyEvEdits(plan,plan.day);
+  const rb=document.getElementById("resetEvBtn");
+  rb.hidden=!plan.editCount;
+  if(plan.editCount) rb.textContent=`✎ 手動編集 ${plan.editCount}件をリセット`;
+  const day=plan.day||getDay(ds);
+  document.getElementById("dowChip").textContent=DOWS[new Date(ds+"T12:00:00").getDay()];
+  const sum=document.getElementById("summaryCard");
+  if(plan.weekend){
+    sum.innerHTML=`<h2>${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）</h2><p class="help">土日はお休みです。平日を選んでください。</p>`;
+    ["dayEditCard","runsCard","warnCard"].forEach(id=>document.getElementById(id).innerHTML="");
+    document.getElementById("tlHost").innerHTML="";
+    return;
+  }
+  const spotN=plan.attendees.filter(a=>a.spot).length;
+  const wN=plan.warnings.filter(w=>w.lv!=="info").length;
+  const V=plan.venue;
+  const venueTxt=V.early&&V.switchMin?`${V.early}（〜${fmt(V.switchMin)}）→ ${V.main}`:V.main;
+  // こども名一覧（学校順→かな順）。人数が増えても畳めるよう details で表示
+  const schOrder=new Map(state.schools.map((sc,i)=>[sc.id,i]));
+  const kidsSorted=[...plan.attendees].sort((x,y)=>
+    (schOrder.get(x.school)??99)-(schOrder.get(y.school)??99) ||
+    String(kanaOf(x)).localeCompare(String(kanaOf(y)),"ja"));
+  const kidChip=a=>`<span class="kidname">${schoolTag(a.school)}${esc(kanaOf(a))}<small>${esc(String(a.grade??""))}年</small>`
+    +`${a.spot?'<em class="kf-spot">スポット</em>':""}${a.selfTransport?'<em class="kf-self">保護者送迎</em>':""}`
+    +`${a.noPhoto?'<em class="kf-np">📷不可</em>':""}</span>`;
+  sum.innerHTML=`
+    <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）の虎の巻
+      <span class="chip acc">会場：${esc(venueTxt)}</span></h2>
+    <div class="chips">
+      <details class="kidsbox" id="kidsBox"${ui.kidsOpen===false?"":" open"}>
+        <summary class="chip kids">👧 こども <span class="num">${plan.attendees.length}</span>名${spotN?`（スポット${spotN}）`:""}</summary>
+        <div class="kidsnames">${kidsSorted.length?kidsSorted.map(kidChip).join(""):'<span class="help">この日の利用者はいません</span>'}</div>
+      </details>
+      <span class="chip drive">🚐 送迎 <span class="num">${plan.runs.length}</span>便</span>
+      ${plan.unassigned?.length?`<span class="chip alert">❗ 送迎未割当 <span class="num">${plan.unassigned.reduce((n,u)=>n+u.kids.length,0)}</span>名</span>`:""}
+      <span class="chip base">🧑‍🤝‍🧑 メンバー <span class="num">${plan.staffOnDuty.length}</span>名（${plan.staffOnDuty.map(s=>esc(s.name)).join("・")}）</span>
+      ${day.visits?.length?`<span class="chip warn">🚪 来訪 <span class="num">${day.visits.length}</span>件</span>`:""}
+      ${plan.attendees.some(a=>a.noPhoto)?`<span class="chip alert">📷 撮影不可 <span class="num">${plan.attendees.filter(a=>a.noPhoto).length}</span>名（${plan.attendees.filter(a=>a.noPhoto).map(a=>esc(kanaOf(a))).join("・")}）</span>`:""}
+      <span class="chip ${wN?"warn":"acc"}">⚠ 警告 <span class="num">${wN}</span>件</span>
+    </div>`;
+  const kb=document.getElementById("kidsBox");
+  if(kb)kb.addEventListener("toggle",()=>{ui.kidsOpen=kb.open;
+    try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}});
+  const safe=(fn,label)=>{try{fn(plan)}catch(err){console.error(label,err);
+    const hostMap={renderDayEdit:"dayEditCard",renderRuns:"runsCard",renderWarnings:"warnCard"};
+    const el=document.getElementById(hostMap[label]||"warnCard");
+    if(el)el.innerHTML=`<p class="help" style="color:var(--alert)">この区画の表示でエラー：${esc(String(err&&err.message||err))}</p>`;
+  }};
+  safe(renderDayEdit,"renderDayEdit");
+  safe(renderRuns,"renderRuns");
+  safe(renderTimeline,"renderTimeline");
+  safe(renderWarnings,"renderWarnings");
+  try{renderLegend()}catch(e){console.error(e)}
+}
+
+function renderDayEdit(plan){
+  const day=plan.day;const ds=currentDate;const dow=plan.dow;
+  const fixed=state.children.filter(c=>c.days.includes(dow));
+  const spotIds=notesOn(ds).filter(n=>n.kind==="spot").map(n=>n.childId);
+  const spotCands=state.children.filter(c=>!c.days.includes(dow));
+  const rows=[];
+  const listed=new Set();
+  for(const c of fixed){listed.add(c.id);
+    const absent=!!getNote(ds,c.id,"absent");
+    const ov=getNote(ds,c.id,"time")?.time||"";
+    rows.push(`<div class="att">
+      <label class="toggle"><input type="checkbox" data-att="${c.id}" ${absent?"":"checked"}> <span class="nm">${esc(c.name)}</span></label>
+      ${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>${c.noPhoto?'<span class="chip alert" style="font-size:11px">📷不可</span>':""}${plan.attendees.find(a=>a.id===c.id)?.special?'<span class="chip warn" style="font-size:11px">特別時刻</span>':""}${c.selfTransport?'<span class="chip base" style="font-size:11px">保護者送迎</span>':""}
+      <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${c.id}" value="${ov}">
+      ${absent?'<span class="chip alert">欠席</span>':""}${ov?'<span class="chip warn">保護者連絡で変更</span>':""}
+    </div>`);
+  }
+  for(const cid of spotIds){const c=state.children.find(x=>x.id===cid);if(!c||listed.has(cid))continue;
+    const ov=getNote(ds,cid,"time")?.time||"";
+    rows.push(`<div class="att"><span class="chip kids">スポット</span><span class="nm">${esc(c.name)}</span>${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>
+      <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${cid}" value="${ov}">
+      <button class="del" data-unspot="${cid}">✕</button></div>`);
+  }
+  const dayStaff=state.staff.filter(s=>s.role!=="taxi"&&(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id)));
+  const staffRows=dayStaff.map(s=>{
+    const off=day.staffOff.includes(s.id);
+    const extra=(day.staffExtra||[]).includes(s.id)&&!s.days.includes(dow);
+    const wt=day.staffTimes?.[s.id]||{};
+    return `<div class="att">
+      <label class="toggle"><input type="checkbox" data-soff="${s.id}" ${off?"":"checked"}> <span class="nm">${esc(s.name)}</span></label>
+      ${extra?'<span class="chip acc" style="font-size:11px">臨時</span>':""}
+      ${off?'<span class="chip alert" style="font-size:11px">休み</span>':`
+      <span style="color:var(--muted);font-size:12px">出勤</span><input type="time" data-stf="${s.id}" value="${esc(wt.from||"")}" placeholder="13:00">
+      <span style="color:var(--muted);font-size:12px">退勤</span><input type="time" data-stt="${s.id}" value="${esc(wt.to||"")}" placeholder="19:00">
+      ${(wt.from||wt.to)?'<span class="chip warn" style="font-size:11px">勤務変更</span>':""}`}
+      ${extra?`<button class="del" data-sxrm="${s.id}">✕</button>`:""}
+    </div>`;
+  }).join("");
+  const extraCands=state.staff.filter(s=>s.role!=="taxi"&&!s.days.includes(dow)&&!(day.staffExtra||[]).includes(s.id));
+  const collapsed=ui.dayEditCollapsed!==false; // 既定は折りたたみ（主要情報を優先）
+  document.getElementById("dayEditCard").innerHTML=`
+    <h2 id="dayEditToggle" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;margin-bottom:${collapsed?"0":"10px"}">
+      <span style="color:var(--accent)">${collapsed?"▸":"▾"}</span>当日調整
+      <span style="font-size:12px;color:var(--muted);font-weight:500">（スクリレ・保護者連絡をここに反映 → 虎の巻が自動更新）</span>
+    </h2>
+    <div id="dayEditBody" ${collapsed?"hidden":""}>
+    <h3 style="margin-top:6px">こども（チェック＝参加）</h3>
+    ${rows.join("")||'<p class="help">この曜日の固定参加はいません。</p>'}
+    <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select id="spotSel" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <option value="">スポット参加を追加…</option>
+        ${spotCands.filter(c=>!spotIds.includes(c.id)).map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(schoolOf(c.school).short)}${c.grade}年）</option>`).join("")}
+      </select>
+    </div>
+    <h3>メンバー（チェック＝出勤。出退勤時刻は変更がある日だけ入力）</h3>
+    <div>${staffRows}
+      <div class="att" style="border-bottom:none">
+        <select id="staffExtraSel" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+          <option value="">臨時出勤を追加…</option>
+          ${extraCands.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
+        </select>
+        <label class="toggle"><input type="checkbox" id="taxiOn" ${day.taxiOn?"checked":""}> 🚕 第一交通を使う</label>
+      </div></div>
+    <h3>来訪予定（見学など・対応1名専任）</h3>
+    ${(day.visits||[]).map((v,i)=>{
+      const hn=state.staff.find(s=>s.id===v.host)?.name||"未設定";
+      return `<div class="att"><span class="chip warn">来訪</span><b style="font-variant-numeric:tabular-nums">${esc(v.from)}〜${esc(v.to)}</b> ${esc(v.label||"")}
+        <span style="color:var(--muted);font-size:12px">対応：${esc(hn)}</span><button class="del" data-unvisit="${i}">✕</button></div>`;
+    }).join("")}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px">
+      <input type="time" id="vFrom" style="border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:var(--surface)">〜
+      <input type="time" id="vTo" style="border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:var(--surface)">
+      <input type="text" id="vLabel" placeholder="内容（例：見学 ◯◯様・こども同伴）" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--surface);width:min(100%,240px)">
+      <select id="vHost" style="padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <option value="">対応メンバー…</option>
+        ${dayStaff.filter(s=>!day.staffOff.includes(s.id)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
+      </select>
+      <button class="btn" id="vAdd">＋ 追加</button>
+    </div>
+    <h3>連絡メモ（Slack投稿・虎の巻の要注意事項に掲載）</h3>
+    <textarea id="dayNotes" rows="2" placeholder="例：渡慶次小の冷房設備が復旧し、全学年通常通りに戻りました。&#10;※担当の入れ替えなど適宜調整ください（※で始まる行は投稿の最後に入ります）" style="width:100%;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);font:inherit">${esc(day.notes||"")}</textarea>
+    <h3>会場（この日だけ変更する場合。空欄＝曜日の既定）</h3>
+    <input type="text" id="venueInput" value="${esc(day.venue||"")}" placeholder="${esc(state.venues?.[dow]?.main||"文化センター")}" style="width:min(100%,340px);border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--surface)">
+    </div>`;
+  document.getElementById("dayEditToggle").onclick=()=>{
+    ui.dayEditCollapsed=!(ui.dayEditCollapsed!==false);
+    try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+    renderDayEdit(plan);
+  };
+  if(collapsed) return;
+  // handlers（こども関連は保護者連絡マスタに書き込む）
+  document.querySelectorAll("[data-att]").forEach(el=>el.onchange=()=>{
+    const id=el.dataset.att;
+    if(el.checked)removeNote(currentDate,id,"absent"); else setNote(currentDate,id,"absent");
+    renderPlan();
+  });
+  document.querySelectorAll("[data-ov]").forEach(el=>el.onchange=()=>{
+    const id=el.dataset.ov;
+    if(el.value)setNote(currentDate,id,"time",{time:el.value}); else removeNote(currentDate,id,"time");
+    renderPlan();
+  });
+  document.querySelectorAll("[data-unspot]").forEach(el=>el.onclick=()=>{
+    removeNote(currentDate,el.dataset.unspot,"spot"); renderPlan();
+  });
+  document.querySelectorAll("[data-soff]").forEach(el=>el.onchange=()=>{
+    const id=el.dataset.soff;const day=getDay(currentDate);
+    day.staffOff=day.staffOff.filter(x=>x!==id); if(!el.checked)day.staffOff.push(id); save();renderPlan();
+  });
+  document.querySelectorAll("[data-stf],[data-stt]").forEach(el=>el.onchange=()=>{
+    const id=el.dataset.stf||el.dataset.stt;const day=getDay(currentDate);
+    const wt=day.staffTimes[id]??={};
+    if(el.dataset.stf!=null)wt.from=el.value;else wt.to=el.value;
+    if(!wt.from&&!wt.to)delete day.staffTimes[id];
+    save();renderPlan();
+  });
+  document.getElementById("staffExtraSel").onchange=e=>{
+    if(!e.target.value)return;
+    const day=getDay(currentDate);
+    day.staffExtra.push(e.target.value);save();renderPlan();
+  };
+  document.querySelectorAll("[data-sxrm]").forEach(el=>el.onclick=()=>{
+    const day=getDay(currentDate);
+    day.staffExtra=day.staffExtra.filter(x=>x!==el.dataset.sxrm);
+    delete day.staffTimes[el.dataset.sxrm];
+    save();renderPlan();
+  });
+  document.getElementById("spotSel").onchange=e=>{
+    if(!e.target.value)return; setNote(currentDate,e.target.value,"spot"); renderPlan();
+  };
+  document.getElementById("taxiOn").onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;save();renderPlan()};
+  document.querySelectorAll("[data-unvisit]").forEach(el=>el.onclick=()=>{
+    const day=getDay(currentDate);day.visits.splice(Number(el.dataset.unvisit),1);save();renderPlan();
+  });
+  document.getElementById("vAdd").onclick=()=>{
+    const from=document.getElementById("vFrom").value,to=document.getElementById("vTo").value;
+    const label=document.getElementById("vLabel").value.trim(),host=document.getElementById("vHost").value;
+    if(!from||!to||toMin(to)<=toMin(from)){alert("開始・終了時刻を正しく入力してください");return}
+    getDay(currentDate).visits.push({from,to,label,host});save();renderPlan();
+  };
+  document.getElementById("venueInput").onchange=e=>{getDay(currentDate).venue=e.target.value;save();renderPlan()};
+  document.getElementById("dayNotes").onchange=e=>{getDay(currentDate).notes=e.target.value;save();renderPlan()};
+}
+
+function renderRuns(plan){
+  const host=document.getElementById("runsCard");
+  const unCards=(plan.unassigned||[]).map(u=>`<div class="run" style="border-left-color:var(--alert)">
+    <h3>❗ 未割当：${esc(schoolOf(u.job.school).short)}（${esc(u.kids.map(kanaOf).join("・"))}）</h3>
+    <div class="stops"><span class="stop" style="background:var(--alert-soft);color:var(--alert)">${esc(schoolOf(u.job.school).short)}<small>${fmt(u.job.time)}下校</small></span></div>
+    <p class="help" style="margin:6px 0 0">乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください。</p>
+  </div>`).join("");
+  const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
+    <b style="font-size:12.5px">📌 担当の固定（手動調整）：</b>
+    ${plan.schoolsToday.map(sc=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(sc).short)}
+      <select data-pin="${sc}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <option value="">自動</option>
+        ${state.staff.filter(s=>s.cap>0).map(s=>`<option value="${s.id}" ${plan.day.pins?.[sc]===s.id?"selected":""}>${esc(s.name)}</option>`).join("")}
+      </select></label>`).join("")}
+  </div>`:"";
+  const drvOpts=sel=>state.staff.filter(s=>s.cap>0).map(s=>`<option value="${s.id}" ${s.id===sel?"selected":""}>${esc(s.name)}</option>`).join("");
+  const crBar=`<div class="noprint" style="display:grid;gap:8px;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:8px 12px">
+    <b style="font-size:12.5px">🔧 手動の便（自由編成：担当と巡回順を指定。時間の無理は警告で表示）</b>
+    ${(plan.day.customRuns||[]).map((cr,i)=>`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px">
+      担当 <select data-crdrv="${i}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"><option value="">選択…</option>${drvOpts(cr.driver)}</select>
+      巡回順：${(cr.schools||[]).map((sc,j)=>`<span class="chip">${esc(schoolOf(sc)?.short||sc)} <button class="del" data-crdel="${i}:${j}">✕</button></span><span class="arrow">→</span>`).join("")}
+      <select data-cradd="${i}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+        <option value="">学校を追加…</option>
+        ${state.schools.map(s=>`<option value="${s.id}">${esc(s.short)}</option>`).join("")}
+      </select>
+      <button class="del" data-crrm="${i}" title="この便を削除">便を削除</button>
+    </div>`).join("")}
+    <div><button class="btn" id="addCr" style="padding:3px 10px;font-size:12.5px">＋ 手動の便を追加</button></div>
+  </div>`;
+  const adjOpen=!!ui.runAdjOpen;
+  const pinN=Object.values(plan.day.pins||{}).filter(Boolean).length;
+  const crN=(plan.day.customRuns||[]).length;
+  const adjBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px">
+    <button class="btn" id="adjToggle" style="font-size:12.5px;padding:4px 12px">${adjOpen?"▾":"▸"} 送迎の調整${(pinN||crN)?`（固定${pinN}・手動便${crN}）`:""}</button>
+    <div id="adjBody" ${adjOpen?"":"hidden"} style="margin-top:8px">${pinBar}${crBar}</div>
+  </div>`:"";
+  function bindPins(){
+    const at=host.querySelector("#adjToggle");
+    if(at)at.onclick=()=>{
+      ui.runAdjOpen=!ui.runAdjOpen;
+      try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+      const body=host.querySelector("#adjBody");
+      body.hidden=!ui.runAdjOpen;
+      at.textContent=`${ui.runAdjOpen?"▾":"▸"} 送迎の調整${(pinN||crN)?`（固定${pinN}・手動便${crN}）`:""}`;
+    };
+    host.querySelectorAll("[data-pin]").forEach(el=>el.onchange=()=>{
+      const day=getDay(currentDate);
+      if(el.value) day.pins[el.dataset.pin]=el.value; else delete day.pins[el.dataset.pin];
+      save(); renderPlan();
+    });
+    const addCr=host.querySelector("#addCr");
+    if(addCr)addCr.onclick=()=>{getDay(currentDate).customRuns.push({id:uid(),driver:"",schools:[]});save();renderPlan()};
+    host.querySelectorAll("[data-crdrv]").forEach(el=>el.onchange=()=>{
+      getDay(currentDate).customRuns[Number(el.dataset.crdrv)].driver=el.value;save();renderPlan();
+    });
+    host.querySelectorAll("[data-cradd]").forEach(el=>el.onchange=()=>{
+      if(!el.value)return;
+      const cr=getDay(currentDate).customRuns[Number(el.dataset.cradd)];
+      (cr.schools??=[]).push(el.value);save();renderPlan();
+    });
+    host.querySelectorAll("[data-crdel]").forEach(el=>el.onclick=()=>{
+      const[i,j]=el.dataset.crdel.split(":").map(Number);
+      getDay(currentDate).customRuns[i].schools.splice(j,1);save();renderPlan();
+    });
+    host.querySelectorAll("[data-crrm]").forEach(el=>el.onclick=()=>{
+      getDay(currentDate).customRuns.splice(Number(el.dataset.crrm),1);save();renderPlan();
+    });
+  }
+  if(!plan.runs.length&&!unCards){host.innerHTML=`<h2>送迎便</h2>${adjBar}<p class="help">この日は送迎便がありません（参加児童なし、または下校時刻未設定）。</p>`;bindPins();return}
+  if(!plan.runs.length){host.innerHTML=`<h2>送迎便</h2>${adjBar}<div class="runs">${unCards}</div>`;bindPins();return}
+  const V=plan.venue;
+  const venueAt=m=>(V.early&&V.switchMin&&m<V.switchMin)?V.early:V.main;
+  host.innerHTML=`<h2>送迎便（${plan.runs.length}便）<span style="font-size:12px;color:var(--muted);font-weight:500">　各校で下校＋20分待機を含む</span></h2>${adjBar}<div class="runs">${plan.runs.map(r=>{
+    const veh=r.hiace?"ハイエース（定員6）":r.taxi?"タクシー（定員3）":"自家用車（定員3）";
+    const cap=Array.from({length:r.cap},(_,i)=>`<i class="${i<r.onboard?"full":""}"></i>`).join("");
+    const stops=[`<span class="stop home">${esc(r.direct?"直行":venueAt(r.depart))}<small>${fmt(r.depart)}発</small></span>`];
+    for(const st of r.stops){
+      stops.push('<span class="arrow">→</span>');
+      stops.push(`<span class="stop">${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
+    }
+    stops.push('<span class="arrow">→</span>');
+    stops.push(`<span class="stop home">${esc(venueAt(r.backAt))}<small>${fmt(r.backAt)}着</small></span>`);
+    return `<div class="run ${r.taxi?"taxi":""}">
+      <h3>${r.taxi?"🚕":"🚐"} 第${r.no}便：${esc(r.driver.name)}${r.manual?' <span class="chip warn" style="font-size:11px">🔧手動</span>':""} <span class="veh">${veh}</span></h3>
+      <div class="stops">${stops.join("")}</div>
+      <div class="cap">${cap}<span>こども ${r.onboard}/${r.cap}名</span></div>
+    </div>`;
+  }).join("")}${unCards}</div>`;
+  bindPins();
+}
+
+function renderTimeline(plan){
+  const host=document.getElementById("tlHost");
+  evIndex={};
+  const members=plan.staffOnDuty.filter(s=>s.role!=="taxi"||plan.runs.some(r=>r.driver.id===s.id));
+  const cols=[
+    {id:"_all",name:"全体",sub:"全員共通の動き"},
+    ...members.map(s=>({id:s.id,name:s.name,sub:(plan.events[s.id]||[]).length?(plan.runs.some(r=>r.driver.id===s.id)?"送迎":"個別の動き"):"全体どおり"})),
+    {id:"_kids",name:"こども・来訪",sub:"動き"}];
+  const H=(DAY_END-DAY_START)*PXM;
+  let html=`<div class="tl" style="grid-template-columns:52px repeat(${cols.length},1fr)">`;
+  html+=`<div class="colhead"></div>`+cols.map(c=>`<div class="colhead">${esc(c.name)}<small>${esc(c.sub)}</small></div>`).join("");
+  // gutter
+  html+=`<div class="gut" style="height:${H}px">`;
+  for(let m=DAY_START;m<=DAY_END;m+=30){
+    if(m%60===0)html+=`<span class="hr" style="top:${(m-DAY_START)*PXM}px">${fmt(m)}</span>`;
+  }
+  html+=`</div>`;
+  for(const c of cols){
+    html+=`<div class="tlcol" style="height:${H}px">`;
+    for(let m=DAY_START;m<=DAY_END;m+=30)
+      html+=`<span class="hline ${m%60?"half":""}" style="top:${(m-DAY_START)*PXM}px"></span>`;
+    const evs=(plan.events[c.id]||[]).slice().sort((a,b)=>a.s-b.s);
+    for(const e of evs){
+      const top=(Math.max(e.s,DAY_START)-DAY_START)*PXM;
+      const h=Math.max((Math.min(e.e,DAY_END)-Math.max(e.s,DAY_START))*PXM,8);
+      const sm=h<17?" sm":"";
+      if(e.key)evIndex[e.key]=e;
+      html+=`<div class="ev ${e.type}${sm}" style="top:${top}px;height:${h-2}px" data-key="${esc(e.key||"")}"><b>${fmt(e.s)}</b>${e.edited?"✎":""}${esc(e.label)}</div>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  lastLanes=cols.map(c=>({id:c.id,name:c.name}));
+  host.innerHTML=html;
+  host.querySelectorAll(".ev").forEach(el=>el.onclick=()=>openEditor(el.dataset.key||null));
+}
+/* --- ブロック編集ポップアップ --- */
+let evIndex={}, lastLanes=[], editorKey=null;
+function openEditor(key){
+  editorKey=key;
+  const ev=key?evIndex[key]:null;
+  document.getElementById("detailTitle").textContent=ev?`${fmt(ev.s)}–${fmt(ev.e)} ${ev.label}`:"ブロックを追加";
+  document.getElementById("detailBody").innerHTML=ev?.detail||"";
+  document.getElementById("edLabel").value=ev?.label||"";
+  document.getElementById("edS").value=ev?fmt(ev.s):"15:00";
+  document.getElementById("edE").value=ev?fmt(ev.e):"15:30";
+  document.getElementById("edLane").innerHTML=lastLanes.map(l=>`<option value="${l.id}" ${ev?.lane===l.id?"selected":""}>${esc(l.name)}</option>`).join("");
+  document.getElementById("edType").value=key?"":"t-fixed";
+  document.getElementById("edDel").hidden=!key;
+  document.getElementById("detailEditor").hidden=false;
+  document.getElementById("detail").hidden=false;
+}
+document.getElementById("edSave").onclick=()=>{
+  const day=getDay(currentDate);
+  const label=document.getElementById("edLabel").value.trim();
+  const s=toMin(document.getElementById("edS").value), e=toMin(document.getElementById("edE").value);
+  const lane=document.getElementById("edLane").value, type=document.getElementById("edType").value;
+  if(!label||s==null||e==null||e<=s){alert("内容と時刻（開始＜終了）を確認してください");return}
+  if(!editorKey){
+    day.evCustom.push({id:uid(),lane,s,e,label,type:type||"t-fixed"});
+  }else if(editorKey.startsWith("custom:")){
+    const c=day.evCustom.find(x=>"custom:"+x.id===editorKey);
+    if(c){c.lane=lane;c.s=s;c.e=e;c.label=label;if(type)c.type=type}
+  }else{
+    day.evEdits[editorKey]={label,s,e,lane,...(type?{type}:{})};
+  }
+  save();document.getElementById("detail").hidden=true;renderPlan();
+};
+document.getElementById("edDel").onclick=()=>{
+  if(!editorKey)return;
+  const day=getDay(currentDate);
+  if(editorKey.startsWith("custom:")) day.evCustom=day.evCustom.filter(x=>"custom:"+x.id!==editorKey);
+  else day.evEdits[editorKey]={del:true};
+  save();document.getElementById("detail").hidden=true;renderPlan();
+};
+document.getElementById("addEvBtn").onclick=()=>openEditor(null);
+document.getElementById("resetEvBtn").onclick=()=>{
+  if(!confirm("この日のタイムライン手動編集をすべて解除して、自動計算の表示に戻します。よろしいですか？"))return;
+  const day=getDay(currentDate);
+  day.evEdits={};day.evCustom=[];
+  save();renderPlan();
+};
+
+function renderWarnings(plan){
+  const host=document.getElementById("warnCard");
+  if(!plan.warnings.length){host.innerHTML=`<h2>要注意事項</h2><p class="help">警告はありません。</p>`;return}
+  const order={alert:0,warn:1,info:2};
+  const ws=plan.warnings.slice().sort((a,b)=>order[a.lv]-order[b.lv]);
+  host.innerHTML=`<h2>要注意事項（自動チェック）</h2><ul class="wlist">${
+    ws.map(w=>`<li class="${w.lv}"><span class="tag">${esc(w.tag)}</span><span>${esc(w.text)}</span></li>`).join("")
+  }</ul>`;
+}
+
+function renderLegend(){
+  document.getElementById("legend").innerHTML=[
+    ["var(--drive)","移動"],["var(--drive-soft)","乗車・待機"],["var(--surface2)","運行前チェック"],
+    ["var(--base-soft)","在館・見守り"],["var(--base)","集まり・引き渡し"],["var(--kids-soft)","こども"],
+    ["var(--warn-soft)","来訪対応"],["var(--surface2)","外出（斜線）"],
+  ].map(([c,l])=>`<span><i style="background:${c};border:1px solid var(--line)"></i>${l}</span>`).join("");
+}
+
+/* ========== マスタ編集 ========== */
+function dayChecks(days,cb){
+  return `<span class="daycheck">${[1,2,3,4,5].map(d=>
+    `<label><input type="checkbox" data-d="${d}" ${days.includes(d)?"checked":""}><span>${DOWS[d]}</span></label>`).join("")}</span>`;
+}
+function renderKids(){
+  const t=document.getElementById("kidsTable");
+  t.innerHTML=`<thead><tr><th>名前</th><th>よびな（虎の巻表示）</th><th>学校</th><th>学年</th><th>参加曜日</th><th>📷撮影不可</th><th>🚫送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
+    state.children.map(c=>`<tr data-id="${c.id}">
+      <td><input type="text" value="${esc(c.name)}" data-f="name" style="width:9em"></td>
+      <td><input type="text" value="${esc(c.kana||"")}" data-f="kana" style="width:6em" placeholder="ひらがな"></td>
+      <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===c.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
+      <td><select data-f="grade">${GRADES.map(g=>`<option ${g===c.grade?"selected":""}>${g}</option>`).join("")}</select></td>
+      <td>${dayChecks(c.days)}</td>
+      <td style="text-align:center"><input type="checkbox" data-np ${c.noPhoto?"checked":""}></td>
+      <td style="text-align:center"><input type="checkbox" data-st ${c.selfTransport?"checked":""}></td>
+      <td><input type="text" value="${esc(c.memo||"")}" data-f="memo" style="width:8em"></td>
+      <td><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const c=state.children.find(x=>x.id===tr.dataset.id);
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+      c[el.dataset.f]=el.dataset.f==="grade"?Number(el.value):el.value;save();renderPlan();
+    });
+    tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
+      const d=Number(el.dataset.d);c.days=el.checked?[...c.days,d]:c.days.filter(x=>x!==d);save();renderPlan();
+    });
+    tr.querySelector("[data-np]").onchange=e=>{c.noPhoto=e.target.checked;save();renderPlan()};
+    tr.querySelector("[data-st]").onchange=e=>{c.selfTransport=e.target.checked;save();renderPlan()};
+    tr.querySelector("[data-del]").onclick=()=>{
+      if(!confirm(`${c.name} を削除しますか？`))return;
+      state.children=state.children.filter(x=>x.id!==c.id);save();renderKids();renderPlan();
+    };
+  });
+  renderParentNotes();
+}
+function renderParentNotes(){
+  const t=document.getElementById("pnTable");
+  state.parentNotes??=[];
+  const kinds={absent:"欠席",spot:"スポット参加",time:"下校時刻変更"};
+  const list=[...state.parentNotes].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||a.childId.localeCompare(b.childId));
+  const today=todayStr();
+  t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th>メモ</th><th></th></tr></thead><tbody>${
+    list.map(n=>`<tr data-id="${n.id}" style="${n.date<today?"opacity:.55":""}">
+      <td><input type="date" value="${esc(n.date||"")}" data-f="date"></td>
+      <td><select data-f="childId">${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
+      <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td><input type="time" value="${esc(n.time||"")}" data-f="time" ${n.kind==="absent"?"disabled":""}></td>
+      <td><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
+      <td><button class="del" data-del>✕</button></td></tr>`).join("")
+    ||'<tr><td colspan="6" style="color:var(--muted)">連絡なし</td></tr>'}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const n=state.parentNotes.find(x=>x.id===tr.dataset.id); if(!n)return;
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+      n[el.dataset.f]=el.value;
+      if(el.dataset.f==="kind"&&n.kind==="absent")n.time="";
+      save();renderParentNotes();renderPlan();
+    });
+    tr.querySelector("[data-del]").onclick=()=>{
+      state.parentNotes=state.parentNotes.filter(x=>x.id!==n.id);save();renderParentNotes();renderPlan();
+    };
+  });
+}
+function renderDismissal(){
+  const sel=document.getElementById("schoolSel");
+  if(!sel.options.length)
+    sel.innerHTML=state.schools.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+  const sc=sel.value||state.schools[0].id;
+  const t=document.getElementById("disTable");
+  t.innerHTML=`<thead><tr><th>学年</th>${[1,2,3,4,5].map(d=>`<th>${DOWS[d]}</th>`).join("")}</tr></thead><tbody>${
+    GRADES.map(g=>`<tr>${[`<th>${g}年</th>`,...[1,2,3,4,5].map(d=>
+      `<td><input type="time" data-sc="${sc}" data-dow="${d}" data-g="${g}" value="${state.dismissal[sc]?.[d]?.[g]||""}"></td>`)].join("")}</tr>`).join("")}</tbody>`;
+  t.querySelectorAll("input").forEach(el=>el.onchange=()=>{
+    const{sc,dow,g}=el.dataset;
+    ((state.dismissal[sc]??={})[dow]??={})[g]=el.value;save();renderPlan();
+  });
+  sel.onchange=renderDismissal;
+  renderVenues();
+  renderSpecials();
+}
+function renderSpecials(){
+  const t=document.getElementById("spTable");
+  state.specialTimes??=[];
+  const list=[...state.specialTimes].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象学年</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
+    list.map(x=>`<tr data-id="${x.id}">
+      <td><input type="date" value="${esc(x.date||"")}" data-f="date"></td>
+      <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===x.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
+      <td><span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span></td>
+      <td><input type="time" value="${esc(x.time||"")}" data-f="time"></td>
+      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障"></td>
+      <td><button class="del" data-del>✕</button></td></tr>`).join("")
+    ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const x=state.specialTimes.find(v=>v.id===tr.dataset.id); if(!x)return;
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{x[el.dataset.f]=el.value;save();renderPlan()});
+    tr.querySelectorAll("[data-g]").forEach(el=>el.onchange=()=>{
+      const g=Number(el.dataset.g);x.grades??=[];
+      x.grades=el.checked?[...x.grades,g].sort((a,b)=>a-b):x.grades.filter(v=>v!==g);
+      save();renderPlan();
+    });
+    tr.querySelector("[data-del]").onclick=()=>{
+      state.specialTimes=state.specialTimes.filter(v=>v.id!==x.id);save();renderSpecials();renderPlan();
+    };
+  });
+}
+function renderVenues(){
+  const t=document.getElementById("venueTable");
+  state.venues??={};
+  t.innerHTML=`<thead><tr><th>曜日</th><th>会場</th><th>前半会場（任意）</th><th>切替時刻</th></tr></thead><tbody>${
+    [1,2,3,4,5].map(d=>{
+      const v=state.venues[d]??={main:"文化センター",early:"",switch:""};
+      return `<tr>
+        <th>${DOWS[d]}</th>
+        <td><input type="text" value="${esc(v.main||"")}" data-vd="${d}" data-vf="main" style="width:14em"></td>
+        <td><input type="text" value="${esc(v.early||"")}" data-vd="${d}" data-vf="early" style="width:10em" placeholder="なし"></td>
+        <td><input type="time" value="${esc(v.switch||"")}" data-vd="${d}" data-vf="switch"></td>
+      </tr>`;
+    }).join("")}</tbody>`;
+  t.querySelectorAll("input").forEach(el=>el.onchange=()=>{
+    state.venues[el.dataset.vd][el.dataset.vf]=el.value;save();renderPlan();
+  });
+}
+function renderStaff(){
+  const t=document.getElementById("staffTable");
+  const roles={base:"在館",drive:"送迎",taxi:"臨時送迎"};
+  const vehs={none:"なし",hiace:"ハイエース",own:"自家用車",taxi:"タクシー"};
+  t.innerHTML=`<thead><tr><th>名前</th><th>勤務曜日</th><th>役割</th><th>車両</th><th>定員</th><th>関連こども</th><th>Slack表記</th><th>毎週の不在時間帯</th><th>メモ</th><th></th></tr></thead><tbody>${
+    state.staff.map(s=>`<tr data-id="${s.id}">
+      <td><input type="text" value="${esc(s.name)}" data-f="name" style="width:8em"></td>
+      <td>${dayChecks(s.days)}</td>
+      <td><select data-f="role">${Object.entries(roles).map(([k,v])=>`<option value="${k}" ${k===s.role?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td><select data-f="vehicle">${Object.entries(vehs).map(([k,v])=>`<option value="${k}" ${k===s.vehicle?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td><input type="number" min="0" max="9" value="${s.cap}" data-f="cap" style="width:3.5em"></td>
+      <td><select data-f="childId"><option value="">なし</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===s.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
+      <td><input type="text" value="${esc(s.mention||"")}" data-f="mention" placeholder="@名前" style="width:9em"></td>
+      <td style="min-width:220px">
+        ${(s.awayTimes||[]).map((w,i)=>`<span class="chip" style="margin:1px;font-size:11px">${DOWS[w.dow]} ${esc(w.from)}〜${esc(w.to)}${w.label?"　"+esc(w.label):""} <button class="del" data-wdel="${i}">✕</button></span>`).join("")}
+        <div style="display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;align-items:center">
+          <select data-wdow>${[1,2,3,4,5].map(d=>`<option value="${d}">${DOWS[d]}</option>`).join("")}</select>
+          <input type="time" data-wfrom style="width:6em">〜<input type="time" data-wto style="width:6em">
+          <input type="text" data-wlabel placeholder="理由" style="width:7em">
+          <button class="btn" data-wadd style="padding:1px 8px">＋</button>
+        </div>
+      </td>
+      <td><input type="text" value="${esc(s.memo||"")}" data-f="memo" style="width:10em"></td>
+      <td><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const s=state.staff.find(x=>x.id===tr.dataset.id);
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+      s[el.dataset.f]=el.dataset.f==="cap"?Number(el.value):el.value;
+      if(el.dataset.f==="vehicle")s.cap=el.value==="hiace"?6:el.value==="none"?0:3;
+      save();renderStaff();renderPlan();
+    });
+    tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
+      const d=Number(el.dataset.d);s.days=el.checked?[...s.days,d]:s.days.filter(x=>x!==d);save();renderPlan();
+    });
+    tr.querySelectorAll("[data-wdel]").forEach(el=>el.onclick=()=>{
+      s.awayTimes.splice(Number(el.dataset.wdel),1);save();renderStaff();renderPlan();
+    });
+    tr.querySelector("[data-wadd]").onclick=()=>{
+      const dow=Number(tr.querySelector("[data-wdow]").value);
+      const from=tr.querySelector("[data-wfrom]").value,to=tr.querySelector("[data-wto]").value;
+      const label=tr.querySelector("[data-wlabel]").value.trim();
+      if(!from||!to||toMin(to)<=toMin(from)){alert("開始・終了時刻を正しく入力してください");return}
+      (s.awayTimes??=[]).push({dow,from,to,label});save();renderStaff();renderPlan();
+    };
+    tr.querySelector("[data-del]").onclick=()=>{
+      if(!confirm(`${s.name} を削除しますか？`))return;
+      state.staff=state.staff.filter(x=>x.id!==s.id);save();renderStaff();renderPlan();
+    };
+  });
+}
+function renderTravel(){
+  const ids=["base",...state.schools.map(s=>s.id)];
+  const nm=id=>id==="base"?"拠点":schoolOf(id).short;
+  const t=document.getElementById("travelTable");
+  t.innerHTML=`<thead><tr><th></th>${ids.map(i=>`<th>${nm(i)}</th>`).join("")}</tr></thead><tbody>${
+    ids.map(a=>`<tr><th>${nm(a)}</th>${ids.map(b=>{
+      if(a===b)return `<td style="background:var(--surface2)">–</td>`;
+      if(ids.indexOf(a)>ids.indexOf(b))return `<td style="background:var(--surface2);color:var(--muted)">${state.travel[a][b]??""}</td>`;
+      const key=[a,b].sort().join("|");
+      return `<td><input type="number" min="0" max="90" value="${state.travel[a][b]??""}" data-a="${a}" data-b="${b}" style="width:3.4em">
+        <label style="font-size:10px;display:block"><input type="checkbox" data-m="${key}" ${state.travelMeasured[key]?"checked":""}>実測</label></td>`;
+    }).join("")}</tr>`).join("")}</tbody>`;
+  t.querySelectorAll("input[type=number]").forEach(el=>el.onchange=()=>{
+    const{a,b}=el.dataset;const v=el.value===""?null:Number(el.value);
+    state.travel[a][b]=v;state.travel[b][a]=v;save();renderTravel();renderPlan();
+  });
+  t.querySelectorAll("input[data-m]").forEach(el=>el.onchange=()=>{
+    if(el.checked)state.travelMeasured[el.dataset.m]=true;else delete state.travelMeasured[el.dataset.m];
+    save();renderPlan();
+  });
+}
+
+/* ========== 画面制御 ========== */
+let curTab="plan";
+function showTab(name){
+  curTab=name;
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===name));
+  ["plan","kids","times","staff","travel","algo","req"].forEach(t=>
+    document.getElementById("tab-"+t).hidden=(t!==name));
+  if(name==="req")renderRequests();
+  if(name==="kids")renderKids();
+  if(name==="times")renderDismissal();
+  if(name==="staff")renderStaff();
+  if(name==="travel")renderTravel();
+}
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".tab");if(b)showTab(b.dataset.tab);
+});
+document.getElementById("dateInput").addEventListener("change",e=>{currentDate=e.target.value||todayStr();renderPlan()});
+document.getElementById("addKid").onclick=()=>{
+  state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
+  save();renderKids();renderPlan();
+  const rows=document.querySelectorAll('#kidsTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
+};
+document.getElementById("reqSend").onclick=async()=>{
+  if(!dbNS){alert("共有データに接続していないため送信できません");return}
+  const name=document.getElementById("reqName").value.trim();
+  const text=document.getElementById("reqText").value.trim();
+  if(!text){alert("内容を入力してください");return}
+  ui.reqName=name;try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+  try{
+    await dbNS.collection("requests").add({name,text,createdAt:Date.now(),status:"open"});
+    document.getElementById("reqText").value="";
+  }catch(e){alert("送信できませんでした。時間をおいて再度お試しください")}
+};
+document.getElementById("addPn").onclick=()=>{
+  state.parentNotes.push({id:uid(),date:currentDate,childId:state.children[0]?.id||"",kind:"time",time:"",memo:""});
+  save();renderParentNotes();
+};
+document.getElementById("addSp").onclick=()=>{
+  state.specialTimes.push({id:uid(),date:currentDate,school:state.schools[0].id,grades:[],time:"",memo:""});
+  save();renderSpecials();
+};
+document.getElementById("addStaff").onclick=()=>{
+  state.staff.push({id:uid(),name:"",days:[],role:"drive",vehicle:"own",cap:3,memo:"",awayTimes:[]});
+  save();renderStaff();renderPlan();
+  const rows=document.querySelectorAll('#staffTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
+};
+/* ---- Slack/LINE投稿用テキスト ---- */
+function buildSlackText(){
+  const ds=currentDate;
+  const plan=planDay(ds);
+  if(plan.weekend)return "（土日はお休みです）";
+  const d=new Date(ds+"T12:00:00");
+  const head=`${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）運行計画（こども${plan.attendees.length}名）`;
+  const url=(state.shareUrl||"").trim();
+  const urlLine=url?`${url}#d${ds}`:"";
+  const mentions=plan.staffOnDuty.filter(s=>s.role!=="taxi").map(s=>s.mention||("@"+s.name)).join(" ");
+  const notes=(plan.day.notes||"").trim().split("\n").map(x=>x.trim()).filter(Boolean);
+  const preNotes=notes.filter(x=>!x.startsWith("※"));
+  const postNotes=notes.filter(x=>x.startsWith("※"));
+  const runLines=plan.runs.map(r=>{
+    const stops=r.stops.map(st=>`${fmt(st.time)}${schoolOf(st.school).name}（${st.kids.map(kanaOf).join("、")}）`).join("→");
+    return `${r.driver.name}：${stops}→拠点${r.manual?"（手動便）":""}`;
+  });
+  const unLines=(plan.unassigned||[]).map(u=>`⚠未割当：${fmt(u.job.time)}${schoolOf(u.job.school).name}（${u.kids.map(kanaOf).join("、")}）`);
+  return [head,urlLine,mentions,...preNotes,"",...runLines,...unLines,...postNotes].filter((x,i,a)=>x!==""||(i>0&&a[i-1]!=="")).join("\n").trim();
+}
+document.getElementById("slackBtn").onclick=async()=>{
+  const text=buildSlackText();
+  let copied=false;
+  try{await navigator.clipboard.writeText(text);copied=true}catch(e){}
+  document.getElementById("detailTitle").textContent=copied?"コピーしました（内容の確認・編集用）":"コピーできない環境のため、全選択してコピーしてください";
+  document.getElementById("detailBody").innerHTML=`<textarea id="slackTxt" rows="10" style="width:300px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--surface);font:12px/1.5 monospace">${esc(text)}</textarea>`;
+  document.getElementById("detailEditor").hidden=true;
+  document.getElementById("detail").hidden=false;
+  const ta=document.getElementById("slackTxt");ta.focus();ta.select();
+};
+
+/* ---- 配布用スナップショット（閲覧専用の静的HTMLを書き出し） ---- */
+function buildSnapshotParts(){
+  const cleanClone=el=>{
+    const c=el.cloneNode(true);
+    c.querySelectorAll(".noprint").forEach(n=>n.remove());
+    c.querySelectorAll("input,select,textarea,button").forEach(n=>n.remove());
+    c.removeAttribute("hidden");
+    return c;
+  };
+  const parts=[];
+  for(const id of ["summaryCard","runsCard"]){
+    const el=document.getElementById(id); if(el&&el.innerHTML.trim())parts.push(cleanClone(el).outerHTML);
+  }
+  const tl=document.getElementById("tlHost");
+  const legend=document.getElementById("legend");
+  parts.push(`<div class="card"><h2>メンバー別タイムライン</h2><div class="tl-scroll">${cleanClone(tl).innerHTML}</div>${legend?cleanClone(legend).outerHTML:""}</div>`);
+  const warn=document.getElementById("warnCard");
+  if(warn&&warn.innerHTML.trim())parts.push(cleanClone(warn).outerHTML);
+  return parts.join("");
+}
+function buildSnapshotHTML(){
+  const ds=currentDate;
+  const dow=DOWS[new Date(ds+"T12:00:00").getDay()];
+  const style=[...document.querySelectorAll("style")].map(el=>el.textContent).join("\n");
+  const body=buildSnapshotParts();
+  const now=new Date();
+  return `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>よみたん虎の巻 本日版</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>${style}
+.snapnote{color:var(--muted);font-size:11.5px;text-align:center;margin:20px 0}
+.ev{cursor:default}</style></head>
+<body><div class="wrap">
+<header class="app"><div class="brand"><div class="mark">🚐</div>
+<div><h1>よみたん送迎虎の巻</h1><small>読谷放課後キャンパス 運行計画</small></div></div>
+<div class="spacer"></div><span class="dowchip" style="font-size:16px;padding:4px 16px">${ds.replaceAll("-","/")}（${dow}）</span></header>
+${body}
+<p class="snapnote">閲覧専用スナップショット／${now.toLocaleString("ja-JP")}生成。最新の計画・変更はアプリ本体を確認してください。</p>
+</div></body></html>`;
+}
+document.getElementById("snapBtn").onclick=async()=>{
+  try{
+    const html=buildSnapshotHTML();
+    const filename=`toranomaki_${currentDate}.html`;
+    let dl=null;
+    if(typeof claude!=="undefined"&&claude?.use){try{dl=await claude.use("downloads")}catch(e){}}
+    if(dl){
+      try{await dl.save({filename,data:html});}
+      catch(e){if(e&&e.code!=="declined")alert("保存できませんでした："+(e.message||e.code||e));}
+    }else{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));
+      a.download=filename;a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    }
+  }catch(err){console.error(err);alert("スナップショットの生成に失敗しました："+(err&&err.message||err));}
+};
+document.getElementById("printBtn").onclick=()=>window.print();
+document.getElementById("resetBtn").onclick=()=>{
+  if(!confirm("すべてのデータを初期状態に戻します。共有データに接続している場合はメンバー全員のデータも初期化されます。よろしいですか？"))return;
+  state=defaultState();save();
+  document.getElementById("schoolSel").innerHTML="";
+  renderPlan();showTab("plan");
+};
+document.getElementById("detailClose").onclick=()=>document.getElementById("detail").hidden=true;
+
+/* ========== 起動 ========== */
+loadState();
+// 選択日の初期値：今日が平日なら今日、土日なら次の月曜
+(function(){
+  const d=new Date();
+  while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
+  currentDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+})();
+document.getElementById("dateInput").value=currentDate;
+document.getElementById("reqName").value=ui.reqName||"";
+renderPlan();
+initShared();
+</script>
