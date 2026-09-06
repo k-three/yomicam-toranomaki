@@ -159,7 +159,10 @@ document.getElementById('f').addEventListener('submit',async function(ev){
   var err=document.getElementById('err'),busy=document.getElementById('busy');
   err.hidden=true;busy.hidden=false;
   try{
-    var raw=await derive(document.getElementById('pw').value.trim());
+    // 全角数字・全角英字でも通るように正規化（日本語IME対策）
+    var pwv=document.getElementById('pw').value.trim();
+    try{pwv=pwv.normalize('NFKC')}catch(_){}
+    var raw=await derive(pwv);
     try{localStorage.setItem('tora-key',Array.from(raw).map(function(b){return b.toString(16).padStart(2,'0')}).join(''))}catch(_){}
     await open2(raw);
   }catch(e){busy.hidden=true;err.hidden=false;try{localStorage.removeItem('tora-key')}catch(_){}}
