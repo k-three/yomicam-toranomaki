@@ -150,6 +150,8 @@ table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;paddi
 .daycheck label:has(input:checked){background:var(--accent)}
 .help{color:var(--muted);font-size:12.5px;margin:4px 0 10px}
 .del{border:none;background:none;color:var(--alert);cursor:pointer;font-weight:900}
+button.del[data-ovclr]{border:1px solid var(--line);border-radius:8px;padding:1px 8px;font-size:11px;font-weight:700;background:var(--surface)}
+button.del[data-ovclr]:hover{border-color:var(--alert)}
 /* detail popover */
 #detail{position:fixed;right:18px;bottom:18px;max-width:340px;background:var(--surface);border:1px solid var(--accent);border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:20}
 #detail h3{margin:0 0 6px}
@@ -1380,6 +1382,7 @@ function renderDayEdit(plan){
       <label class="toggle"><input type="checkbox" data-att="${c.id}" ${absent?"":"checked"}> <span class="nm">${esc(c.name)}</span></label>
       ${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>${c.noPhoto?'<span class="chip alert" style="font-size:11px">📷不可</span>':""}${plan.attendees.find(a=>a.id===c.id)?.special?'<span class="chip warn" style="font-size:11px">特別時刻</span>':""}${c.selfTransport?'<span class="chip base" style="font-size:11px">保護者送迎</span>':""}
       <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${c.id}" value="${ov}">
+      ${ov?`<button class="del" data-ovclr="${c.id}" title="個別時刻を取り消して通常の下校時刻に戻す">取消</button>`:""}
       ${absent?'<span class="chip alert">欠席</span>':""}${ov?'<span class="chip warn">保護者連絡で変更</span>':""}
     </div>`);
   }
@@ -1387,7 +1390,8 @@ function renderDayEdit(plan){
     const ov=getNote(ds,cid,"time")?.time||"";
     rows.push(`<div class="att"><span class="chip kids">スポット</span><span class="nm">${esc(c.name)}</span>${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>
       <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${cid}" value="${ov}">
-      <button class="del" data-unspot="${cid}">✕</button></div>`);
+      ${ov?`<button class="del" data-ovclr="${cid}" title="個別時刻を取り消す">取消</button>`:""}
+      <button class="del" data-unspot="${cid}" title="スポット参加を取り消す">✕</button></div>`);
   }
   const dayStaff=state.staff.filter(s=>s.role!=="taxi"&&(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id)));
   const staffRows=dayStaff.map(s=>{
@@ -1466,6 +1470,9 @@ function renderDayEdit(plan){
     const id=el.dataset.ov;
     if(el.value)setNote(currentDate,id,"time",{time:el.value}); else removeNote(currentDate,id,"time");
     renderPlan();
+  });
+  document.querySelectorAll("[data-ovclr]").forEach(el=>el.onclick=()=>{
+    removeNote(currentDate,el.dataset.ovclr,"time"); renderPlan();
   });
   document.querySelectorAll("[data-unspot]").forEach(el=>el.onclick=()=>{
     removeNote(currentDate,el.dataset.unspot,"spot"); renderPlan();
