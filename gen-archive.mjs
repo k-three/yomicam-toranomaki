@@ -16,6 +16,12 @@ if (password && !/^[0-9a-f]{32}$/.test(saltHex || '')) { console.error('saltHex 
 const masters = JSON.parse(fs.readFileSync(mastersPath, 'utf8'));
 const days = JSON.parse(fs.readFileSync(daysPath, 'utf8'));
 const state = { ...(masters.state || {}), ...(days.state || {}) };
+// 要望フォーム（Googleフォーム等）のURL。マスタの requestFormUrl に入っていれば送信ボタンを出す
+const rawReqUrl = (masters.state && masters.state.requestFormUrl) || '';
+const reqUrl = /^https:\/\//.test(rawReqUrl)
+  ? rawReqUrl.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  : '';
+if (rawReqUrl && !reqUrl) console.warn('WARN: requestFormUrl は https:// で始まる必要があります。ボタンは出力しません:', rawReqUrl);
 const dates = datesCsv.split(',').filter(Boolean);
 const DOWS = ['日','月','火','水','木','金','土'];
 const jd = ds => { const d = new Date(ds + 'T12:00:00'); return `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）`; };
@@ -54,12 +60,20 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .daybtn{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 14px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-variant-numeric:tabular-nums}
 .daybtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .snapnote{color:var(--muted);font-size:11.5px;text-align:center;margin:20px 0}
-.ev{cursor:default}</style></head>
+.ev{cursor:default}
+.reqbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin:22px 0 0;text-align:center}
+.reqbox p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
+.reqbtn{display:inline-block;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:700;font-family:"Zen Maru Gothic",system-ui,sans-serif;border-radius:10px;padding:9px 22px}
+.reqbtn:hover{opacity:.88}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
 <div><h1>よみキャン運営虎の巻（デイリー）</h1><small>よみたん放課後キャンパス運営虎の巻（閲覧用）</small></div></div></header>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
+${reqUrl ? `<div class="reqbox">
+<p>気づいたこと・改善してほしいことがあれば運行管理担当に届きます</p>
+<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer">📮 要望を送る</a>
+</div>` : ''}
 <p class="snapnote">閲覧専用／${now} 更新。最新の変更は運行管理担当からの連絡を確認してください。</p>
 </div>
 <script>
