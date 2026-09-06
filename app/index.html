@@ -183,8 +183,7 @@ body.mro .mroNote{display:block}
 body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,body.mro #kidsTable label,body.mro #addKid,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
-body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label,
-body.mro #resetBtn{pointer-events:none;opacity:.55}
+body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
 [hidden]{display:none!important}
 /* ログイン画面（GitHub Pages版・Firebase接続時のみ表示） */
 #login{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50;padding:24px}
@@ -210,7 +209,7 @@ body.mro #resetBtn{pointer-events:none;opacity:.55}
 <header class="app">
   <div class="brand">
     <div class="mark">🚐</div>
-    <div><h1>よみたん送迎虎の巻</h1><small>読谷放課後キャンパス 運行計画</small></div>
+    <div><h1>よみキャン運営虎の巻</h1></div>
   </div>
   <div class="spacer"></div>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
@@ -220,7 +219,6 @@ body.mro #resetBtn{pointer-events:none;opacity:.55}
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
   <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓 ログイン切替</button>
   <button class="btn" id="printBtn">🖨 印刷</button>
-  <button class="btn" id="resetBtn">初期データに戻す</button>
 </header>
 
 <nav class="tabs" id="tabs">
@@ -704,6 +702,7 @@ function applyFbUser(user){
   if(who){who.hidden=false;setWho(whoAmI());setTimeout(()=>askWho(false),400);}
   const ht=document.getElementById("histTab");
   if(ht)ht.hidden=!canMasters; // 変更履歴の確認は管理者ページのみ
+  applyRoleUI();
   const chip=document.getElementById("syncChip");
   if(chip){chip.style.cursor="pointer";chip.title+="／クリックでログイン切替";chip.onclick=logout;}
 }
@@ -737,6 +736,7 @@ async function initShared(){
     try{await dbNS.doc("shared/probe").set({t:Date.now()});canDays=true}catch(e){canDays=false}
     const w=document.getElementById("whoBtn"); if(w){w.hidden=false;setWho(whoAmI())}
     const h=document.getElementById("histTab"); if(h)h.hidden=!canMasters;
+    applyRoleUI();
   }else{
     let r;
     try{r=await initFirebase()}catch(e){console.error(e);setSync("error");return}
@@ -1372,13 +1372,19 @@ function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.get
 /* マスタ編集の権限がないときは、見た目だけでなく入力欄自体を無効化する
    （曜日チェックのように label 経由で切り替わるものは CSS だけでは防げないため） */
 const mastersLocked=()=>!!dbNS && !canMasters;
+/* 📣投稿文・📤配布用は運行管理担当（管理者）の作業なので、閲覧用では出さない */
+function applyRoleUI(){
+  ["slackBtn","snapBtn"].forEach(id=>{
+    const b=document.getElementById(id); if(b)b.hidden=mastersLocked();
+  });
+}
 function lockMasterTables(){
   if(!mastersLocked()) return;
   ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
   });
-  ["addKid","addStaff","addSp","resetBtn"].forEach(id=>{
+  ["addKid","addStaff","addSp"].forEach(id=>{
     const b=document.getElementById(id); if(b)b.disabled=true;
   });
 }
@@ -2136,7 +2142,7 @@ function buildSnapshotHTML(){
 .ev{cursor:default}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみたん送迎虎の巻</h1><small>読谷放課後キャンパス 運行計画</small></div></div>
+<div><h1>よみキャン運営虎の巻</h1></div></div>
 <div class="spacer"></div><span class="dowchip" style="font-size:16px;padding:4px 16px">${ds.replaceAll("-","/")}（${dow}）</span></header>
 ${body}
 <p class="snapnote">閲覧専用スナップショット／${now.toLocaleString("ja-JP")}生成。最新の計画・変更はアプリ本体を確認してください。</p>
@@ -2160,12 +2166,6 @@ document.getElementById("snapBtn").onclick=async()=>{
   }catch(err){console.error(err);alert("スナップショットの生成に失敗しました："+(err&&err.message||err));}
 };
 document.getElementById("printBtn").onclick=()=>window.print();
-document.getElementById("resetBtn").onclick=()=>{
-  if(!confirm("すべてのデータを初期状態に戻します。共有データに接続している場合はメンバー全員のデータも初期化されます。よろしいですか？"))return;
-  state=defaultState();save();
-  document.getElementById("schoolSel").innerHTML="";
-  renderPlan();showTab("plan");
-};
 document.getElementById("detailClose").onclick=()=>document.getElementById("detail").hidden=true;
 
 /* ========== 起動 ========== */

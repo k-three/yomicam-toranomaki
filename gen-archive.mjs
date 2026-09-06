@@ -66,7 +66,7 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 @media print{.reqbtn{display:none!important}}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>よみたん放課後キャンパス運営虎の巻（閲覧用）</small></div></div>
+<div><h1>よみキャン運営虎の巻（デイリー）</h1></div></div>
 <div class="spacer"></div>
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="daynav" id="dayNav">${nav}</nav>
@@ -161,8 +161,13 @@ function ready(fn){
 }
 ready(function(){
   (async function(){
-    try{var kh=localStorage.getItem('tora-key');if(kh){await open2(hex2buf(kh))}}
-    catch(e){try{localStorage.removeItem('tora-key')}catch(_){}}
+    try{
+      var raw=localStorage.getItem('tora-key');if(!raw)return;
+      var o; try{o=JSON.parse(raw)}catch(_){o={k:raw,t:0}}
+      // 14日を過ぎたら鍵を捨てて、もう一度パスワードを聞く
+      if(!o.k||!o.t||Date.now()-o.t>14*24*60*60*1000){localStorage.removeItem('tora-key');return}
+      await open2(hex2buf(o.k));
+    }catch(e){try{localStorage.removeItem('tora-key')}catch(_){}}
   })();
 });
 document.getElementById('f').addEventListener('submit',async function(ev){
@@ -174,7 +179,7 @@ document.getElementById('f').addEventListener('submit',async function(ev){
     var pwv=document.getElementById('pw').value.trim();
     try{pwv=pwv.normalize('NFKC')}catch(_){}
     var raw=await derive(pwv);
-    try{localStorage.setItem('tora-key',Array.from(raw).map(function(b){return b.toString(16).padStart(2,'0')}).join(''))}catch(_){}
+    try{localStorage.setItem('tora-key',JSON.stringify({k:Array.from(raw).map(function(b){return b.toString(16).padStart(2,'0')}).join(''),t:Date.now()}))}catch(_){}
     await open2(raw);
   }catch(e){busy.hidden=true;err.hidden=false;try{localStorage.removeItem('tora-key')}catch(_){}}
 });
