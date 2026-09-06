@@ -44,18 +44,28 @@ for (const ds of dates) {
   if (!style) style = await p.evaluate(() => [...document.querySelectorAll('style')].map(el => el.textContent).join('\n'));
   sections.push({ ds, body });
 }
+// 日別以外のタブ（こども・下校時刻・メンバー・移動時間・アルゴリズム）も読むだけの形で載せる
+const refs = await p.evaluate(() => buildRefSnapshot());
 await b.close();
 
 const nav = sections.map(s =>
   `<button class="daybtn" data-d="${s.ds}">${jd(s.ds)}</button>`).join('');
 const secHtml = sections.map(s =>
   `<section class="dsec" id="d${s.ds}" hidden>${s.body}</section>`).join('\n');
+const topNav = `<button class="topbtn on" data-t="plan">📋 日別の虎の巻</button>`
+  + refs.map(r => `<button class="topbtn" data-t="${r.id}">${r.label}</button>`).join('');
+const refHtml = refs.map(r => `<section class="rsec" id="r-${r.id}" hidden>${r.html}</section>`).join('\n');
 const now = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
 const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>よみキャン運営虎の巻（閲覧用）</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
 <style>${style}
+.topnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.topbtn{border:1px solid transparent;background:none;color:var(--muted);border-radius:99px;padding:6px 14px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-size:14px}
+.topbtn:hover{color:var(--ink)}
+.topbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
+.rsec .grid td,.rsec .grid th{white-space:normal}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .daybtn{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 14px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-variant-numeric:tabular-nums}
 .daybtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -69,9 +79,13 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 <div><h1>よみキャン運営虎の巻（閲覧用）</h1></div></div>
 <div class="spacer"></div>
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
+<nav class="topnav" id="topNav">${topNav}</nav>
+<div id="planWrap">
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
-<p class="snapnote">閲覧専用／${now} 更新。最新の変更は運行管理担当からの連絡を確認してください。</p>
+</div>
+${refHtml}
+<p class="snapnote">閲覧専用／${now} 更新。変更は管理用ページ（当日調整）で行います。気づいたことは「📮 要望を送る」からどうぞ。</p>
 </div>
 <script>
 (function(){
@@ -82,13 +96,33 @@ ${secHtml}
     document.querySelectorAll('.daybtn').forEach(function(b){b.classList.toggle('on','d'+b.dataset.d===id)});
     return found;
   }
-  var want=(location.hash||'').replace('#','');
-  if(!want||!show(want)) show(def);
+  function showTop(t){
+    var isPlan=(t==='plan');
+    if(!isPlan&&!document.getElementById('r-'+t)){t='plan';isPlan=true}
+    document.querySelectorAll('.topbtn').forEach(function(b){b.classList.toggle('on',b.dataset.t===t)});
+    document.getElementById('planWrap').hidden=!isPlan;
+    document.querySelectorAll('.rsec').forEach(function(s){s.hidden=(s.id!=='r-'+t)});
+    return t;
+  }
+  function route(){
+    var w=(location.hash||'').replace('#','');
+    if(w.indexOf('t-')===0){ showTop(w.slice(2)); if(!document.querySelector('.dsec:not([hidden])'))show(def); }
+    else { showTop('plan'); if(!w||!show(w)) show(def); }
+  }
+  route();
   document.getElementById('dayNav').addEventListener('click',function(e){
     var b=e.target.closest('.daybtn'); if(!b)return;
-    location.hash='d'+b.dataset.d; show('d'+b.dataset.d);
+    location.hash='d'+b.dataset.d;
   });
-  window.addEventListener('hashchange',function(){var w=(location.hash||'').replace('#','');if(w)show(w)});
+  document.getElementById('topNav').addEventListener('click',function(e){
+    var b=e.target.closest('.topbtn'); if(!b)return;
+    if(b.dataset.t==='plan'){
+      var cur=document.querySelector('.dsec:not([hidden])');
+      location.hash=cur?cur.id:def;
+    } else location.hash='t-'+b.dataset.t;
+    route();
+  });
+  window.addEventListener('hashchange',route);
 })();
 </script></body></html>`;
 let out = html;

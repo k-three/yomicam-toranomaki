@@ -184,6 +184,9 @@ body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
+/* 配布ページ（閲覧専用）で入力欄を文字に置き換えたもの */
+.ro{display:inline-block;font-variant-numeric:tabular-nums}
+.ro.na{color:var(--muted)}
 /* 未確定バー（当日調整・送迎の調整・保護者連絡は「決定」で確定） */
 #stageBar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:2px solid var(--warn);box-shadow:0 -6px 20px rgba(0,0,0,.14)}
 .sbInner{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
@@ -272,7 +275,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：保護者連絡 ＞ 特別下校時刻 ＞ 通常の下校時刻。適用日は要注意事項に表示されます。<br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。</p>
+    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：保護者連絡 ＞ 特別下校時刻 ＞ 通常の下校時刻。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -2079,7 +2082,7 @@ function renderStaff(){
       <td><input type="text" value="${esc(s.mention||"")}" data-f="mention" placeholder="@名前" style="width:9em"></td>
       <td style="min-width:220px">
         ${(s.awayTimes||[]).map((w,i)=>`<span class="chip" style="margin:1px;font-size:11px">${DOWS[w.dow]} ${esc(w.from)}〜${esc(w.to)}${w.label?"　"+esc(w.label):""} <button class="del" data-wdel="${i}">✕</button></span>`).join("")}
-        <div style="display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;align-items:center">
+        <div class="addrow" style="display:flex;gap:3px;margin-top:3px;flex-wrap:wrap;align-items:center">
           <select data-wdow>${[1,2,3,4,5].map(d=>`<option value="${d}">${DOWS[d]}</option>`).join("")}</select>
           <input type="time" data-wfrom style="width:6em">〜<input type="time" data-wto style="width:6em">
           <input type="text" data-wlabel placeholder="理由" style="width:7em">
@@ -2243,6 +2246,75 @@ function buildSnapshotParts(){
   const warn=document.getElementById("warnCard");
   if(warn&&warn.innerHTML.trim())parts.push(cleanClone(warn).outerHTML);
   return parts.join("");
+}
+/* ===== 配布ページ（閲覧用）：マスタ各タブを「読むだけ」の形に変換する =====
+   入力欄は値の文字に、ボタンや編集の注意書きは削除。
+   参加曜日・学年のピルだけは見た目を保つため、無効化した入力のまま残す。 */
+function staticize(node){
+  const c=node.cloneNode(true);
+  c.removeAttribute("hidden");
+  c.querySelectorAll(".noprint,.mroNote,.editnote,.addrow").forEach(n=>n.remove());
+  c.querySelectorAll("button").forEach(n=>n.remove());
+  c.querySelectorAll(".daycheck input").forEach(n=>n.setAttribute("disabled",""));
+  c.querySelectorAll("label > input[type=checkbox]").forEach(n=>{
+    if(n.closest(".daycheck"))return;
+    const lab=n.parentNode, txt=lab.textContent.trim();
+    if(n.checked){const sp=document.createElement("span");sp.className="ro";sp.textContent="✓"+txt;
+      lab.parentNode.replaceChild(sp,lab);}
+    else lab.remove();
+  });
+  c.querySelectorAll("input,select,textarea").forEach(n=>{
+    if(n.closest(".daycheck"))return;
+    let v="";
+    if(n.tagName==="SELECT")v=n.options[n.selectedIndex]?.text||"";
+    else if(n.type==="checkbox")v=n.checked?"✓":"";
+    else v=n.value||"";
+    const sp=document.createElement("span");
+    if(v){sp.className="ro";sp.textContent=v}else{sp.className="ro na";sp.textContent="–"}
+    n.parentNode.replaceChild(sp,n);
+  });
+  // 操作ボタン用だった列（見出しも中身も空）は落とす
+  c.querySelectorAll("table").forEach(t=>{
+    const rows=[...t.rows]; if(!rows.length)return;
+    const cols=Math.max(...rows.map(r=>r.cells.length));
+    for(let i=cols-1;i>=0;i--){
+      if(rows.every(r=>!r.cells[i]||!r.cells[i].textContent.trim()))
+        rows.forEach(r=>{if(r.cells[i])r.deleteCell(i)});
+    }
+  });
+  return c;
+}
+function buildRefSnapshot(){
+  const sel=document.getElementById("schoolSel");
+  const prevSchool=sel.value;
+  const secs=[];
+  renderKids();
+  secs.push({id:"kids",label:"👧 こども",html:staticize(document.getElementById("tab-kids")).innerHTML});
+
+  renderDismissal();
+  const hasTimes=id=>Object.values(state.dismissal?.[id]||{})
+    .some(byDow=>Object.values(byDow||{}).some(v=>v));
+  const per=state.schools.map(sc=>{
+    const head=`<h3 style="margin:16px 0 6px">${esc(sc.name)}`
+      +`<span style="font-weight:500;font-size:12px;color:var(--muted)">　待ち合わせ：${esc(sc.meet||"未設定")}</span></h3>`;
+    if(!hasTimes(sc.id))
+      return head+`<p class="help" style="margin:0">この学校の下校時刻はまだ登録されていません。</p>`;
+    sel.value=sc.id; renderDismissal();
+    return head+`<div class="tblwrap">${staticize(document.getElementById("disTable")).outerHTML}</div>`;
+  }).join("");
+  sel.value=prevSchool||state.schools[0].id; renderDismissal();
+  const card=id=>staticize(document.getElementById(id).closest(".card")).outerHTML;
+  secs.push({id:"times",label:"🏫 下校時刻",html:
+    `<div class="card"><h2>学校別・曜日別・学年別 下校時刻</h2>`
+    +`<p class="help">空欄＝その曜日は対象児童なし／不明。特定の日の変更は「特別下校時刻」、こども個別の変更は「保護者連絡」を見てください。</p>`
+    +`${per}</div>${card("meetTable")}${card("spTable")}${card("venueTable")}`});
+
+  renderStaff();
+  secs.push({id:"staff",label:"🧑‍🤝‍🧑 メンバー・車両",html:staticize(document.getElementById("tab-staff")).innerHTML});
+  renderTravel();
+  secs.push({id:"travel",label:"🗺 移動時間",html:staticize(document.getElementById("tab-travel")).innerHTML});
+  secs.push({id:"algo",label:"🧭 アルゴリズム",html:staticize(document.getElementById("tab-algo")).innerHTML});
+  return secs;
 }
 function buildSnapshotHTML(){
   const ds=currentDate;
