@@ -794,7 +794,7 @@ function setWho(name){
 }
 function askWho(force){
   if(!force&&whoAmI())return;
-  const v=prompt("変更履歴に記録するお名前を入力してください（例：はあと）",whoAmI());
+  const v=prompt("変更履歴に記録するお名前を入力してください（虎の巻での呼び名でOK）",whoAmI());
   if(v!==null)setWho(v);
 }
 function logChange(kind,text,ds){
