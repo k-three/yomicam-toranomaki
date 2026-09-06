@@ -178,7 +178,7 @@ table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;paddi
 /* マスタ閲覧のみモード（当日調整モードの閲覧メンバー） */
 .mroNote{display:none;color:var(--warn);font-size:12.5px;font-weight:700;margin:0 0 8px}
 body.mro .mroNote{display:block}
-body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,body.mro #addKid,
+body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,body.mro #kidsTable label,body.mro #addKid,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label,
@@ -215,6 +215,7 @@ body.mro #resetBtn{pointer-events:none;opacity:.55}
   <div class="datebox">📅 <input type="date" id="dateInput"> <span class="dowchip" id="dowChip">–</span></div>
   <button class="btn" id="slackBtn" title="Slack・LINE投稿用の運行概要テキストをコピー">📣 投稿文</button>
   <button class="btn" id="snapBtn" title="この日の虎の巻を1枚のHTMLファイルとして保存（LINE・メール等で配布用）">📤 配布用</button>
+  <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓 ログイン切替</button>
   <button class="btn" id="printBtn">🖨 印刷</button>
   <button class="btn" id="resetBtn">初期データに戻す</button>
 </header>
@@ -396,13 +397,9 @@ body.mro #resetBtn{pointer-events:none;opacity:.55}
 <section id="tab-req" hidden>
   <div class="card">
     <h2>改善要望・連絡</h2>
-    <p class="help">アプリやマスタデータの修正が必要なときは、ここに要望を投稿してください（閲覧メンバーも投稿できます）。データやコードの変更は管理者が対応します。</p>
-    <div style="display:grid;gap:8px;max-width:560px;margin-bottom:16px">
-      <input type="text" id="reqName" placeholder="なまえ" style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);width:12em">
-      <textarea id="reqText" rows="3" placeholder="要望・連絡の内容（例：◯◯小の待ち合わせ場所が変わりました）" style="border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--surface);font:inherit"></textarea>
-      <div><button class="btn primary" id="reqSend">送信</button></div>
-    </div>
-    <h3>これまでの要望</h3>
+    <p class="help">アプリやマスタデータの修正が必要なときは、要望フォームから送ってください（閲覧メンバーも送れます）。閲覧用ページの「📮 要望を送る」と同じフォームなので、要望はすべて1か所に集まります。データやコードの変更は管理者が対応します。</p>
+    <div id="reqFormBox" style="margin-bottom:16px"></div>
+    <h3>これまでの要望（アプリから送られた分）</h3>
     <div id="reqList"></div>
   </div>
 </section>
@@ -584,7 +581,7 @@ function save(){
 /* データは2層：
    - マスタ（こども・メンバー・下校時刻・移動時間・会場・特別下校時刻）… 編集は admin/所有者のみ
    - 日別データ（当日調整・担当固定・手動便・タイムライン編集・保護者連絡）… 閲覧メンバーも編集可 */
-const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","shareUrl","_v"];
+const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","shareUrl","requestFormUrl","_v"];
 const DAY_KEYS=["days","parentNotes"];
 let dbNS=null, adopting=false;
 let mastersRev=0, daysRev=0, canMasters=false, canDays=false;
@@ -669,15 +666,15 @@ function applyFbUser(user){
   dbNS=firebase.firestore();
   canMasters=(user.email||"").toLowerCase()===FB_ADMIN_EMAIL;
   canDays=true;
+  const logout=async()=>{
+    if(!confirm("ログアウトしますか？\n別のパスワードで入り直せます（閲覧用⇄管理者）"))return;
+    try{await fbAuth.signOut()}catch(e){}
+    location.reload();
+  };
+  const btn=document.getElementById("logoutBtn");
+  if(btn){btn.hidden=false;btn.onclick=logout;}
   const chip=document.getElementById("syncChip");
-  if(chip){
-    chip.style.cursor="pointer";
-    chip.onclick=async()=>{
-      if(!confirm("ログアウトしますか？（別のパスワードで入り直せます）"))return;
-      try{await fbAuth.signOut()}catch(e){}
-      location.reload();
-    };
-  }
+  if(chip){chip.style.cursor="pointer";chip.title+="／クリックでログイン切替";chip.onclick=logout;}
 }
 function showLogin(){
   const box=document.getElementById("login"); if(!box)return;
@@ -758,6 +755,13 @@ function updateReqBadge(){
   if(tab)tab.textContent=`📮 要望${openN?`（${openN}）`:""}`;
 }
 function renderRequests(){
+  const box=document.getElementById("reqFormBox");
+  if(box){
+    const u=(state.requestFormUrl||"").trim();
+    box.innerHTML=/^https:\/\//.test(u)
+      ? `<a class="btn primary" style="display:inline-block;text-decoration:none" href="${esc(u)}" target="_blank" rel="noopener noreferrer">📮 要望フォームを開く</a>`
+      : `<p class="help">要望フォームが未設定です。運行管理担当にご連絡ください。</p>`;
+  }
   const host=document.getElementById("reqList"); if(!host)return;
   if(!dbNS){host.innerHTML='<p class="help">共有データに接続していないため、要望の送信・閲覧はできません（公開ページから開いてください）。</p>';return}
   host.innerHTML=requestsCache.length?requestsCache.map(r=>`
@@ -1280,6 +1284,19 @@ let ui={};try{ui=JSON.parse(localStorage.getItem("toranomaki-ui")||"{}")}catch(e
 if(!ui||typeof ui!=="object")ui={};
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 
+/* マスタ編集の権限がないときは、見た目だけでなく入力欄自体を無効化する
+   （曜日チェックのように label 経由で切り替わるものは CSS だけでは防げないため） */
+const mastersLocked=()=>!!dbNS && !canMasters;
+function lockMasterTables(){
+  if(!mastersLocked()) return;
+  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable"].forEach(id=>{
+    const t=document.getElementById(id); if(!t)return;
+    t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
+  });
+  ["addKid","addStaff","addSp","resetBtn"].forEach(id=>{
+    const b=document.getElementById(id); if(b)b.disabled=true;
+  });
+}
 function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" style="background:${s.color}">${esc(s.short)}</span>`}
 
 function renderPlan(){
@@ -1718,6 +1735,7 @@ function renderKids(){
     };
   });
   renderParentNotes();
+  lockMasterTables();
 }
 function renderParentNotes(){
   const t=document.getElementById("pnTable");
@@ -1762,6 +1780,7 @@ function renderDismissal(){
   sel.onchange=renderDismissal;
   renderVenues();
   renderSpecials();
+  lockMasterTables();
 }
 function renderSpecials(){
   const t=document.getElementById("spTable");
@@ -1788,6 +1807,7 @@ function renderSpecials(){
       state.specialTimes=state.specialTimes.filter(v=>v.id!==x.id);save();renderSpecials();renderPlan();
     };
   });
+  lockMasterTables();
 }
 function renderVenues(){
   const t=document.getElementById("venueTable");
@@ -1805,6 +1825,7 @@ function renderVenues(){
   t.querySelectorAll("input").forEach(el=>el.onchange=()=>{
     state.venues[el.dataset.vd][el.dataset.vf]=el.value;save();renderPlan();
   });
+  lockMasterTables();
 }
 function renderStaff(){
   const t=document.getElementById("staffTable");
@@ -1855,6 +1876,7 @@ function renderStaff(){
       state.staff=state.staff.filter(x=>x.id!==s.id);save();renderStaff();renderPlan();
     };
   });
+  lockMasterTables();
 }
 function renderTravel(){
   const ids=["base",...state.schools.map(s=>s.id)];
@@ -1876,6 +1898,7 @@ function renderTravel(){
     if(el.checked)state.travelMeasured[el.dataset.m]=true;else delete state.travelMeasured[el.dataset.m];
     save();renderPlan();
   });
+  lockMasterTables();
 }
 
 /* ========== 画面制御 ========== */
@@ -1900,17 +1923,6 @@ document.getElementById("addKid").onclick=()=>{
   save();renderKids();renderPlan();
   const rows=document.querySelectorAll('#kidsTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
-};
-document.getElementById("reqSend").onclick=async()=>{
-  if(!dbNS){alert("共有データに接続していないため送信できません");return}
-  const name=document.getElementById("reqName").value.trim();
-  const text=document.getElementById("reqText").value.trim();
-  if(!text){alert("内容を入力してください");return}
-  ui.reqName=name;try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
-  try{
-    await dbNS.collection("requests").add({name,text,createdAt:Date.now(),status:"open"});
-    document.getElementById("reqText").value="";
-  }catch(e){alert("送信できませんでした。時間をおいて再度お試しください")}
 };
 document.getElementById("addPn").onclick=()=>{
   state.parentNotes.push({id:uid(),date:currentDate,childId:state.children[0]?.id||"",kind:"time",time:"",memo:""});
@@ -2032,7 +2044,6 @@ loadState();
   currentDate=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 })();
 document.getElementById("dateInput").value=currentDate;
-document.getElementById("reqName").value=ui.reqName||"";
 renderPlan();
 initShared();
 </script>
