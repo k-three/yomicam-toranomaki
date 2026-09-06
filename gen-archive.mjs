@@ -61,19 +61,16 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .daybtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .snapnote{color:var(--muted);font-size:11.5px;text-align:center;margin:20px 0}
 .ev{cursor:default}
-.reqbox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin:22px 0 0;text-align:center}
-.reqbox p{margin:0 0 10px;color:var(--muted);font-size:12.5px}
-.reqbtn{display:inline-block;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:700;font-family:"Zen Maru Gothic",system-ui,sans-serif;border-radius:10px;padding:9px 22px}
-.reqbtn:hover{opacity:.88}</style></head>
+.reqbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--muted);text-decoration:none;font-weight:700;font-size:12px;border-radius:99px;padding:4px 12px;white-space:nowrap;line-height:1.5}
+.reqbtn:hover{border-color:var(--accent);color:var(--accent)}
+@media print{.reqbtn{display:none!important}}</style></head>
 <body><div class="wrap">
 <header class="app"><div class="brand"><div class="mark">🚐</div>
-<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>よみたん放課後キャンパス運営虎の巻（閲覧用）</small></div></div></header>
+<div><h1>よみキャン運営虎の巻（デイリー）</h1><small>よみたん放課後キャンパス運営虎の巻（閲覧用）</small></div></div>
+<div class="spacer"></div>
+${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
-${reqUrl ? `<div class="reqbox">
-<p>気づいたこと・改善してほしいことがあれば運行管理担当に届きます</p>
-<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer">📮 要望を送る</a>
-</div>` : ''}
 <p class="snapnote">閲覧専用／${now} 更新。最新の変更は運行管理担当からの連絡を確認してください。</p>
 </div>
 <script>
