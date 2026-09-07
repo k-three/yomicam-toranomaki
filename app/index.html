@@ -2652,12 +2652,6 @@ function buildSnapshotParts(){
    参加曜日・学年のピルだけは見た目を保つため、無効化した入力のまま残す。 */
 function staticize(node,shiftBlocks){
   const c=node.cloneNode(true);
-  if(shiftBlocks!==undefined){
-    // 配布ページのメンバー予定は、今週から先の期間をまとめて（読むだけで）載せる
-    const tbl=c.querySelector("#shiftTable"), wrap=tbl&&tbl.closest(".tblwrap");
-    if(wrap){const box=document.createElement("div");box.innerHTML=shiftBlocks;wrap.parentNode.replaceChild(box,wrap)}
-    const note=c.querySelector("#shShort"); if(note)note.remove();
-  }
   c.removeAttribute("hidden");
   c.querySelectorAll(".noprint,.mroNote,.editnote,.addrow").forEach(n=>n.remove());
   c.querySelectorAll("button").forEach(n=>n.remove());
@@ -2688,31 +2682,50 @@ function staticize(node,shiftBlocks){
         rows.forEach(r=>{if(r.cells[i])r.deleteCell(i)});
     }
   });
+  if(shiftBlocks!==undefined){
+    // メンバー予定は期間ごとの表に差し替える（この差し込みは削ぎ落としの後に行う）
+    const tbl=c.querySelector("#shiftTable"), wrap=tbl&&tbl.closest(".tblwrap");
+    if(wrap){const box=document.createElement("div");box.innerHTML=shiftBlocks;wrap.parentNode.replaceChild(box,wrap)}
+    const note=c.querySelector("#shShort"); if(note)note.remove();
+  }
   return c;
 }
-/* 配布ページ用：メンバー予定を「今週から先」ぶんまとめて静的HTMLにする。
-   最初の2期間（4週間）は必ず出し、それ以降は予定の登録や長期休暇がある期間だけ出す。 */
+/* 配布ページ用：メンバー予定を2週間ごとの表にして、前後の期間ぶんまとめて書き出す。
+   閲覧用でも管理用と同じように「前の2週／次の2週／この日の週へ／応援も表示」で
+   切り替えられるように、操作バーもここで作る（表示の切り替えだけで、編集はしない）。 */
+const SHIFT_BACK=2, SHIFT_FWD=24; // 過去4週間〜先26週間（2週間刻み）
 function buildShiftBlocks(){
-  const keep=ui.shiftOffset||0, MAX=13; // 最大26週
-  const out=[]; let skipped=0;
-  for(let k=0;k<MAX;k++){
-    ui.shiftOffset=k*2;
+  const keepOff=ui.shiftOffset||0, keepAll=ui.shiftShowAll;
+  ui.shiftShowAll=true;   // 応援も含めて全員ぶん書き出し、既定は畳んでおく
+  const standbyN=shiftStaff().filter(isStandby).length;
+  const out=[];
+  for(let o=-SHIFT_BACK;o<=SHIFT_FWD;o+=2){
+    ui.shiftOffset=o;
     const dates=shiftDates();
-    const hasSomething=dates.some(ds=>{
-      const d=state.days?.[ds]||{};
-      return termOn(ds)||(d.staffOff||[]).length||(d.staffExtra||[]).length
-        ||Object.keys(d.staffTimes||{}).length||onDutyMin(ds)<SET.minStaff;
-    });
-    if(k>=2&&!hasSomething){skipped++;continue}
     renderShift();
     const tbl=staticize(document.getElementById("shiftTable"));
+    // その期間に予定が入っていない応援メンバーの行は既定で畳む
+    tbl.querySelectorAll("tr.shsb").forEach(tr=>{
+      const quiet=[...tr.querySelectorAll("td")].every(td=>
+        td.classList.contains("shclosed")||td.querySelector(".sh-none"));
+      if(quiet){tr.classList.add("sbq");tr.setAttribute("hidden","")}
+    });
     const note=document.getElementById("shShort");
-    out.push(`<h3 style="margin:16px 0 6px">${mdOf(dates[0])}（${DOWS[dowOf(dates[0])]}）〜${mdOf(dates[9])}（${DOWS[dowOf(dates[9])]}）</h3>`
+    out.push(`<div class="shblk" data-off="${o}" data-from="${dates[0]}" data-to="${dates[9]}" hidden>`
+      +`<h3 style="margin:14px 0 6px">${mdOf(dates[0])}（${DOWS[dowOf(dates[0])]}）〜${mdOf(dates[9])}（${DOWS[dowOf(dates[9])]}）</h3>`
       +`<div class="tblwrap">${tbl.outerHTML}</div>`
-      +(note&&note.innerHTML?`<p style="font-size:12.5px;font-weight:700;margin:6px 0 0">${note.innerHTML}</p>`:""));
+      +(note&&note.innerHTML?`<p class="shnote">${staticize(note).innerHTML}</p>`:"")
+      +`</div>`);
   }
-  ui.shiftOffset=keep; renderShift();
-  return out.join("")+(skipped?`<p class="help" style="margin-top:12px">※ 予定の登録がない期間（${skipped}期間）は省略しています。</p>`:"");
+  ui.shiftOffset=keepOff; ui.shiftShowAll=keepAll; renderShift();
+  const nav=`<div class="vnav">
+    <span class="btn vbtn" data-shnav="prev">◀ 前の2週</span>
+    <span class="btn vbtn" data-shnav="now">今週から</span>
+    <span class="btn vbtn" data-shnav="next">次の2週 ▶</span>
+    ${standbyN?`<span class="btn vbtn" id="shbAll" data-base="応援も表示（${standbyN}名）">▸ 応援も表示（${standbyN}名）</span>`:""}
+    <label class="help" style="margin:0">この日の週へ <input type="date" id="shbJump" class="vinput"></label>
+  </div>`;
+  return nav+out.join("");
 }
 function buildRefSnapshot(){
   const sel=document.getElementById("schoolSel");

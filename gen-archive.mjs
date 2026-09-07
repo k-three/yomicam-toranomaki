@@ -109,7 +109,12 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .topbtn:hover{color:var(--ink)}
 .topbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
 .rsec .grid td,.rsec .grid th{white-space:normal}
-.monthnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.monthnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;align-items:center}
+.vinput{border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px}
+.vbtn{cursor:pointer;user-select:none;display:inline-block}
+.vnav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
+.daymsg{color:var(--alert);font-size:12px;font-weight:700}
+.shnote{font-size:12.5px;font-weight:700;margin:6px 0 0}
 .mbtn{border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:3px 12px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-size:13px}
 .mbtn.on{background:var(--surface2);color:var(--ink);border-color:var(--muted)}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
@@ -127,7 +132,9 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="topnav" id="topNav">${topNav}</nav>
 <div id="planWrap">
-<nav class="monthnav" id="monthNav">${monthNav}</nav>
+<nav class="monthnav" id="monthNav">${monthNav}
+  <label class="help" style="margin:0 0 0 6px">この日を開く <input type="date" id="dayPick" class="vinput" min="${sections[0].ds}" max="${sections[sections.length-1].ds}"></label>
+  <span id="dayMsg" class="daymsg" hidden></span></nav>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
 </div>
@@ -179,6 +186,43 @@ ${refHtml}
     route();
   });
   window.addEventListener('hashchange',route);
+  // 日付を指定して開く
+  var pick=document.getElementById('dayPick'), msg=document.getElementById('dayMsg');
+  if(pick)pick.addEventListener('change',function(){
+    var v=this.value; msg.hidden=true; if(!v)return;
+    if(document.getElementById('d'+v)){showTop('plan');location.hash='d'+v;route()}
+    else{msg.textContent='その日は収録されていません（前後の営業日を選んでください）';msg.hidden=false}
+  });
+  // メンバー予定：2週間ごとの切り替え
+  var blks=[].slice.call(document.querySelectorAll('.shblk'));
+  if(blks.length){
+    var cur=0;
+    blks.forEach(function(b,i){if(b.dataset.off==='0')cur=i});
+    function showBlk(i){
+      i=Math.max(0,Math.min(blks.length-1,i)); cur=i;
+      blks.forEach(function(b,j){b.hidden=(j!==i)});
+    }
+    showBlk(cur);
+    document.querySelectorAll('[data-shnav]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var k=b.dataset.shnav;
+        showBlk(k==='prev'?cur-1:k==='next'?cur+1:blks.findIndex(function(x){return x.dataset.off==='0'}));
+      });
+    });
+    var ab=document.getElementById('shbAll'), allOn=false;
+    if(ab)ab.addEventListener('click',function(){
+      allOn=!allOn;
+      document.querySelectorAll('.shblk tr.sbq').forEach(function(tr){tr.hidden=!allOn});
+      ab.textContent=(allOn?'▾ ':'▸ ')+ab.dataset.base;
+    });
+    var jp=document.getElementById('shbJump');
+    if(jp)jp.addEventListener('change',function(){
+      var v=this.value; if(!v)return;
+      for(var i=0;i<blks.length;i++)
+        if(v>=blks[i].dataset.from&&v<=blks[i].dataset.to){showBlk(i);return}
+      showBlk(v<blks[0].dataset.from?0:blks.length-1);
+    });
+  }
 })();
 </script></body></html>`;
 let out = html;
