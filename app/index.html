@@ -195,6 +195,9 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
 .sh-none{color:var(--muted)}
 .shwt{display:block;font-size:10px;font-weight:700;color:var(--warn);margin-top:1px}
 #shiftTable tr.shsb th{color:var(--muted)}
+#shiftTable td.shclosed{background:var(--surface2);color:var(--muted)}
+#shiftTable small.thclosed{color:var(--muted);font-weight:700}
+#shiftTable small.thbreak{color:var(--warn);font-weight:700}
 #shiftTable tr.shsum td{font-weight:900;font-family:"Zen Maru Gothic"}
 #shiftTable tr.shsum td.short{background:var(--alert-soft);color:var(--alert)}
 #shiftTable th.wksep,#shiftTable td.wksep{border-left:3px double var(--muted)}
@@ -313,6 +316,13 @@ body.staging{padding-bottom:110px}
     <div class="tblwrap"><table class="grid" id="meetTable"></table></div>
   </div>
   <div class="card">
+    <h2>長期休暇・休所日</h2>
+    <p class="help">学校の長期休業（夏休み・冬休みなど）は<b>開所時間が変わり、送迎便がなくなります</b>（登所・降所とも保護者送迎）。運営の休み（年末年始など）は「休所」で登録してください。<b>休所は長期休暇より優先</b>されるので、期間が重なっていてもそのまま登録して大丈夫です。土日はもともと対象外です。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="termTable"></table></div>
+    <button class="btn addrow" id="addTerm" style="margin-top:10px">＋ 期間を追加</button>
+  </div>
+  <div class="card">
     <h2>特別下校時刻（日付指定の変更）</h2>
     <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
@@ -344,13 +354,14 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>メンバー予定（この日だけの休み・時短・臨時出勤）</h2>
-    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>1日あたり3名</b>を下回る日は赤く表示されます。<br>
+    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>3名</b>を下回る<b>時間帯</b>がある日は赤く表示されます（勤務時間を変えている人はその時間だけ数えます。数字は「最少／延べ」）。<br>
     <b>応援（臨時）メンバー</b>＝メンバーマスタで勤務曜日を1つもチェックしていない人。普段は表に出ず、臨時出勤を入れた日だけ行が出ます（「応援も表示」で全員出せます）。</p>
     <div class="noprint" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
       <button class="btn" id="shPrev" style="padding:3px 10px">◀ 前の2週</button>
       <button class="btn" id="shToday" style="padding:3px 10px">今週から</button>
       <button class="btn" id="shNext" style="padding:3px 10px">次の2週 ▶</button>
       <button class="btn" id="shAll" style="padding:3px 10px" hidden>▸ 応援も表示</button>
+      <label class="help" style="margin:0">この日の週へ <input type="date" id="shJump" style="padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"></label>
       <span class="help" style="margin:0">セルをクリックすると「出勤 ⇄ 休み」／「－ ⇄ 臨時出勤」が切り替わります。</span>
     </div>
     <div class="tblwrap"><table class="grid" id="shiftTable"></table></div>
@@ -389,7 +400,7 @@ body.staging{padding-bottom:110px}
     <h3>0. 前提条件（この計画が守る数字と要件）</h3>
     <div class="tblwrap"><table class="grid">
       <tbody>
-      <tr><th>開所時間</th><td>平日 13:00〜19:00（保護者お迎えは原則18:00まで。虎の巻には記載しない）</td></tr>
+      <tr><th>開所時間</th><td>平日 13:00〜19:00（保護者お迎えは原則18:00まで。虎の巻には記載しない）。<b>学校の長期休業（夏休み・冬休みなど）は 9:00〜19:00 で、送迎便はなく登所・降所とも保護者送迎</b>（「下校時刻」タブの「長期休暇・休所日」で期間を登録）</td></tr>
       <tr><th>集合</th><td>13:00 当日の会場に集合（会場は曜日別。火曜は図書館→15:00に健康増進センターへ移動）</td></tr>
       <tr><th>学校での待機</th><td>下校時刻から<b>最低20分</b>（学校発＝下校＋20分。遅れて来る子はここで吸収）</td></tr>
       <tr><th>移動時間</th><td>余裕をもって<b>一律20分枠</b>（実測が貯まった区間から「移動時間」タブで短縮可）</td></tr>
@@ -528,7 +539,7 @@ body.staging{padding-bottom:110px}
 /* ========== 定数・ユーティリティ ========== */
 const DOWS=["日","月","火","水","木","金","土"];
 const GRADES=[1,2,3,4,5,6];
-const DAY_START=750, DAY_END=1155; // 12:30 - 19:15
+let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開所時間に合わせて広げる）
 const PXM=2; // px per minute
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, minStaff:3};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
@@ -595,6 +606,7 @@ function defaultState(){
     children:confirmedChildren(),
     shareUrl:"https://k-three.github.io/yomicam-toranomaki/",
     specialTimes:[], // 日付指定の下校時刻変更 {id,date,school,grades[],time,memo}
+    terms:[],        // 長期休暇・休所日 {id,from,to,kind:"break"|"closed",label,open,close}
     parentNotes:[],  // 保護者連絡 {id,date,childId,kind:absent|spot|time,time?,memo}
     days:{}, // dateStr -> {venue,absent[],spots[],timeOverrides{},staffOff[],taxiOn,notes}
   };
@@ -635,6 +647,7 @@ function migrate(){
   }
   state.specialTimes??=[];
   state.parentNotes??=[];
+  state.terms??=[];
   if(state._v<8){
     // Slack表記は個人情報のためソースには持たせない（メンバータブで設定）
     state.shareUrl??="https://k-three.github.io/yomicam-toranomaki/";
@@ -740,7 +753,7 @@ function cancelStage(){
 /* データは2層：
    - マスタ（こども・メンバー・下校時刻・移動時間・会場・特別下校時刻）… 編集は admin/所有者のみ
    - 日別データ（当日調整・担当固定・手動便・タイムライン編集・保護者連絡）… 閲覧メンバーも編集可 */
-const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","shareUrl","requestFormUrl","_v"];
+const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","terms","shareUrl","requestFormUrl","_v"];
 const DAY_KEYS=["days","parentNotes"];
 let dbNS=null, adopting=false;
 let mastersRev=0, daysRev=0, canMasters=false, canDays=false;
@@ -1021,6 +1034,40 @@ const schoolOf=id=>state.schools.find(s=>s.id===id)||{id,name:String(id),short:S
 const travelOf=(a,b)=>{const v=state.travel[a]?.[b];return (v==null||v==="")?null:Number(v)};
 const measured=(a,b)=>state.travelMeasured[[a,b].sort().join("|")];
 
+/* その日の勤務時間をふまえて、必要人数を下回る時間帯を返す。
+   勤務時間を入れていない人は開所〜閉所まで在席とみなす。 */
+function staffGaps(crew,day,open,close){
+  const span=s=>{
+    const wt=day.staffTimes?.[s.id]||{};
+    return [toMin(wt.from)??open, toMin(wt.to)??close];
+  };
+  const at=m=>crew.filter(s=>{const[f,t]=span(s);return m>=f&&m<t}).length;
+  const gaps=[]; let cur=null;
+  for(let m=open;m<close;m+=15){
+    const n=at(m);
+    if(n<SET.minStaff){
+      if(cur&&cur.n===n&&cur.e===m)cur.e=m+15;
+      else{cur={s:m,e:m+15,n};gaps.push(cur)}
+    }else cur=null;
+  }
+  return gaps;
+}
+function staffMin(crew,day,open,close){
+  if(!crew.length)return 0;
+  const span=s=>{const wt=day.staffTimes?.[s.id]||{};return [toMin(wt.from)??open,toMin(wt.to)??close]};
+  let min=Infinity;
+  for(let m=open;m<close;m+=15)
+    min=Math.min(min,crew.filter(s=>{const[f,t]=span(s);return m>=f&&m<t}).length);
+  return min===Infinity?0:min;
+}
+
+/* 長期休暇（学校の長期休業）・休所日の判定。休所が最優先。 */
+function termOn(ds){
+  const hit=(state.terms||[]).filter(t=>t.from&&t.to&&ds>=t.from&&ds<=t.to);
+  return hit.find(t=>t.kind==="closed")||hit.find(t=>t.kind==="break")||null;
+}
+const BREAK_OPEN="09:00", BREAK_CLOSE="19:00";
+
 /* ========== プランナー ========== */
 function planDay(ds){
   const d=new Date(ds+"T12:00:00");
@@ -1029,14 +1076,27 @@ function planDay(ds){
   const warnings=[];
   const res={dow,day,warnings,attendees:[],runs:[],events:{},staffOnDuty:[],weekend:(dow===0||dow===6)};
   if(res.weekend) return res;
+  // --- 長期休暇（学校休業）・休所日 ---
+  const term=termOn(ds);
+  res.term=term;
+  res.closed=!!(term&&term.kind==="closed");
+  res.breakMode=!!(term&&term.kind==="break");
+  res.open=res.breakMode?(toMin(term.open||BREAK_OPEN)??540):780;
+  res.close=res.breakMode?(toMin(term.close||BREAK_CLOSE)??1140):1140;
+  if(res.closed) return res;
+  if(res.breakMode)
+    warnings.push({lv:"warn",tag:"長期休暇",text:`${term.label||"長期休暇"}のため開所は ${fmt(res.open)}〜${fmt(res.close)}。学校がないので送迎便はありません（登所・降所とも保護者送迎）。メンバーの勤務も ${fmt(res.open)}〜${fmt(res.close)} になるため、シフトが3名そろうか確認してください`});
 
   // --- 会場（曜日既定＋当日上書き） ---
   const vm=state.venues?.[dow]||{main:"文化センター"};
   res.venue={
     main:(day.venue||"").trim()||vm.main,
-    early:(vm.early||"").trim()||null,
-    switchMin:vm.switch?toMin(vm.switch):null,
+    // 曜日の「前半だけ別会場」は13:00開所が前提のルール。長期休暇は時間帯が違うので使わない
+    early:res.breakMode?null:((vm.early||"").trim()||null),
+    switchMin:res.breakMode?null:(vm.switch?toMin(vm.switch):null),
   };
+  if(res.breakMode&&(vm.early||"").trim())
+    warnings.push({lv:"warn",tag:"会場",text:`通常の${DOWS[dow]}曜は${vm.early}→${vm.main}ですが、長期休暇は開所時間が違うため曜日ルールは適用していません。会場の予約を確認し、違う場合は当日調整の「会場」欄で上書きしてください`});
   if(res.venue.early&&res.venue.switchMin)
     warnings.push({lv:"info",tag:"会場",text:`13:00〜${vm.switch}は${res.venue.main}が利用できないため${res.venue.early}に集合。${vm.switch}に${res.venue.main}へ移動します（出発前と到着後に点呼・こどもを一人にしない）`});
 
@@ -1057,7 +1117,7 @@ function planDay(ds){
     const t=ov||sp?.time||state.dismissal[c.school]?.[dow]?.[c.grade]||"";
     if(sp){const e=appliedSp.get(sp.id)||{sp,kids:[]};e.kids.push(c);appliedSp.set(sp.id,e)}
     res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp});
-    if(!t&&!c.selfTransport) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
+    if(!t&&!c.selfTransport&&!res.breakMode) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
   }
   for(const {sp,kids} of appliedSp.values())
     warnings.push({lv:"warn",tag:"特別時刻",text:`${schoolOf(sp.school).short}${sp.grades.join("・")}年は特別下校時刻 ${sp.time} を適用${sp.memo?`（${sp.memo}）`:""}。対象：${kids.map(kanaOf).join("・")}`});
@@ -1101,8 +1161,9 @@ function planDay(ds){
 
   // --- お迎えジョブ（学校×時刻クラスタ） ---
   const bySchool={};
-  res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
-  const selfKids=res.attendees.filter(a=>a.selfTransport);
+  if(!res.breakMode)
+    res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
+  const selfKids=res.breakMode?[]:res.attendees.filter(a=>a.selfTransport);
   if(selfKids.length) warnings.push({lv:"info",tag:"保護者送迎",text:`送迎不要（保護者が送迎）：${selfKids.map(kanaOf).join("・")}。到着時刻は保護者と個別に確認`});
   const jobs=[];
   for(const [sc,list] of Object.entries(bySchool)){
@@ -1123,13 +1184,16 @@ function planDay(ds){
   res.staffOnDuty=onDuty.filter(s=>s.role!=="taxi"||day.taxiOn||pinnedIds.has(s.id));
   const drivers=onDuty.filter(s=>s.role==="drive"||(s.role==="taxi"&&(day.taxiOn||pinnedIds.has(s.id))));
   {
-    // 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
+    // 必要なメンバー数のチェック。延べ人数ではなく「その時間に何人いるか」で見る
+    // （第一交通＝臨時送迎は数えない。勤務時間を変えている人はその時間だけ数える）
     const crew=onDuty.filter(s=>s.role!=="taxi");
-    if(res.attendees.length&&crew.length<SET.minStaff){
+    const gaps=staffGaps(crew,day,res.open,res.close);
+    if(res.attendees.length&&gaps.length){
       const cands=state.staff.filter(s=>s.role!=="taxi"&&!crew.some(c=>c.id===s.id)&&!day.staffOff.includes(s.id));
       const names=cands.slice(0,6).map(s=>s.name).join("・")+(cands.length>6?`ほか${cands.length-6}名`:"");
+      const when=gaps.map(g=>`${fmt(g.s)}〜${fmt(g.e)}は${g.n}名`).join("、");
       warnings.push({lv:"alert",tag:"人員不足",
-        text:`この日の出勤は${crew.length}名です（${SET.minStaff}名必要）。${cands.length?`臨時出勤の候補：${names}。`:""}「メンバー・車両」タブのメンバー予定、または当日調整の臨時出勤から追加してください`});
+        text:`${SET.minStaff}名を下回る時間帯があります：${when}（この日の出勤は延べ${crew.length}名）。${cands.length?`臨時出勤の候補：${names}。`:""}「メンバー・車両」タブのメンバー予定、または当日調整の臨時出勤・勤務時間で調整してください`});
     }
   }
   // 固定先が当日使えない場合は警告して自動扱いに
@@ -1399,8 +1463,21 @@ function buildEvents(res){
   const dayVisits=(res.day.visits||[]).map(v=>({s:toMin(v.from),e:toMin(v.to),host:v.host,label:v.label}))
     .filter(v=>v.s!=null&&v.e!=null&&v.e>v.s);
 
+  const OPEN=res.open??780, CLOSE=res.close??1140;
   // --- 全体レーン（全員共通の動き） ---
   const all=[];
+  if(res.breakMode){
+    const V1=V.main;
+    const lunch=Math.min(720,CLOSE-180), lunchEnd=Math.min(780,CLOSE-120);
+    all.push({s:OPEN-15,e:OPEN,type:"t-fixed",label:`開所準備（${V1}）`,detail:"会場設営・使用エリア確認（座席・こどもの居場所・トイレ・出入口）／受け入れ準備"});
+    all.push({s:OPEN,e:OPEN+30,type:"t-fixed",label:"受け入れ・朝の集まり",detail:"保護者送迎で順次登所。コドモン入館打刻（保護者へ自動通知）／健康観察・持ち物確認／1日の流れを共有"});
+    all.push({s:OPEN+30,e:lunch,type:"t-base",label:`午前の活動（${V1}）`,detail:"在館（見守り・記録・保護者窓口）。外出・来訪対応のメンバーはその時間だけ抜ける"});
+    all.push({s:lunch,e:lunchEnd,type:"t-fixed",label:"昼食",detail:"持参のお弁当。アレルギー・食べこぼしの見守り／食事前後の手洗い"});
+    all.push({s:lunchEnd,e:CLOSE-80,type:"t-base",label:`午後の活動（${V1}）`,detail:"在館（見守り・記録・保護者窓口）"});
+    all.push({s:CLOSE-80,e:CLOSE-60,type:"t-fixed",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
+    all.push({s:CLOSE-60,e:CLOSE,type:"t-base",label:"片付け・お迎え対応",detail:"順次お迎え（保護者送迎）。備品を倉庫へ／忘れ物確認／施錠依頼"});
+    ev["_all"]=all;
+  }else{
   all.push({s:780,e:800,type:"t-fixed",label:`集合・会場準備（${V.early||V.main}）`,detail:`${V.early||V.main}に集合／使用エリア確認（座席・こどもの居場所・トイレ・出入口）／出迎え位置を決めて待機`});
   const inkan="在館（見守り・記録・保護者窓口／出迎え・コドモン入館打刻）。送迎・外出・来訪対応のメンバーはその時間だけ抜ける";
   if(V.early&&V.switchMin){
@@ -1415,6 +1492,7 @@ function buildEvents(res){
   all.push({s:1060,e:1080,type:"t-fixed",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
   all.push({s:1080,e:1140,type:"t-base",label:"片付け・ふりかえり",detail:"備品を倉庫へ／忘れ物確認／アルコールチェック様式・運行日報を回収／施錠依頼"});
   ev["_all"]=all;
+  }
 
   // --- 送迎便（運転担当の個別レーン：移動と乗車だけのシンプル表示） ---
   for(const r of runs){
@@ -1446,14 +1524,24 @@ function buildEvents(res){
     for(const v of dayVisits.filter(v=>v.host===id))
       push(id,{s:v.s,e:v.e,type:"t-visit",label:`来訪対応：${v.label||"来訪"}`,detail:"ご案内・説明・質疑に専任。見学者と児童が1対1にならないよう、必ず運営メンバーの視界内で"});
     const wt=res.day.staffTimes?.[id];
-    if(wt?.from&&toMin(wt.from)>780) push(id,{s:780,e:toMin(wt.from),type:"t-away",label:"出勤前",detail:`この日の勤務：${wt.from||"13:00"}〜${wt.to||"19:00"}`});
-    if(wt?.to&&toMin(wt.to)<1140) push(id,{s:toMin(wt.to),e:1140,type:"t-away",label:"退勤",detail:`この日の勤務：${wt.from||"13:00"}〜${wt.to||"19:00"}`});
+    const dft=`この日の勤務：${wt?.from||fmt(OPEN)}〜${wt?.to||fmt(CLOSE)}`;
+    if(wt?.from&&toMin(wt.from)>OPEN) push(id,{s:OPEN,e:toMin(wt.from),type:"t-away",label:"出勤前",detail:dft});
+    if(wt?.to&&toMin(wt.to)<CLOSE) push(id,{s:toMin(wt.to),e:CLOSE,type:"t-away",label:"退勤",detail:dft});
   }
 
   // --- こども・来訪レーン ---
   const kidsEv=[];
   const backs=runs.map(r=>r.backAt).sort((a,b)=>a-b);
   const firstArr=backs.length?backs[0]:null;
+  if(res.breakMode&&res.attendees.length){
+    const lunch=Math.min(720,CLOSE-180), lunchEnd=Math.min(780,CLOSE-120);
+    kidsEv.push({s:OPEN,e:OPEN+30,type:"t-kmove",label:"登所（保護者送迎）",detail:"保護者送迎で順次登所。出迎え・コドモン入館打刻（保護者へ自動通知）"});
+    kidsEv.push({s:OPEN+30,e:lunch,type:"t-kids",label:"午前の活動",detail:"集まり→活動。到着した児童から順に合流"});
+    kidsEv.push({s:lunch,e:lunchEnd,type:"t-kids",label:"昼食（お弁当）",detail:"持参のお弁当。アレルギーに注意"});
+    kidsEv.push({s:lunchEnd,e:CLOSE-80,type:"t-kids",label:"午後の活動",detail:"活動"});
+    kidsEv.push({s:CLOSE-80,e:CLOSE-60,type:"t-kids",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
+    kidsEv.push({s:CLOSE-60,e:CLOSE,type:"t-kmove",label:"降所（保護者お迎え）",detail:"順次お迎え。引き渡し時に保護者へ様子を共有"});
+  }
   for(const r of runs){
     for(const st of r.stops)
       kidsEv.push({s:st.time,e:st.end,type:"t-kids",label:`${S(st.school).short}下校（${st.kids.map(kanaOf).join("・")}）`,detail:`第${r.no}便（${r.driver.name}）に乗車。下校＋20分待機を含む`});
@@ -1527,11 +1615,11 @@ function applyRoleUI(){
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
-  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable"].forEach(id=>{
+  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
   });
-  ["addKid","addStaff","addSp"].forEach(id=>{
+  ["addKid","addStaff","addSp","addTerm"].forEach(id=>{
     const b=document.getElementById(id); if(b)b.disabled=true;
   });
 }
@@ -1557,8 +1645,11 @@ function renderPlanInner(){
   const day=plan.day||getDay(ds);
   document.getElementById("dowChip").textContent=DOWS[new Date(ds+"T12:00:00").getDay()];
   const sum=document.getElementById("summaryCard");
-  if(plan.weekend){
-    sum.innerHTML=`<h2>${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）</h2><p class="help">土日はお休みです。平日を選んでください。</p>`;
+  if(plan.weekend||plan.closed){
+    const why=plan.closed
+      ? `<b>休所日</b>です（${esc(plan.term?.label||"休所")}）。この日は開所しません。`
+      : "土日はお休みです。平日を選んでください。";
+    sum.innerHTML=`<h2>${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）</h2><p class="help">${why}</p>`;
     ["dayEditCard","runsCard","warnCard"].forEach(id=>document.getElementById(id).innerHTML="");
     document.getElementById("tlHost").innerHTML="";
     return;
@@ -1583,7 +1674,9 @@ function renderPlanInner(){
         <summary class="chip kids">👧 こども <span class="num">${plan.attendees.length}</span>名${spotN?`（スポット${spotN}）`:""}</summary>
         <div class="kidsnames">${kidsSorted.length?kidsSorted.map(kidChip).join(""):'<span class="help">この日の利用者はいません</span>'}</div>
       </details>
-      <span class="chip drive">🚐 送迎 <span class="num">${plan.runs.length}</span>便</span>
+      ${plan.breakMode
+        ?`<span class="chip warn">🏫 ${esc(plan.term?.label||"長期休暇")}　開所 ${fmt(plan.open)}〜${fmt(plan.close)}・送迎なし（保護者送迎）</span>`
+        :`<span class="chip drive">🚐 送迎 <span class="num">${plan.runs.length}</span>便</span>`}
       ${plan.unassigned?.length?`<span class="chip alert">❗ 送迎未割当 <span class="num">${plan.unassigned.reduce((n,u)=>n+u.kids.length,0)}</span>名</span>`:""}
       <span class="chip base">🧑‍🤝‍🧑 メンバー <span class="num">${plan.staffOnDuty.length}</span>名（${plan.staffOnDuty.map(s=>esc(s.name)).join("・")}）</span>
       ${day.visits?.length?`<span class="chip warn">🚪 来訪 <span class="num">${day.visits.length}</span>件</span>`:""}
@@ -1653,6 +1746,7 @@ function renderDayEdit(plan){
       <span style="font-size:12px;color:var(--muted);font-weight:500">（スクリレ・保護者連絡をここに反映 → 虎の巻が自動更新）</span>
     </h2>
     <div id="dayEditBody" ${collapsed?"hidden":""}>
+    ${plan.breakMode?`<p class="help" style="margin-top:0;color:var(--warn);font-weight:700">${esc(plan.term?.label||"長期休暇")}：開所 ${fmt(plan.open)}〜${fmt(plan.close)}・送迎なし（保護者送迎）。下校時刻の欄はこの日は使いません。</p>`:""}
     <p class="help" style="margin-top:0">変更はこの画面ですぐ確認できますが、<b>画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません</b>。間違って触ったときは「↩ 取り消し」で元に戻せます。</p>
     <h3 style="margin-top:6px">こども（チェック＝参加）</h3>
     ${rows.join("")||'<p class="help">この曜日の固定参加はいません。</p>'}
@@ -1769,6 +1863,10 @@ function renderDayEdit(plan){
 
 function renderRuns(plan){
   const host=document.getElementById("runsCard");
+  if(plan.breakMode){
+    host.innerHTML=`<h2>送迎便</h2><p class="help">${esc(plan.term?.label||"長期休暇")}のため学校がなく、<b>送迎便はありません</b>。登所・降所とも保護者送迎です（開所 ${fmt(plan.open)}〜${fmt(plan.close)}）。</p>`;
+    return;
+  }
   const unCards=(plan.unassigned||[]).map(u=>`<div class="run" style="border-left-color:var(--alert)">
     <h3>❗ 未割当：${esc(schoolOf(u.job.school).short)}（${esc(u.kids.map(kanaOf).join("・"))}）</h3>
     <div class="stops"><span class="stop" style="background:var(--alert-soft);color:var(--alert)">${esc(schoolOf(u.job.school).short)}<small>${fmt(u.job.time)}下校</small></span></div>
@@ -1865,6 +1963,9 @@ function renderRuns(plan){
 }
 
 function renderTimeline(plan){
+  // 長期休暇（9:00開所など）は表示範囲を前に広げる
+  DAY_START=plan.breakMode?Math.min(750,(plan.open??780)-30):750;
+  DAY_END=plan.breakMode?Math.max(1155,(plan.close??1140)+15):1155;
   const host=document.getElementById("tlHost");
   evIndex={};
   const members=plan.staffOnDuty.filter(s=>s.role!=="taxi"||plan.runs.some(r=>r.driver.id===s.id));
@@ -2056,6 +2157,7 @@ function renderDismissal(){
     logChange("下校時刻",`${schoolOf(sc).short} ${DOWS[dow]}曜 ${g}年 → ${el.value||"（空）"}`);renderPlan();
   });
   sel.onchange=renderDismissal;
+  renderTerms();
   renderMeet();
   renderVenues();
   renderSpecials();
@@ -2073,6 +2175,52 @@ function renderMeet(){
     sc.meet=el.value;save();
     logChange("待ち合わせ場所",`${sc.short}：「${el.value||"（空）"}」に変更`);renderPlan();
   });
+}
+function renderTerms(){
+  const t=document.getElementById("termTable"); if(!t)return;
+  state.terms??=[];
+  const kinds={break:"長期休暇（開所）",closed:"休所（開所しない）"};
+  const list=[...state.terms].sort((a,b)=>(a.from||"").localeCompare(b.from||""));
+  t.innerHTML=`<thead><tr><th>開始</th><th>終了</th><th>区分</th><th>名称</th><th>開所〜終了</th><th>対象の平日</th><th></th></tr></thead><tbody>${
+    list.map(x=>{
+      const days=termDays(x);
+      return `<tr data-id="${x.id}">
+      <td><input type="date" value="${esc(x.from||"")}" data-f="from"></td>
+      <td><input type="date" value="${esc(x.to||"")}" data-f="to"></td>
+      <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===x.kind?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td><input type="text" value="${esc(x.label||"")}" data-f="label" style="width:9em" placeholder="例：冬休み"></td>
+      <td>${x.kind==="closed"?'<span class="ro na">–</span>'
+        :`<input type="time" value="${esc(x.open||BREAK_OPEN)}" data-f="open"> 〜 <input type="time" value="${esc(x.close||BREAK_CLOSE)}" data-f="close">`}</td>
+      <td style="font-size:12px;color:var(--muted)">${days.length?esc(days.map(d=>`${mdOf(d)}(${DOWS[dowOf(d)]})`).join("・")):"（なし）"}</td>
+      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
+    ||'<tr><td colspan="7" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const x=state.terms.find(v=>v.id===tr.dataset.id); if(!x)return;
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+      x[el.dataset.f]=el.value; save();
+      logChange("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from||"?"}〜${x.to||"?"}／${x.kind==="closed"?"休所":"長期休暇"}）を編集`);
+      renderTerms(); renderPlan(); renderShift();
+    });
+    tr.querySelector("[data-del]").onclick=()=>{
+      if(!confirm(`「${x.label||"（名称なし）"}」（${x.from}〜${x.to}）を削除しますか？`))return;
+      state.terms=state.terms.filter(v=>v.id!==x.id); save();
+      logChange("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from}〜${x.to}）を削除`);
+      renderTerms(); renderPlan(); renderShift();
+    };
+  });
+  lockMasterTables();
+}
+// 期間に含まれる平日のうち、実際にその区分が効く日（休所が重なる日は長期休暇から除く）
+function termDays(x){
+  if(!x.from||!x.to||x.to<x.from) return [];
+  const out=[]; const d=new Date(x.from+"T12:00:00"), end=new Date(x.to+"T12:00:00");
+  let guard=0;
+  while(d<=end&&guard++<400){
+    const ds=dstr(d), w=d.getDay();
+    if(w!==0&&w!==6&&termOn(ds)===x) out.push(ds);
+    d.setDate(d.getDate()+1);
+  }
+  return out;
 }
 function renderSpecials(){
   const t=document.getElementById("spTable");
@@ -2210,12 +2358,27 @@ function shiftState(ds,s){
   if((d.staffExtra||[]).includes(s.id)) return {k:"extra",label:"臨時",wt};
   return {k:"none",label:"–",wt:{}};
 }
-const onDutyCount=ds=>shiftStaff().filter(s=>["on","extra"].includes(shiftState(ds,s).k)).length;
+const onDutyCrew=ds=>shiftStaff().filter(s=>["on","extra"].includes(shiftState(ds,s).k));
+const onDutyCount=ds=>onDutyCrew(ds).length;
+// その日いちばん人が少ない時間帯の人数（勤務時間を変えている人はその時間だけ数える）
+function onDutyMin(ds){
+  const t=termOn(ds);
+  const open=t&&t.kind==="break"?(toMin(t.open||BREAK_OPEN)??540):780;
+  const close=t&&t.kind==="break"?(toMin(t.close||BREAK_CLOSE)??1140):1140;
+  return staffMin(onDutyCrew(ds),state.days?.[ds]||{},open,close);
+}
 function renderShift(){
   const t=document.getElementById("shiftTable"); if(!t)return;
   const dates=shiftDates(), staff=shiftStaff(), today=todayStr();
   const sep=i=>i===5?" wksep":"";
-  const th=dates.map((ds,i)=>`<th class="${ds===today?"today":""}${sep(i)}">${mdOf(ds)}<br><small>${DOWS[dowOf(ds)]}</small></th>`).join("");
+  const tm=ds=>termOn(ds);
+  const th=dates.map((ds,i)=>{
+    const t=tm(ds);
+    const mark=!t?"":t.kind==="closed"
+      ? `<br><small class="thclosed">休所</small>`
+      : `<br><small class="thbreak">${esc(t.open||BREAK_OPEN)}〜</small>`;
+    return `<th class="${ds===today?"today":""}${sep(i)}" title="${t?esc((t.label||"")+(t.kind==="closed"?"（休所）":`（開所 ${t.open||BREAK_OPEN}〜${t.close||BREAK_CLOSE}・送迎なし）`)):""}">${mdOf(ds)}<br><small>${DOWS[dowOf(ds)]}</small>${mark}</th>`;
+  }).join("");
   const regular=staff.filter(s=>!isStandby(s));
   const standbyAll=staff.filter(isStandby);
   // 応援メンバーは「この2週間に予定が入っている人」だけ出す（全員表示にすれば全員）
@@ -2224,22 +2387,34 @@ function renderShift(){
   const row=s=>`<tr${isStandby(s)?' class="shsb"':''}><th style="text-align:left">${esc(s.name)}${
       isStandby(s)?'<span class="chip warn" style="font-size:10px;margin-left:4px">応援</span>':""}</th>${
     dates.map((ds,i)=>{
+      const t=tm(ds);
+      if(t&&t.kind==="closed") return `<td class="shclosed${sep(i)}"><span class="sh sh-none">休所</span></td>`;
       const st=shiftState(ds,s);
-      const wt=(st.wt.from||st.wt.to)?`<span class="shwt">${esc(st.wt.from||"13:00")}〜${esc(st.wt.to||"19:00")}</span>`:"";
+      const dft=t?[t.open||BREAK_OPEN,t.close||BREAK_CLOSE]:["13:00","19:00"];
+      const wt=(st.wt.from||st.wt.to)?`<span class="shwt">${esc(st.wt.from||dft[0])}〜${esc(st.wt.to||dft[1])}</span>`:"";
       return `<td class="shcell${sep(i)}" data-sh="${s.id}|${ds}" title="クリックで切り替え"><span class="sh sh-${st.k}">${st.label}</span>${wt}</td>`;
     }).join("")}</tr>`;
   const body=regular.map(row).join("")+standby.map(row).join("");
-  const sum=`<tr class="shsum"><th style="text-align:left">出勤人数</th>${
-    dates.map((ds,i)=>{const n=onDutyCount(ds);
-      return `<td class="${n<SET.minStaff?"short":""}${sep(i)}" title="${n<SET.minStaff?`${SET.minStaff}名必要です`:""}">${n}名</td>`}).join("")}</tr>`;
+  const sum=`<tr class="shsum"><th style="text-align:left">同時に居る人数<br><small style="font-weight:500">（最少／延べ）</small></th>${
+    dates.map((ds,i)=>{
+      const t=tm(ds);
+      if(t&&t.kind==="closed") return `<td class="shclosed${sep(i)}">–</td>`;
+      const n=onDutyMin(ds), tot=onDutyCount(ds);
+      return `<td class="${n<SET.minStaff?"short":""}${sep(i)}" title="${
+        n<SET.minStaff?`${SET.minStaff}名必要です。`:""}最も人が少ない時間帯で${n}名（この日の出勤は延べ${tot}名）">${n}名${
+        tot!==n?`<small style="font-weight:500;color:var(--muted)">／${tot}</small>`:""}</td>`}).join("")}</tr>`;
   t.innerHTML=`<thead><tr><th style="text-align:left">メンバー</th>${th}</tr></thead><tbody>${body}${sum}</tbody>`;
-  const short=dates.filter(ds=>onDutyCount(ds)<SET.minStaff);
+  const short=dates.filter(ds=>{const t=tm(ds);return !(t&&t.kind==="closed")&&onDutyMin(ds)<SET.minStaff});
   const note=document.getElementById("shShort");
   if(note) note.innerHTML=short.length
-    ? `⚠ ${SET.minStaff}名に満たない日：`+short.map(ds=>`${mdOf(ds)}（${DOWS[dowOf(ds)]}）${onDutyCount(ds)}名`).join("、")
+    ? `⚠ ${SET.minStaff}名に満たない時間帯がある日：`+short.map(ds=>`${mdOf(ds)}（${DOWS[dowOf(ds)]}）最少${onDutyMin(ds)}名`).join("、")
       +`　→ 出られる人のセルをクリックして「臨時出勤」にしてください${
         standbyAll.length&&!ui.shiftShowAll?`（応援メンバー${standbyAll.length}名は「応援も表示」で出せます）`:""}`
-    : `<span style="color:var(--accent)">✅ この2週間はすべての日で${SET.minStaff}名以上そろっています</span>`;
+    : `<span style="color:var(--accent)">✅ この2週間はどの時間帯も${SET.minStaff}名以上そろっています</span>`;
+  const brk=[...new Set(dates.map(ds=>tm(ds)).filter(t=>t&&t.kind==="break"))];
+  if(note&&brk.length) note.innerHTML+=`<br><span style="color:var(--warn)">🏫 ${brk.map(t=>
+    `${esc(t.label||"長期休暇")}（開所 ${esc(t.open||BREAK_OPEN)}〜${esc(t.close||BREAK_CLOSE)}・送迎なし）`).join("、")
+    }：勤務時間が長くなるので、シフトの入れ替えが必要か確認してください</span>`;
   const sb=document.getElementById("shAll");
   if(sb){
     sb.hidden=!standbyAll.length;
@@ -2350,6 +2525,13 @@ function shiftNav(delta){
 document.getElementById("shPrev").onclick=()=>shiftNav(-2);
 document.getElementById("shNext").onclick=()=>shiftNav(2);
 document.getElementById("shToday").onclick=()=>shiftNav(null);
+document.getElementById("shJump").onchange=e=>{
+  if(!e.target.value)return;
+  const a=mondayOf(todayStr()), b=mondayOf(e.target.value);
+  ui.shiftOffset=Math.round((b-a)/(7*86400000));
+  try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(err){}
+  renderShift();
+};
 document.getElementById("shAll").onclick=()=>{
   ui.shiftShowAll=!ui.shiftShowAll;
   try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
@@ -2394,6 +2576,13 @@ document.getElementById("shAdd").onclick=()=>{
   document.getElementById("shFrom").value="";document.getElementById("shTo").value="";
   renderShift(); renderPlan();
 };
+document.getElementById("addTerm").onclick=()=>{
+  state.terms??=[];
+  state.terms.push({id:uid(),from:"",to:"",kind:"break",label:"",open:BREAK_OPEN,close:BREAK_CLOSE});
+  save(); renderTerms();
+  const rows=document.querySelectorAll('#termTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="from"]')?.focus();
+};
 document.getElementById("addSp").onclick=()=>{
   state.specialTimes.push({id:uid(),date:currentDate,school:state.schools[0].id,grades:[],time:"",memo:""});
   save();renderSpecials();
@@ -2410,7 +2599,10 @@ function buildSlackText(){
   const plan=planDay(ds);
   if(plan.weekend)return "（土日はお休みです）";
   const d=new Date(ds+"T12:00:00");
-  const head=`${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）運行計画（こども${plan.attendees.length}名）`;
+  if(plan.closed)return `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）は休所日です（${plan.term?.label||"休所"}）。`;
+  const head=plan.breakMode
+    ? `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）${plan.term?.label||"長期休暇"}・開所${fmt(plan.open)}〜${fmt(plan.close)}（こども${plan.attendees.length}名／送迎なし・保護者送迎）`
+    : `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）運行計画（こども${plan.attendees.length}名）`;
   const url=(state.shareUrl||"").trim();
   const urlLine=url?`${url}#d${ds}`:"";
   const mentions=plan.staffOnDuty.filter(s=>s.role!=="taxi").map(s=>s.mention||("@"+s.name)).join(" ");
