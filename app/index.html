@@ -194,6 +194,7 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
 .sh-extra{background:var(--warn-soft);color:var(--warn)}
 .sh-none{color:var(--muted)}
 .shwt{display:block;font-size:10px;font-weight:700;color:var(--warn);margin-top:1px}
+#shiftTable tr.shsb th{color:var(--muted)}
 #shiftTable tr.shsum td{font-weight:900;font-family:"Zen Maru Gothic"}
 #shiftTable tr.shsum td.short{background:var(--alert-soft);color:var(--alert)}
 #shiftTable th.wksep,#shiftTable td.wksep{border-left:3px double var(--muted)}
@@ -330,7 +331,8 @@ body.staging{padding-bottom:110px}
 <section id="tab-staff" hidden>
   <div class="card">
     <h2>運営メンバー・車両</h2>
-    <p class="help">「在館」は拠点で受け入れ・見守り担当。「送迎」は運転担当。第一交通（タクシー）は当日調整でONにした日だけ使われ、<b>1回1校→拠点の運用（巡回なし）・2営業日前までに依頼</b>です。定員は<b>こどもの乗車可能数</b>。「関連こども」＝メンバーのこどもが参加する日は、そのこどもの学校便をこのメンバーが優先担当します（余裕がなければこの限りではありません）。</p>
+    <p class="help">「在館」は拠点で受け入れ・見守り担当。「送迎」は運転担当。第一交通（タクシー）は当日調整でONにした日だけ使われ、<b>1回1校→拠点の運用（巡回なし）・2営業日前までに依頼</b>です。定員は<b>こどもの乗車可能数</b>。「関連こども」＝メンバーのこどもが参加する日は、そのこどもの学校便をこのメンバーが優先担当します（余裕がなければこの限りではありません）。<br>
+    <b>応援（臨時）メンバー</b>を登録するときは、勤務曜日を1つもチェックせずに追加してください。普段の計画には入らず、下の「メンバー予定」で臨時出勤にした日だけ数えます。運転もお願いする人は役割「送迎」・車両・定員を設定してください。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="staffTable"></table></div>
     <button class="btn" id="addStaff" style="margin-top:10px">＋ メンバーを追加</button>
@@ -342,11 +344,13 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>メンバー予定（この日だけの休み・時短・臨時出勤）</h2>
-    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>1日あたり3名</b>を下回る日は赤く表示されます。</p>
+    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>1日あたり3名</b>を下回る日は赤く表示されます。<br>
+    <b>応援（臨時）メンバー</b>＝メンバーマスタで勤務曜日を1つもチェックしていない人。普段は表に出ず、臨時出勤を入れた日だけ行が出ます（「応援も表示」で全員出せます）。</p>
     <div class="noprint" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
       <button class="btn" id="shPrev" style="padding:3px 10px">◀ 前の2週</button>
       <button class="btn" id="shToday" style="padding:3px 10px">今週から</button>
       <button class="btn" id="shNext" style="padding:3px 10px">次の2週 ▶</button>
+      <button class="btn" id="shAll" style="padding:3px 10px" hidden>▸ 応援も表示</button>
       <span class="help" style="margin:0">セルをクリックすると「出勤 ⇄ 休み」／「－ ⇄ 臨時出勤」が切り替わります。</span>
     </div>
     <div class="tblwrap"><table class="grid" id="shiftTable"></table></div>
@@ -1123,8 +1127,9 @@ function planDay(ds){
     const crew=onDuty.filter(s=>s.role!=="taxi");
     if(res.attendees.length&&crew.length<SET.minStaff){
       const cands=state.staff.filter(s=>s.role!=="taxi"&&!crew.some(c=>c.id===s.id)&&!day.staffOff.includes(s.id));
+      const names=cands.slice(0,6).map(s=>s.name).join("・")+(cands.length>6?`ほか${cands.length-6}名`:"");
       warnings.push({lv:"alert",tag:"人員不足",
-        text:`この日の出勤は${crew.length}名です（${SET.minStaff}名必要）。${cands.length?`臨時出勤の候補：${cands.map(s=>s.name).join("・")}。`:""}「メンバー・車両」タブのメンバー予定、または当日調整の臨時出勤から追加してください`});
+        text:`この日の出勤は${crew.length}名です（${SET.minStaff}名必要）。${cands.length?`臨時出勤の候補：${names}。`:""}「メンバー・車両」タブのメンバー予定、または当日調整の臨時出勤から追加してください`});
     }
   }
   // 固定先が当日使えない場合は警告して自動扱いに
@@ -2193,6 +2198,9 @@ function shiftDates(){
   return out;
 }
 const shiftStaff=()=>state.staff.filter(s=>s.role!=="taxi");
+// 勤務曜日が1つも入っていない人は「応援（臨時）メンバー」。
+// 普段の予定表には出さず、臨時出勤を入れた日だけ行が出る（全員表示に切り替え可）。
+const isStandby=s=>s.role!=="taxi"&&!(s.days||[]).length;
 // 予定の読み取りは state.days を直接見る（getDay だと未使用の日まで作ってしまう）
 function shiftState(ds,s){
   const d=state.days?.[ds]||{};
@@ -2208,12 +2216,19 @@ function renderShift(){
   const dates=shiftDates(), staff=shiftStaff(), today=todayStr();
   const sep=i=>i===5?" wksep":"";
   const th=dates.map((ds,i)=>`<th class="${ds===today?"today":""}${sep(i)}">${mdOf(ds)}<br><small>${DOWS[dowOf(ds)]}</small></th>`).join("");
-  const body=staff.map(s=>`<tr><th style="text-align:left">${esc(s.name)}</th>${
+  const regular=staff.filter(s=>!isStandby(s));
+  const standbyAll=staff.filter(isStandby);
+  // 応援メンバーは「この2週間に予定が入っている人」だけ出す（全員表示にすれば全員）
+  const standby=ui.shiftShowAll ? standbyAll
+    : standbyAll.filter(s=>dates.some(ds=>shiftState(ds,s).k!=="none"));
+  const row=s=>`<tr${isStandby(s)?' class="shsb"':''}><th style="text-align:left">${esc(s.name)}${
+      isStandby(s)?'<span class="chip warn" style="font-size:10px;margin-left:4px">応援</span>':""}</th>${
     dates.map((ds,i)=>{
       const st=shiftState(ds,s);
       const wt=(st.wt.from||st.wt.to)?`<span class="shwt">${esc(st.wt.from||"13:00")}〜${esc(st.wt.to||"19:00")}</span>`:"";
       return `<td class="shcell${sep(i)}" data-sh="${s.id}|${ds}" title="クリックで切り替え"><span class="sh sh-${st.k}">${st.label}</span>${wt}</td>`;
-    }).join("")}</tr>`).join("");
+    }).join("")}</tr>`;
+  const body=regular.map(row).join("")+standby.map(row).join("");
   const sum=`<tr class="shsum"><th style="text-align:left">出勤人数</th>${
     dates.map((ds,i)=>{const n=onDutyCount(ds);
       return `<td class="${n<SET.minStaff?"short":""}${sep(i)}" title="${n<SET.minStaff?`${SET.minStaff}名必要です`:""}">${n}名</td>`}).join("")}</tr>`;
@@ -2222,15 +2237,23 @@ function renderShift(){
   const note=document.getElementById("shShort");
   if(note) note.innerHTML=short.length
     ? `⚠ ${SET.minStaff}名に満たない日：`+short.map(ds=>`${mdOf(ds)}（${DOWS[dowOf(ds)]}）${onDutyCount(ds)}名`).join("、")
-      +`　→ 出勤できる人のセルをクリックして「臨時出勤」にしてください`
+      +`　→ 出られる人のセルをクリックして「臨時出勤」にしてください${
+        standbyAll.length&&!ui.shiftShowAll?`（応援メンバー${standbyAll.length}名は「応援も表示」で出せます）`:""}`
     : `<span style="color:var(--accent)">✅ この2週間はすべての日で${SET.minStaff}名以上そろっています</span>`;
+  const sb=document.getElementById("shAll");
+  if(sb){
+    sb.hidden=!standbyAll.length;
+    sb.textContent=ui.shiftShowAll?`▾ 応援も表示（${standbyAll.length}名）`:`▸ 応援も表示（${standbyAll.length}名）`;
+  }
   t.querySelectorAll("[data-sh]").forEach(td=>td.onclick=()=>{
     const [sid,ds]=td.dataset.sh.split("|"); toggleShift(ds,sid);
   });
   const who=document.getElementById("shWho");
   if(who){
     const keep=who.value;
-    who.innerHTML=`<option value="">メンバー…</option>`+staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
+    who.innerHTML=`<option value="">メンバー…</option>`
+      +regular.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")
+      +standbyAll.map(s=>`<option value="${s.id}">${esc(s.name)}（応援）</option>`).join("");
     if(keep&&staff.some(s=>s.id===keep))who.value=keep;
   }
 }
@@ -2327,6 +2350,11 @@ function shiftNav(delta){
 document.getElementById("shPrev").onclick=()=>shiftNav(-2);
 document.getElementById("shNext").onclick=()=>shiftNav(2);
 document.getElementById("shToday").onclick=()=>shiftNav(null);
+document.getElementById("shAll").onclick=()=>{
+  ui.shiftShowAll=!ui.shiftShowAll;
+  try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+  renderShift();
+};
 document.getElementById("shKind").onchange=e=>{
   document.getElementById("shTimeBox").hidden=(e.target.value!=="time");
 };
