@@ -22,9 +22,47 @@ const reqUrl = /^https:\/\//.test(rawReqUrl)
   ? rawReqUrl.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
   : '';
 if (rawReqUrl && !reqUrl) console.warn('WARN: requestFormUrl は https:// で始まる必要があります。ボタンは出力しません:', rawReqUrl);
-const dates = datesCsv.split(',').filter(Boolean);
 const DOWS = ['日','月','火','水','木','金','土'];
 const jd = ds => { const d = new Date(ds + 'T12:00:00'); return `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）`; };
+const dstr = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+// dates に auto を渡すと「直近＋この先」の営業日と、登録済みの長期休暇・休所日を自動で拾う
+const PAST_BD = 5;      // 過去の営業日
+const AHEAD_BD = 30;    // この先の営業日（約6週間）
+const TERM_AHEAD_DAYS = 200; // これより先に始まる長期休暇・休所は含めない
+function autoDates() {
+  const now = new Date(Date.now() + 9 * 3600 * 1000); // 日本時間
+  const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 12));
+  const wd = d => { const w = d.getUTCDay(); return w !== 0 && w !== 6; };
+  const set = new Set();
+  // 過去（今日を含む直近の営業日から遡る）
+  let d = new Date(base), n = 0;
+  while (!wd(d)) d.setUTCDate(d.getUTCDate() + 1);   // 土日なら次の月曜を基準に
+  const anchor = new Date(d);
+  while (n < PAST_BD) { if (wd(d)) { set.add(dstr(d)); n++; } d.setUTCDate(d.getUTCDate() - 1); }
+  // この先
+  d = new Date(anchor); n = 0;
+  while (n < AHEAD_BD) { d.setUTCDate(d.getUTCDate() + 1); if (wd(d)) { set.add(dstr(d)); n++; } }
+  // 予定が入っている先の日（メンバーの休み・臨時出勤・保護者連絡など）も見られるように
+  const limitD = new Date(anchor); limitD.setUTCDate(limitD.getUTCDate() + TERM_AHEAD_DAYS);
+  const inRange = ds => { const c = new Date(ds + 'T12:00:00Z'); return wd(c) && c >= anchor && c <= limitD; };
+  for (const ds of Object.keys((days.state && days.state.days) || {})) if (inRange(ds)) set.add(ds);
+  for (const n2 of (days.state && days.state.parentNotes) || []) if (n2.date && inRange(n2.date)) set.add(n2.date);
+  // 長期休暇・休所の期間（先の予定でも見られるように）
+  const limit = new Date(anchor); limit.setUTCDate(limit.getUTCDate() + TERM_AHEAD_DAYS);
+  for (const t of (masters.state && masters.state.terms) || []) {
+    if (!t.from || !t.to) continue;
+    let c = new Date(t.from + 'T12:00:00Z'); const end = new Date(t.to + 'T12:00:00Z');
+    let guard = 0;
+    while (c <= end && guard++ < 400) {
+      if (wd(c) && c >= anchor && c <= limit) set.add(dstr(c));
+      c.setUTCDate(c.getUTCDate() + 1);
+    }
+  }
+  return [...set].sort();
+}
+const dates = (datesCsv === 'auto') ? autoDates() : datesCsv.split(',').filter(Boolean);
+if (!dates.length) { console.error('対象の日付がありません'); process.exit(1); }
 
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
 const ctx = await b.newContext({ viewport: { width: 1280, height: 1000 } });
@@ -48,8 +86,13 @@ for (const ds of dates) {
 const refs = await p.evaluate(() => buildRefSnapshot());
 await b.close();
 
+const months = [...new Set(sections.map(s => s.ds.slice(0, 7)))].sort();
+const monthLabel = m => `${Number(m.slice(5, 7))}月`;
+const defMonth = months.includes(defaultDate.slice(0, 7)) ? defaultDate.slice(0, 7) : months[0];
+const monthNav = months.map(m =>
+  `<button class="mbtn${m === defMonth ? ' on' : ''}" data-m="${m}">${monthLabel(m)}</button>`).join('');
 const nav = sections.map(s =>
-  `<button class="daybtn" data-d="${s.ds}">${jd(s.ds)}</button>`).join('');
+  `<button class="daybtn" data-d="${s.ds}" data-m="${s.ds.slice(0, 7)}"${s.ds.slice(0, 7) === defMonth ? '' : ' hidden'}>${jd(s.ds)}</button>`).join('');
 const secHtml = sections.map(s =>
   `<section class="dsec" id="d${s.ds}" hidden>${s.body}</section>`).join('\n');
 const topNav = `<button class="topbtn on" data-t="plan">📋 日別の虎の巻</button>`
@@ -66,6 +109,9 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .topbtn:hover{color:var(--ink)}
 .topbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
 .rsec .grid td,.rsec .grid th{white-space:normal}
+.monthnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.mbtn{border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:3px 12px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-size:13px}
+.mbtn.on{background:var(--surface2);color:var(--ink);border-color:var(--muted)}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
 .daybtn{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 14px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-variant-numeric:tabular-nums}
 .daybtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -81,6 +127,7 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="topnav" id="topNav">${topNav}</nav>
 <div id="planWrap">
+<nav class="monthnav" id="monthNav">${monthNav}</nav>
 <nav class="daynav" id="dayNav">${nav}</nav>
 ${secHtml}
 </div>
@@ -90,10 +137,15 @@ ${refHtml}
 <script>
 (function(){
   var def=${JSON.stringify('d' + defaultDate)};
+  function showMonth(m){
+    document.querySelectorAll('.mbtn').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
+    document.querySelectorAll('.daybtn').forEach(function(b){b.hidden=(b.dataset.m!==m)});
+  }
   function show(id){
     var found=false;
     document.querySelectorAll('.dsec').forEach(function(s){var on=s.id===id;s.hidden=!on;if(on)found=true});
     document.querySelectorAll('.daybtn').forEach(function(b){b.classList.toggle('on','d'+b.dataset.d===id)});
+    if(found)showMonth(id.slice(1,8));
     return found;
   }
   function showTop(t){
@@ -113,6 +165,10 @@ ${refHtml}
   document.getElementById('dayNav').addEventListener('click',function(e){
     var b=e.target.closest('.daybtn'); if(!b)return;
     location.hash='d'+b.dataset.d;
+  });
+  document.getElementById('monthNav').addEventListener('click',function(e){
+    var b=e.target.closest('.mbtn'); if(!b)return;
+    showMonth(b.dataset.m);
   });
   document.getElementById('topNav').addEventListener('click',function(e){
     var b=e.target.closest('.topbtn'); if(!b)return;

@@ -355,7 +355,7 @@ body.staging{padding-bottom:110px}
   <div class="card">
     <h2>メンバー予定（この日だけの休み・時短・臨時出勤）</h2>
     <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>3名</b>を下回る<b>時間帯</b>がある日は赤く表示されます（勤務時間を変えている人はその時間だけ数えます。数字は「最少／延べ」）。<br>
-    <b>応援（臨時）メンバー</b>＝メンバーマスタで勤務曜日を1つもチェックしていない人。普段は表に出ず、臨時出勤を入れた日だけ行が出ます（「応援も表示」で全員出せます）。</p>
+    <b>応援（臨時）メンバー</b>＝メンバーマスタで勤務曜日を1つもチェックしていない人。普段は表に出ず、臨時出勤を入れた日だけ行が出ます<span class="editnote">（「応援も表示」で全員出せます）</span>。</p>
     <div class="noprint" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
       <button class="btn" id="shPrev" style="padding:3px 10px">◀ 前の2週</button>
       <button class="btn" id="shToday" style="padding:3px 10px">今週から</button>
@@ -2408,8 +2408,8 @@ function renderShift(){
   const note=document.getElementById("shShort");
   if(note) note.innerHTML=short.length
     ? `⚠ ${SET.minStaff}名に満たない時間帯がある日：`+short.map(ds=>`${mdOf(ds)}（${DOWS[dowOf(ds)]}）最少${onDutyMin(ds)}名`).join("、")
-      +`　→ 出られる人のセルをクリックして「臨時出勤」にしてください${
-        standbyAll.length&&!ui.shiftShowAll?`（応援メンバー${standbyAll.length}名は「応援も表示」で出せます）`:""}`
+      +`<span class="editnote">　→ 出られる人のセルをクリックして「臨時出勤」にしてください${
+        standbyAll.length&&!ui.shiftShowAll?`（応援メンバー${standbyAll.length}名は「応援も表示」で出せます）`:""}</span>`
     : `<span style="color:var(--accent)">✅ この2週間はどの時間帯も${SET.minStaff}名以上そろっています</span>`;
   const brk=[...new Set(dates.map(ds=>tm(ds)).filter(t=>t&&t.kind==="break"))];
   if(note&&brk.length) note.innerHTML+=`<br><span style="color:var(--warn)">🏫 ${brk.map(t=>
@@ -2650,8 +2650,14 @@ function buildSnapshotParts(){
 /* ===== 配布ページ（閲覧用）：マスタ各タブを「読むだけ」の形に変換する =====
    入力欄は値の文字に、ボタンや編集の注意書きは削除。
    参加曜日・学年のピルだけは見た目を保つため、無効化した入力のまま残す。 */
-function staticize(node){
+function staticize(node,shiftBlocks){
   const c=node.cloneNode(true);
+  if(shiftBlocks!==undefined){
+    // 配布ページのメンバー予定は、今週から先の期間をまとめて（読むだけで）載せる
+    const tbl=c.querySelector("#shiftTable"), wrap=tbl&&tbl.closest(".tblwrap");
+    if(wrap){const box=document.createElement("div");box.innerHTML=shiftBlocks;wrap.parentNode.replaceChild(box,wrap)}
+    const note=c.querySelector("#shShort"); if(note)note.remove();
+  }
   c.removeAttribute("hidden");
   c.querySelectorAll(".noprint,.mroNote,.editnote,.addrow").forEach(n=>n.remove());
   c.querySelectorAll("button").forEach(n=>n.remove());
@@ -2684,6 +2690,30 @@ function staticize(node){
   });
   return c;
 }
+/* 配布ページ用：メンバー予定を「今週から先」ぶんまとめて静的HTMLにする。
+   最初の2期間（4週間）は必ず出し、それ以降は予定の登録や長期休暇がある期間だけ出す。 */
+function buildShiftBlocks(){
+  const keep=ui.shiftOffset||0, MAX=13; // 最大26週
+  const out=[]; let skipped=0;
+  for(let k=0;k<MAX;k++){
+    ui.shiftOffset=k*2;
+    const dates=shiftDates();
+    const hasSomething=dates.some(ds=>{
+      const d=state.days?.[ds]||{};
+      return termOn(ds)||(d.staffOff||[]).length||(d.staffExtra||[]).length
+        ||Object.keys(d.staffTimes||{}).length||onDutyMin(ds)<SET.minStaff;
+    });
+    if(k>=2&&!hasSomething){skipped++;continue}
+    renderShift();
+    const tbl=staticize(document.getElementById("shiftTable"));
+    const note=document.getElementById("shShort");
+    out.push(`<h3 style="margin:16px 0 6px">${mdOf(dates[0])}（${DOWS[dowOf(dates[0])]}）〜${mdOf(dates[9])}（${DOWS[dowOf(dates[9])]}）</h3>`
+      +`<div class="tblwrap">${tbl.outerHTML}</div>`
+      +(note&&note.innerHTML?`<p style="font-size:12.5px;font-weight:700;margin:6px 0 0">${note.innerHTML}</p>`:""));
+  }
+  ui.shiftOffset=keep; renderShift();
+  return out.join("")+(skipped?`<p class="help" style="margin-top:12px">※ 予定の登録がない期間（${skipped}期間）は省略しています。</p>`:"");
+}
 function buildRefSnapshot(){
   const sel=document.getElementById("schoolSel");
   const prevSchool=sel.value;
@@ -2710,7 +2740,7 @@ function buildRefSnapshot(){
     +`${per}</div>${card("meetTable")}${card("spTable")}${card("venueTable")}`});
 
   renderStaff();
-  secs.push({id:"staff",label:"🧑‍🤝‍🧑 メンバー・車両",html:staticize(document.getElementById("tab-staff")).innerHTML});
+  secs.push({id:"staff",label:"🧑‍🤝‍🧑 メンバー・車両",html:staticize(document.getElementById("tab-staff"),buildShiftBlocks()).innerHTML});
   renderTravel();
   secs.push({id:"travel",label:"🗺 移動時間",html:staticize(document.getElementById("tab-travel")).innerHTML});
   secs.push({id:"algo",label:"🧭 アルゴリズム",html:staticize(document.getElementById("tab-algo")).innerHTML});
