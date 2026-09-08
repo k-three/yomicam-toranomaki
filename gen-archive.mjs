@@ -86,13 +86,13 @@ for (const ds of dates) {
 const refs = await p.evaluate(() => buildRefSnapshot());
 await b.close();
 
+// 日付はプルダウン（月ごとにまとめる）＋前後ボタン。並べるとごちゃつくため
 const months = [...new Set(sections.map(s => s.ds.slice(0, 7)))].sort();
-const monthLabel = m => `${Number(m.slice(5, 7))}月`;
-const defMonth = months.includes(defaultDate.slice(0, 7)) ? defaultDate.slice(0, 7) : months[0];
-const monthNav = months.map(m =>
-  `<button class="mbtn${m === defMonth ? ' on' : ''}" data-m="${m}">${monthLabel(m)}</button>`).join('');
-const nav = sections.map(s =>
-  `<button class="daybtn" data-d="${s.ds}" data-m="${s.ds.slice(0, 7)}"${s.ds.slice(0, 7) === defMonth ? '' : ' hidden'}>${jd(s.ds)}</button>`).join('');
+const nav = months.map(m =>
+  `<optgroup label="${Number(m.slice(0, 4))}年${Number(m.slice(5, 7))}月">`
+  + sections.filter(s => s.ds.slice(0, 7) === m)
+      .map(s => `<option value="${s.ds}"${s.ds === defaultDate ? ' selected' : ''}>${jd(s.ds)}</option>`).join('')
+  + `</optgroup>`).join('');
 const secHtml = sections.map(s =>
   `<section class="dsec" id="d${s.ds}" hidden>${s.body}</section>`).join('\n');
 const topNav = `<button class="topbtn on" data-t="plan">📋 日別の虎の巻</button>`
@@ -109,17 +109,15 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .topbtn:hover{color:var(--ink)}
 .topbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-soft)}
 .rsec .grid td,.rsec .grid th{white-space:normal}
-.monthnav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px;align-items:center}
-.vinput{border:1px solid var(--line);border-radius:8px;padding:3px 6px;background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px}
+.vinput{border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.vsel{font-weight:700;font-family:"Zen Maru Gothic";font-size:14px;padding:5px 10px}
 .vbtn{cursor:pointer;user-select:none;display:inline-block}
-.vnav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 4px}
+.vnav{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 6px}
 .daymsg{color:var(--alert);font-size:12px;font-weight:700}
 .shnote{font-size:12.5px;font-weight:700;margin:6px 0 0}
 .mbtn{border:1px solid var(--line);background:none;color:var(--muted);border-radius:8px;padding:3px 12px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-size:13px}
 .mbtn.on{background:var(--surface2);color:var(--ink);border-color:var(--muted)}
-.daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
-.daybtn{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 14px;cursor:pointer;font-weight:700;font-family:"Zen Maru Gothic";font-variant-numeric:tabular-nums}
-.daybtn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;align-items:center}
 .snapnote{color:var(--muted);font-size:11.5px;text-align:center;margin:20px 0}
 .ev{cursor:default}
 .reqbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--muted);text-decoration:none;font-weight:700;font-size:12px;border-radius:99px;padding:4px 12px;white-space:nowrap;line-height:1.5}
@@ -132,10 +130,13 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
 <nav class="topnav" id="topNav">${topNav}</nav>
 <div id="planWrap">
-<nav class="monthnav" id="monthNav">${monthNav}
-  <label class="help" style="margin:0 0 0 6px">この日を開く <input type="date" id="dayPick" class="vinput" min="${sections[0].ds}" max="${sections[sections.length-1].ds}"></label>
-  <span id="dayMsg" class="daymsg" hidden></span></nav>
-<nav class="daynav" id="dayNav">${nav}</nav>
+<nav class="daynav" id="dayNav">
+  <span class="btn vbtn" id="dayPrev">◀ 前の日</span>
+  <select id="daySel" class="vinput vsel">${nav}</select>
+  <span class="btn vbtn" id="dayNext">次の日 ▶</span>
+  <label class="help" style="margin:0 0 0 6px">カレンダーで <input type="date" id="dayPick" class="vinput" min="${sections[0].ds}" max="${sections[sections.length-1].ds}"></label>
+  <span id="dayMsg" class="daymsg" hidden></span>
+</nav>
 ${secHtml}
 </div>
 ${refHtml}
@@ -144,15 +145,12 @@ ${refHtml}
 <script>
 (function(){
   var def=${JSON.stringify('d' + defaultDate)};
-  function showMonth(m){
-    document.querySelectorAll('.mbtn').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)});
-    document.querySelectorAll('.daybtn').forEach(function(b){b.hidden=(b.dataset.m!==m)});
-  }
+  var sel=document.getElementById('daySel');
+  var all=[].slice.call(sel.options).map(function(o){return o.value});
   function show(id){
     var found=false;
     document.querySelectorAll('.dsec').forEach(function(s){var on=s.id===id;s.hidden=!on;if(on)found=true});
-    document.querySelectorAll('.daybtn').forEach(function(b){b.classList.toggle('on','d'+b.dataset.d===id)});
-    if(found)showMonth(id.slice(1,8));
+    if(found)sel.value=id.slice(1);
     return found;
   }
   function showTop(t){
@@ -169,14 +167,13 @@ ${refHtml}
     else { showTop('plan'); if(!w||!show(w)) show(def); }
   }
   route();
-  document.getElementById('dayNav').addEventListener('click',function(e){
-    var b=e.target.closest('.daybtn'); if(!b)return;
-    location.hash='d'+b.dataset.d;
-  });
-  document.getElementById('monthNav').addEventListener('click',function(e){
-    var b=e.target.closest('.mbtn'); if(!b)return;
-    showMonth(b.dataset.m);
-  });
+  sel.addEventListener('change',function(){location.hash='d'+sel.value});
+  function step(n){
+    var i=all.indexOf(sel.value)+n;
+    if(i>=0&&i<all.length)location.hash='d'+all[i];
+  }
+  document.getElementById('dayPrev').addEventListener('click',function(){step(-1)});
+  document.getElementById('dayNext').addEventListener('click',function(){step(1)});
   document.getElementById('topNav').addEventListener('click',function(e){
     var b=e.target.closest('.topbtn'); if(!b)return;
     if(b.dataset.t==='plan'){
@@ -190,7 +187,7 @@ ${refHtml}
   var pick=document.getElementById('dayPick'), msg=document.getElementById('dayMsg');
   if(pick)pick.addEventListener('change',function(){
     var v=this.value; msg.hidden=true; if(!v)return;
-    if(document.getElementById('d'+v)){showTop('plan');location.hash='d'+v;route()}
+    if(document.getElementById('d'+v)){showTop('plan');location.hash='d'+v;route();}
     else{msg.textContent='その日は収録されていません（前後の営業日を選んでください）';msg.hidden=false}
   });
   // メンバー予定：2週間ごとの切り替え
@@ -203,24 +200,17 @@ ${refHtml}
       blks.forEach(function(b,j){b.hidden=(j!==i)});
     }
     showBlk(cur);
+    var msel=document.getElementById('shbSel');
+    function showBlk2(i){showBlk(i); if(msel)msel.value=blks[cur].dataset.off}
+    showBlk2(cur);
     document.querySelectorAll('[data-shnav]').forEach(function(b){
       b.addEventListener('click',function(){
-        var k=b.dataset.shnav;
-        showBlk(k==='prev'?cur-1:k==='next'?cur+1:blks.findIndex(function(x){return x.dataset.off==='0'}));
+        showBlk2(b.dataset.shnav==='prev'?cur-1:cur+1);
       });
     });
-    var ab=document.getElementById('shbAll'), allOn=false;
-    if(ab)ab.addEventListener('click',function(){
-      allOn=!allOn;
-      document.querySelectorAll('.shblk tr.sbq').forEach(function(tr){tr.hidden=!allOn});
-      ab.textContent=(allOn?'▾ ':'▸ ')+ab.dataset.base;
-    });
-    var jp=document.getElementById('shbJump');
-    if(jp)jp.addEventListener('change',function(){
-      var v=this.value; if(!v)return;
-      for(var i=0;i<blks.length;i++)
-        if(v>=blks[i].dataset.from&&v<=blks[i].dataset.to){showBlk(i);return}
-      showBlk(v<blks[0].dataset.from?0:blks.length-1);
+    if(msel)msel.addEventListener('change',function(){
+      var i=blks.findIndex(function(x){return x.dataset.off===msel.value});
+      if(i>=0)showBlk2(i);
     });
   }
 })();

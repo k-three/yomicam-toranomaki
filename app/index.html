@@ -185,10 +185,11 @@ body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable butt
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
 /* メンバー予定表（シフト） */
-#shiftTable th,#shiftTable td{text-align:center;white-space:nowrap}
+#shiftTable th,#shiftTable td{text-align:center;white-space:nowrap;padding:3px 4px;font-size:12px}
+#shiftTable th:first-child,#shiftTable td:first-child{text-align:left;padding:3px 8px}
 #shiftTable td.shcell{cursor:pointer;padding:3px 4px;user-select:none}
 #shiftTable td.shcell:hover{background:var(--surface2)}
-.sh{display:block;border-radius:7px;padding:2px 6px;font-size:12px;font-weight:700;line-height:1.5}
+.sh{display:block;border-radius:6px;padding:1px 4px;font-size:11.5px;font-weight:700;line-height:1.45}
 .sh-on{background:var(--accent-soft);color:var(--accent)}
 .sh-off{background:var(--alert-soft);color:var(--alert)}
 .sh-extra{background:var(--warn-soft);color:var(--warn)}
@@ -354,14 +355,14 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>メンバー予定（この日だけの休み・時短・臨時出勤）</h2>
-    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>3名</b>を下回る<b>時間帯</b>がある日は赤く表示されます（勤務時間を変えている人はその時間だけ数えます。数字は「最少／延べ」）。<br>
+    <p class="help">毎週決まった勤務曜日・不在時間帯は上の「運営メンバー・車両」で設定します。ここは<b>特定の日だけ</b>の予定です。「虎の巻」タブの当日調整と同じデータなので、どちらで変えても同じように反映されます。<b>3名</b>を下回る<b>時間帯</b>がある日は赤く表示されます（勤務時間を変えている人はその時間だけ数えます。数字は「最少／延べ」）。表は月単位です。<br>
     <b>応援（臨時）メンバー</b>＝メンバーマスタで勤務曜日を1つもチェックしていない人。普段は表に出ず、臨時出勤を入れた日だけ行が出ます<span class="editnote">（「応援も表示」で全員出せます）</span>。</p>
     <div class="noprint" style="display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-      <button class="btn" id="shPrev" style="padding:3px 10px">◀ 前の2週</button>
-      <button class="btn" id="shToday" style="padding:3px 10px">今週から</button>
-      <button class="btn" id="shNext" style="padding:3px 10px">次の2週 ▶</button>
+      <button class="btn" id="shPrev" style="padding:3px 10px">◀ 前の月</button>
+      <button class="btn" id="shToday" style="padding:3px 10px">今月</button>
+      <button class="btn" id="shNext" style="padding:3px 10px">次の月 ▶</button>
       <button class="btn" id="shAll" style="padding:3px 10px" hidden>▸ 応援も表示</button>
-      <label class="help" style="margin:0">この日の週へ <input type="date" id="shJump" style="padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"></label>
+      <label class="help" style="margin:0">この日の月へ <input type="date" id="shJump" style="padding:3px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"></label>
       <span class="help" style="margin:0">セルをクリックすると「出勤 ⇄ 休み」／「－ ⇄ 臨時出勤」が切り替わります。</span>
     </div>
     <div class="tblwrap"><table class="grid" id="shiftTable"></table></div>
@@ -2330,21 +2331,24 @@ function renderStaff(){
 const dstr=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const dowOf=ds=>new Date(ds+"T12:00:00").getDay();
 const mdOf=ds=>{const d=new Date(ds+"T12:00:00");return `${d.getMonth()+1}/${d.getDate()}`};
-function mondayOf(ds){
-  // 週の月曜。土日は「次の月曜」を返す（運行がある週に合わせる）
-  const d=new Date(ds+"T12:00:00"), w=d.getDay();
-  d.setDate(d.getDate()+(w===0?1:w===6?2:1-w));
-  return d;
+// 予定表は月単位。ui.shiftMonth は今月からの月数（-1=先月、+1=来月）
+function shiftMonth(){
+  const t=new Date(todayStr()+"T12:00:00");
+  return new Date(t.getFullYear(),t.getMonth()+(ui.shiftMonth||0),1,12);
 }
+const monthLabel=m=>`${m.getFullYear()}年${m.getMonth()+1}月`;
 function shiftDates(){
-  const base=mondayOf(todayStr());
-  base.setDate(base.getDate()+(ui.shiftOffset||0)*7);
-  const out=[];
-  for(let w=0;w<2;w++)for(let i=0;i<5;i++){
-    const d=new Date(base); d.setDate(base.getDate()+w*7+i); out.push(dstr(d));
+  const m=shiftMonth(), out=[], d=new Date(m);
+  while(d.getMonth()===m.getMonth()){
+    const w=d.getDay(); if(w!==0&&w!==6) out.push(dstr(d));
+    d.setDate(d.getDate()+1);
   }
   return out;
 }
+const monthDiff=ds=>{
+  const t=new Date(todayStr()+"T12:00:00"), d=new Date(ds+"T12:00:00");
+  return (d.getFullYear()-t.getFullYear())*12+(d.getMonth()-t.getMonth());
+};
 const shiftStaff=()=>state.staff.filter(s=>s.role!=="taxi");
 // 勤務曜日が1つも入っていない人は「応援（臨時）メンバー」。
 // 普段の予定表には出さず、臨時出勤を入れた日だけ行が出る（全員表示に切り替え可）。
@@ -2370,7 +2374,7 @@ function onDutyMin(ds){
 function renderShift(){
   const t=document.getElementById("shiftTable"); if(!t)return;
   const dates=shiftDates(), staff=shiftStaff(), today=todayStr();
-  const sep=i=>i===5?" wksep":"";
+  const sep=i=>(i>0&&dowOf(dates[i])===1)?" wksep":"";
   const tm=ds=>termOn(ds);
   const th=dates.map((ds,i)=>{
     const t=tm(ds);
@@ -2403,14 +2407,14 @@ function renderShift(){
       return `<td class="${n<SET.minStaff?"short":""}${sep(i)}" title="${
         n<SET.minStaff?`${SET.minStaff}名必要です。`:""}最も人が少ない時間帯で${n}名（この日の出勤は延べ${tot}名）">${n}名${
         tot!==n?`<small style="font-weight:500;color:var(--muted)">／${tot}</small>`:""}</td>`}).join("")}</tr>`;
-  t.innerHTML=`<thead><tr><th style="text-align:left">メンバー</th>${th}</tr></thead><tbody>${body}${sum}</tbody>`;
+  t.innerHTML=`<thead><tr><th style="text-align:left">${esc(monthLabel(shiftMonth()))}</th>${th}</tr></thead><tbody>${body}${sum}</tbody>`;
   const short=dates.filter(ds=>{const t=tm(ds);return !(t&&t.kind==="closed")&&onDutyMin(ds)<SET.minStaff});
   const note=document.getElementById("shShort");
   if(note) note.innerHTML=short.length
     ? `⚠ ${SET.minStaff}名に満たない時間帯がある日：`+short.map(ds=>`${mdOf(ds)}（${DOWS[dowOf(ds)]}）最少${onDutyMin(ds)}名`).join("、")
       +`<span class="editnote">　→ 出られる人のセルをクリックして「臨時出勤」にしてください${
         standbyAll.length&&!ui.shiftShowAll?`（応援メンバー${standbyAll.length}名は「応援も表示」で出せます）`:""}</span>`
-    : `<span style="color:var(--accent)">✅ この2週間はどの時間帯も${SET.minStaff}名以上そろっています</span>`;
+    : `<span style="color:var(--accent)">✅ ${monthLabel(shiftMonth())}はどの時間帯も${SET.minStaff}名以上そろっています</span>`;
   const brk=[...new Set(dates.map(ds=>tm(ds)).filter(t=>t&&t.kind==="break"))];
   if(note&&brk.length) note.innerHTML+=`<br><span style="color:var(--warn)">🏫 ${brk.map(t=>
     `${esc(t.label||"長期休暇")}（開所 ${esc(t.open||BREAK_OPEN)}〜${esc(t.close||BREAK_CLOSE)}・送迎なし）`).join("、")
@@ -2518,17 +2522,16 @@ document.getElementById("addPn").onclick=()=>{
 };
 /* ---- メンバー予定表の操作 ---- */
 function shiftNav(delta){
-  ui.shiftOffset=(delta===null)?0:(ui.shiftOffset||0)+delta;
+  ui.shiftMonth=(delta===null)?0:(ui.shiftMonth||0)+delta;
   try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
   renderShift();
 }
-document.getElementById("shPrev").onclick=()=>shiftNav(-2);
-document.getElementById("shNext").onclick=()=>shiftNav(2);
+document.getElementById("shPrev").onclick=()=>shiftNav(-1);
+document.getElementById("shNext").onclick=()=>shiftNav(1);
 document.getElementById("shToday").onclick=()=>shiftNav(null);
 document.getElementById("shJump").onchange=e=>{
   if(!e.target.value)return;
-  const a=mondayOf(todayStr()), b=mondayOf(e.target.value);
-  ui.shiftOffset=Math.round((b-a)/(7*86400000));
+  ui.shiftMonth=monthDiff(e.target.value);
   try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(err){}
   renderShift();
 };
@@ -2690,40 +2693,31 @@ function staticize(node,shiftBlocks){
   }
   return c;
 }
-/* 配布ページ用：メンバー予定を2週間ごとの表にして、前後の期間ぶんまとめて書き出す。
-   閲覧用でも管理用と同じように「前の2週／次の2週／この日の週へ／応援も表示」で
-   切り替えられるように、操作バーもここで作る（表示の切り替えだけで、編集はしない）。 */
-const SHIFT_BACK=2, SHIFT_FWD=24; // 過去4週間〜先26週間（2週間刻み）
+/* 配布ページ用：メンバー予定を月ごとの表にして、前後の月ぶんまとめて書き出す。
+   閲覧用でも「前の月／今月／次の月／月を選ぶ」で切り替えられるように操作バーも作る
+   （表示の切り替えだけで、編集はしない）。応援メンバーはその月に予定がある人だけ出す。 */
+const SHIFT_BACK=1, SHIFT_FWD=6; // 先月〜6か月先
 function buildShiftBlocks(){
-  const keepOff=ui.shiftOffset||0, keepAll=ui.shiftShowAll;
-  ui.shiftShowAll=true;   // 応援も含めて全員ぶん書き出し、既定は畳んでおく
-  const standbyN=shiftStaff().filter(isStandby).length;
-  const out=[];
-  for(let o=-SHIFT_BACK;o<=SHIFT_FWD;o+=2){
-    ui.shiftOffset=o;
-    const dates=shiftDates();
+  const keepM=ui.shiftMonth||0, keepAll=ui.shiftShowAll;
+  ui.shiftShowAll=false;  // 応援はその月に予定がある人だけ
+  const out=[], opts=[];
+  for(let o=-SHIFT_BACK;o<=SHIFT_FWD;o++){
+    ui.shiftMonth=o;
+    const dates=shiftDates(), label=monthLabel(shiftMonth());
     renderShift();
     const tbl=staticize(document.getElementById("shiftTable"));
-    // その期間に予定が入っていない応援メンバーの行は既定で畳む
-    tbl.querySelectorAll("tr.shsb").forEach(tr=>{
-      const quiet=[...tr.querySelectorAll("td")].every(td=>
-        td.classList.contains("shclosed")||td.querySelector(".sh-none"));
-      if(quiet){tr.classList.add("sbq");tr.setAttribute("hidden","")}
-    });
     const note=document.getElementById("shShort");
-    out.push(`<div class="shblk" data-off="${o}" data-from="${dates[0]}" data-to="${dates[9]}" hidden>`
-      +`<h3 style="margin:14px 0 6px">${mdOf(dates[0])}（${DOWS[dowOf(dates[0])]}）〜${mdOf(dates[9])}（${DOWS[dowOf(dates[9])]}）</h3>`
+    out.push(`<div class="shblk" data-off="${o}" data-from="${dates[0]}" data-to="${dates[dates.length-1]}" hidden>`
       +`<div class="tblwrap">${tbl.outerHTML}</div>`
       +(note&&note.innerHTML?`<p class="shnote">${staticize(note).innerHTML}</p>`:"")
       +`</div>`);
+    opts.push(`<option value="${o}"${o===0?" selected":""}>${esc(label)}</option>`);
   }
-  ui.shiftOffset=keepOff; ui.shiftShowAll=keepAll; renderShift();
+  ui.shiftMonth=keepM; ui.shiftShowAll=keepAll; renderShift();
   const nav=`<div class="vnav">
-    <span class="btn vbtn" data-shnav="prev">◀ 前の2週</span>
-    <span class="btn vbtn" data-shnav="now">今週から</span>
-    <span class="btn vbtn" data-shnav="next">次の2週 ▶</span>
-    ${standbyN?`<span class="btn vbtn" id="shbAll" data-base="応援も表示（${standbyN}名）">▸ 応援も表示（${standbyN}名）</span>`:""}
-    <label class="help" style="margin:0">この日の週へ <input type="date" id="shbJump" class="vinput"></label>
+    <span class="btn vbtn" data-shnav="prev">◀ 前の月</span>
+    <span class="btn vbtn" data-shnav="next">次の月 ▶</span>
+    <select id="shbSel" class="vinput">${opts.join("")}</select>
   </div>`;
   return nav+out.join("");
 }
