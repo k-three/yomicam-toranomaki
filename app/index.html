@@ -325,7 +325,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>特別下校時刻（日付指定の変更）</h2>
-    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。<br>新しい行は日付・学校・時刻とも空欄で追加されます。未入力の行は色つきで表示され、計画には反映されません。</p>
+    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。<b>「1年2組だけ」など学年より細かい通知は、対象を「こどもを選んで指定」に切り替えて、対象のこどもを直接選んでください</b>（組を登録しておく必要はありません。メモに「1年2組のみ」と書いておくと後から追えます）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。<br>新しい行は日付・学校・時刻とも空欄で追加されます。未入力の行は色つきで表示され、計画には反映されません。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="spTable"></table></div>
     <button class="btn" id="addSp" style="margin-top:10px">＋ 変更を追加</button>
@@ -1109,7 +1109,11 @@ function planDay(ds){
 
   // --- 参加児童（時刻の優先順：保護者連絡の個別時刻＞特別下校時刻＞通常マスタ） ---
   const specials=(state.specialTimes||[]).filter(x=>x.date===ds&&x.time);
-  const specialOf=(school,grade)=>{const h=specials.filter(x=>x.school===school&&(x.grades||[]).includes(grade));return h.length?h[h.length-1]:null};
+  // 対象は「学年で指定」か「こどもを選んで指定」。1年2組だけ違うといった通知は後者で登録する
+  const specialOf=c=>{const h=specials.filter(x=>(x.childIds||[]).length
+    ? x.childIds.includes(c.id)
+    : (x.school===c.school&&(x.grades||[]).includes(c.grade)));
+    return h.length?h[h.length-1]:null};
   const appliedSp=new Map();
   const dayNotes=notesOn(ds);
   const noteFor=(cid,kind)=>dayNotes.find(n=>n.childId===cid&&n.kind===kind);
@@ -1120,14 +1124,22 @@ function planDay(ds){
     if(!(fixed||spot)||absent) continue;
     const tn=noteFor(c.id,"time");
     const ov=tn?.time||spotN?.time||"";
-    const sp=ov?null:specialOf(c.school,c.grade);
+    const sp=ov?null:specialOf(c);
     const t=ov||sp?.time||state.dismissal[c.school]?.[dow]?.[c.grade]||"";
     if(sp){const e=appliedSp.get(sp.id)||{sp,kids:[]};e.kids.push(c);appliedSp.set(sp.id,e)}
     res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp});
     if(!t&&!c.selfTransport&&!res.breakMode) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
   }
   for(const {sp,kids} of appliedSp.values())
-    warnings.push({lv:"warn",tag:"特別時刻",text:`${schoolOf(sp.school).short}${sp.grades.join("・")}年は特別下校時刻 ${sp.time} を適用${sp.memo?`（${sp.memo}）`:""}。対象：${kids.map(kanaOf).join("・")}`});
+    warnings.push({lv:"warn",tag:"特別時刻",text:`${schoolOf(sp.school).short}${
+      (sp.childIds||[]).length?"（こども指定）":sp.grades.join("・")+"年"}は特別下校時刻 ${sp.time} を適用${
+      sp.memo?`（${sp.memo}）`:""}。対象：${kids.map(kanaOf).join("・")}`});
+  // 選んだこどもがその日に参加していない（欠席・利用日でない）ときは気づけるように
+  for(const x of specials.filter(x=>(x.childIds||[]).length)){
+    const miss=x.childIds.filter(id=>!res.attendees.some(a=>a.id===id));
+    if(miss.length) warnings.push({lv:"info",tag:"特別時刻",text:`特別下校時刻（${x.time}${x.memo?`／${x.memo}`:""}）の対象に選ばれている ${
+      miss.map(id=>childName(id)).join("・")} は、この日は参加予定がありません（欠席・利用日以外）`});
+  }
   const noteTxt=dayNotes.map(n=>{
     const c=state.children.find(x=>x.id===n.childId);if(!c)return null;
     const memo=n.memo?`（${n.memo}）`:"";
@@ -2234,14 +2246,24 @@ function renderSpecials(){
   const t=document.getElementById("spTable");
   state.specialTimes??=[];
   const list=[...state.specialTimes].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象学年</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
-    list.map(x=>{const half=!x.date||!x.school||!x.time||!(x.grades||[]).length;
+  t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象（学年 or こども）</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
+    list.map(x=>{
+      const byKid=(x.childIds||[]).length>0||x.mode==="kids";
+      const half=!x.date||!x.school||!x.time||(byKid?!(x.childIds||[]).length:!(x.grades||[]).length);
+      const cand=state.children.filter(c=>!(x.childIds||[]).includes(c.id));
       return `<tr data-id="${x.id}" style="${half?"background:var(--warn-soft)":""}">
       <td><input type="date" value="${esc(x.date||"")}" data-f="date" ${x.date?"":'style="border-color:var(--warn)"'}></td>
       <td><select data-f="school" ${x.school?"":'style="border-color:var(--warn)"'}><option value="">学校を選択…</option>${state.schools.map(s=>`<option value="${s.id}" ${s.id===x.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
-      <td><span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span></td>
+      <td style="min-width:210px">
+        <select data-mode style="font-size:12px;margin-bottom:3px"><option value="grade" ${byKid?"":"selected"}>学年で指定</option><option value="kids" ${byKid?"selected":""}>こどもを選んで指定</option></select><br>
+        ${byKid
+          ? `${(x.childIds||[]).map(id=>`<span class="chip" style="margin:1px;font-size:11px">${esc(childName(id))} <button class="del" data-kidrm="${id}">✕</button></span>`).join("")
+             }<select data-kidadd style="font-size:12px;margin-top:2px${(x.childIds||[]).length?"":";border-color:var(--warn)"}"><option value="">こどもを追加…</option>${
+               cand.map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(schoolOf(c.school).short)}${c.grade}年）</option>`).join("")}</select>`
+          : `<span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span>`}
+      </td>
       <td><input type="time" value="${esc(x.time||"")}" data-f="time" ${x.time?"":'style="border-color:var(--warn)"'}></td>
-      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障"></td>
+      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障／1年2組のみ"></td>
       <td><button class="del" data-del>✕</button></td></tr>`}).join("")
     ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
@@ -2249,6 +2271,25 @@ function renderSpecials(){
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{x[el.dataset.f]=el.value;
       stage("特別下校時刻",`${x.date||"（日付なし）"} ${x.school?schoolOf(x.school).short:"（学校なし）"} ${(x.grades||[]).join("・")}年 ${x.time||""} を編集`,x.date);
       renderSpecials();renderPlan()});
+    const mode=tr.querySelector("[data-mode]");
+    if(mode)mode.onchange=()=>{
+      x.mode=mode.value;
+      if(x.mode==="grade")x.childIds=[]; else x.grades=[];
+      stage("特別下校時刻",`${x.date||"（日付なし）"}：対象の指定方法を「${mode.value==="kids"?"こどもを選んで指定":"学年で指定"}」に変更`,x.date);
+      renderSpecials();renderPlan();
+    };
+    const kadd=tr.querySelector("[data-kidadd]");
+    if(kadd)kadd.onchange=()=>{
+      if(!kadd.value)return;
+      (x.childIds??=[]).push(kadd.value); x.mode="kids";
+      stage("特別下校時刻",`${x.date||"（日付なし）"}：対象に ${childName(kadd.value)} を追加`,x.date);
+      renderSpecials();renderPlan();
+    };
+    tr.querySelectorAll("[data-kidrm]").forEach(el=>el.onclick=()=>{
+      x.childIds=(x.childIds||[]).filter(id=>id!==el.dataset.kidrm);
+      stage("特別下校時刻",`${x.date||"（日付なし）"}：対象から ${childName(el.dataset.kidrm)} を外す`,x.date);
+      renderSpecials();renderPlan();
+    });
     tr.querySelectorAll("[data-g]").forEach(el=>el.onchange=()=>{
       const g=Number(el.dataset.g);x.grades??=[];
       x.grades=el.checked?[...x.grades,g].sort((a,b)=>a-b):x.grades.filter(v=>v!==g);
@@ -2602,7 +2643,7 @@ document.getElementById("addTerm").onclick=()=>{
 };
 document.getElementById("addSp").onclick=()=>{
   // 日付・学校は空欄で追加（どれを直せばよいか分からなくなるのを防ぐ）
-  state.specialTimes.push({id:uid(),date:"",school:"",grades:[],time:"",memo:""});
+  state.specialTimes.push({id:uid(),date:"",school:"",mode:"grade",grades:[],childIds:[],time:"",memo:""});
   stage("特別下校時刻","変更の行を追加");renderSpecials();
   const rows=document.querySelectorAll('#spTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="date"]')?.focus();
