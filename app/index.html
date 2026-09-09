@@ -184,6 +184,13 @@ body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
+/* 参加曜日の変更（開始日つき）の注記 */
+.dcnote{font-size:10.5px;font-weight:700;margin-top:3px;line-height:1.4}
+.dcnote.on{color:var(--accent)}
+.dcnote.next{color:var(--warn)}
+.daycheck.locked label{cursor:default;opacity:.9}
+.daycheck.locked label.on{background:var(--accent)}
+.daycheck.locked label.on span{color:var(--accent-ink)}
 /* メンバー予定表（シフト） */
 #shiftTable th,#shiftTable td{text-align:center;white-space:nowrap;padding:3px 4px;font-size:12px}
 #shiftTable th:first-child,#shiftTable td:first-child{text-align:left;padding:3px 8px}
@@ -292,6 +299,13 @@ body.staging{padding-bottom:110px}
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="kidsTable"></table></div>
     <button class="btn" id="addKid" style="margin-top:10px">＋ こどもを追加</button>
+  </div>
+  <div class="card">
+    <h2>参加曜日の変更（開始日つき）</h2>
+    <p class="help">利用契約の変更で<b>ある日から参加曜日が変わる</b>ときは、ここに「開始日」と「変更後の曜日」を登録します。開始日を過ぎると計画に自動で反映されるので、当日に直す必要はありません。<br>開始日より前は今までの曜日のまま。同じこどもに複数回の変更を登録した場合は、その日に有効な（いちばん新しい）ものが使われます。1日だけの振替は「保護者連絡」の欠席／スポット参加で対応してください。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div class="tblwrap"><table class="grid" id="dcTable"></table></div>
+    <button class="btn addrow" id="addDc" style="margin-top:10px">＋ 変更を追加</button>
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
@@ -608,6 +622,7 @@ function defaultState(){
     shareUrl:"https://k-three.github.io/yomicam-toranomaki/",
     specialTimes:[], // 日付指定の下校時刻変更 {id,date,school,grades[],time,memo}
     terms:[],        // 長期休暇・休所日 {id,from,to,kind:"break"|"closed",label,open,close}
+    dayChanges:[],   // 参加曜日の変更（開始日つき）{id,childId,from,days[],memo}
     parentNotes:[],  // 保護者連絡 {id,date,childId,kind:absent|spot|time,time?,memo}
     days:{}, // dateStr -> {venue,absent[],spots[],timeOverrides{},staffOff[],taxiOn,notes}
   };
@@ -649,6 +664,7 @@ function migrate(){
   state.specialTimes??=[];
   state.parentNotes??=[];
   state.terms??=[];
+  state.dayChanges??=[];
   if(state._v<8){
     // Slack表記は個人情報のためソースには持たせない（メンバータブで設定）
     state.shareUrl??="https://k-three.github.io/yomicam-toranomaki/";
@@ -757,7 +773,7 @@ function cancelStage(){
 /* データは2層：
    - マスタ（こども・メンバー・下校時刻・移動時間・会場・特別下校時刻）… 編集は admin/所有者のみ
    - 日別データ（当日調整・担当固定・手動便・タイムライン編集・保護者連絡）… 閲覧メンバーも編集可 */
-const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","terms","shareUrl","requestFormUrl","_v"];
+const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","terms","dayChanges","shareUrl","requestFormUrl","_v"];
 const DAY_KEYS=["days","parentNotes"];
 let dbNS=null, adopting=false;
 let mastersRev=0, daysRev=0, canMasters=false, canDays=false;
@@ -1068,6 +1084,21 @@ function staffMin(crew,day,open,close){
   return min===Infinity?0:min;
 }
 
+/* 参加曜日は「開始日つきの変更」で上書きできる。指定日以前の変更のうち最も新しいものを使う。
+   変更が1つもなければ、こどもマスタの参加曜日。 */
+function daysChangeAt(cid,ds){
+  const hit=(state.dayChanges||[]).filter(x=>x.childId===cid&&x.from&&x.from<=ds)
+    .sort((a,b)=>a.from.localeCompare(b.from));
+  return hit.length?hit[hit.length-1]:null;
+}
+function daysOf(c,ds){
+  const ch=daysChangeAt(c.id,ds||todayStr());
+  return ch?(ch.days||[]):(c.days||[]);
+}
+/* そのこどもの「これから始まる変更」（こどもマスタに注記を出すため） */
+const futureChanges=cid=>(state.dayChanges||[]).filter(x=>x.childId===cid&&x.from&&x.from>todayStr())
+  .sort((a,b)=>a.from.localeCompare(b.from));
+
 /* 長期休暇（学校の長期休業）・休所日の判定。休所が最優先。 */
 function termOn(ds){
   const hit=(state.terms||[]).filter(t=>t.from&&t.to&&ds>=t.from&&ds<=t.to);
@@ -1120,7 +1151,7 @@ function planDay(ds){
   for(const c of state.children){
     const absent=!!noteFor(c.id,"absent");
     const spotN=noteFor(c.id,"spot");
-    const fixed=c.days.includes(dow), spot=!!spotN;
+    const fixed=daysOf(c,ds).includes(dow), spot=!!spotN;
     if(!(fixed||spot)||absent) continue;
     const tn=noteFor(c.id,"time");
     const ov=tn?.time||spotN?.time||"";
@@ -1147,6 +1178,9 @@ function planDay(ds){
     if(n.kind==="spot")return`${kanaOf(c)}＝スポット参加${n.time?` ${n.time}下校`:""}${memo}`;
     return n.time?`${kanaOf(c)}＝${n.time}下校に変更${memo}`:null;
   }).filter(Boolean);
+  for(const x of (state.dayChanges||[]).filter(x=>x.from===ds&&x.childId))
+    warnings.push({lv:"warn",tag:"参加曜日",text:`きょうから ${childName(x.childId)} の参加曜日が ${
+      (x.days||[]).slice().sort().map(d=>DOWS[d]).join("")||"なし"} に変わります${x.memo?`（${x.memo}）`:""}`});
   if(noteTxt.length) warnings.push({lv:"info",tag:"保護者連絡",text:noteTxt.join("、")});
   if((day.notes||"").trim()) warnings.push({lv:"info",tag:"連絡",text:day.notes.trim().replace(/\n+/g," ／ ")});
   {
@@ -1634,11 +1668,11 @@ function applyRoleUI(){
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
-  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable"].forEach(id=>{
+  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable","dcTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
   });
-  ["addKid","addStaff","addSp","addTerm"].forEach(id=>{
+  ["addKid","addStaff","addSp","addTerm","addDc"].forEach(id=>{
     const b=document.getElementById(id); if(b)b.disabled=true;
   });
 }
@@ -1719,9 +1753,9 @@ function renderPlanInner(){
 
 function renderDayEdit(plan){
   const day=plan.day;const ds=currentDate;const dow=plan.dow;
-  const fixed=state.children.filter(c=>c.days.includes(dow));
+  const fixed=state.children.filter(c=>daysOf(c,ds).includes(dow));
   const spotIds=notesOn(ds).filter(n=>n.kind==="spot").map(n=>n.childId);
-  const spotCands=state.children.filter(c=>!c.days.includes(dow));
+  const spotCands=state.children.filter(c=>!daysOf(c,ds).includes(dow));
   const rows=[];
   const listed=new Set();
   for(const c of fixed){listed.add(c.id);
@@ -2100,7 +2134,16 @@ function renderKids(){
       <td><input type="text" value="${esc(c.kana||"")}" data-f="kana" style="width:6em" placeholder="ひらがな"></td>
       <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===c.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
       <td><select data-f="grade">${GRADES.map(g=>`<option ${g===c.grade?"selected":""}>${g}</option>`).join("")}</select></td>
-      <td>${dayChecks(c.days)}</td>
+      <td>${(()=>{
+        const now=daysChangeAt(c.id,todayStr());
+        const fut=futureChanges(c.id);
+        const note=[];
+        if(now)note.push(`<div class="dcnote on">⏩ ${esc(now.from)}〜 ${(now.days||[]).slice().sort().map(d=>DOWS[d]).join("")||"なし"} に変更済み（下の表で管理）</div>`);
+        if(fut.length)note.push(`<div class="dcnote next">📅 ${esc(fut[0].from)}〜 ${(fut[0].days||[]).slice().sort().map(d=>DOWS[d]).join("")||"なし"} に変更予定</div>`);
+        return (now
+          ? `<span class="daycheck locked">${[1,2,3,4,5].map(d=>`<label${(now.days||[]).includes(d)?' class="on"':''}><span>${DOWS[d]}</span></label>`).join("")}</span>`
+          : dayChecks(c.days))+note.join("");
+      })()}</td>
       <td style="text-align:center"><input type="checkbox" data-np ${c.noPhoto?"checked":""}></td>
       <td style="text-align:center"><input type="checkbox" data-st ${c.selfTransport?"checked":""}></td>
       <td><input type="text" value="${esc(c.memo||"")}" data-f="memo" style="width:8em"></td>
@@ -2127,7 +2170,50 @@ function renderKids(){
       stage("こどもマスタ",`${c.kana||c.name} を削除`);renderKids();renderPlan();
     };
   });
+  renderDayChanges();
   renderParentNotes();
+  lockMasterTables();
+}
+function renderDayChanges(){
+  const t=document.getElementById("dcTable"); if(!t)return;
+  state.dayChanges??=[];
+  const today=todayStr();
+  const list=[...state.dayChanges].sort((a,b)=>(a.from||"").localeCompare(b.from||""));
+  t.innerHTML=`<thead><tr><th>開始日</th><th>こども</th><th>変更後の参加曜日</th><th>状態</th><th>メモ</th><th></th></tr></thead><tbody>${
+    list.map(x=>{const half=!x.from||!x.childId;
+      const st=!x.from?"":(x.from>today?`<span class="chip warn" style="font-size:11px">${esc(x.from)}から</span>`
+        :'<span class="chip acc" style="font-size:11px">適用中</span>');
+      return `<tr data-id="${x.id}" style="${half?"background:var(--warn-soft)":(x.from&&x.from<=today?"opacity:.75":"")}">
+      <td><input type="date" value="${esc(x.from||"")}" data-f="from" ${x.from?"":'style="border-color:var(--warn)"'}></td>
+      <td><select data-f="childId" ${x.childId?"":'style="border-color:var(--warn)"'}><option value="">こどもを選択…</option>${
+        state.children.map(c=>`<option value="${c.id}" ${c.id===x.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
+      <td><span class="daycheck">${[1,2,3,4,5].map(d=>`<label><input type="checkbox" data-dcd="${d}" ${(x.days||[]).includes(d)?"checked":""}><span>${DOWS[d]}</span></label>`).join("")}</span></td>
+      <td>${st}</td>
+      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:11em" placeholder="例：週5→週3に変更"></td>
+      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
+    ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
+  const nm=id=>childName(id);
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const x=state.dayChanges.find(v=>v.id===tr.dataset.id); if(!x)return;
+    const label=()=>`${x.from||"（開始日なし）"}〜 ${nm(x.childId)}：${(x.days||[]).slice().sort().map(d=>DOWS[d]).join("")||"なし"}`;
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+      x[el.dataset.f]=el.value;
+      stage("参加曜日の変更",`${label()} を編集`,x.from);
+      renderKids();renderPlan();
+    });
+    tr.querySelectorAll("[data-dcd]").forEach(el=>el.onchange=()=>{
+      const d=Number(el.dataset.dcd); x.days??=[];
+      x.days=el.checked?[...x.days,d].sort((a,b)=>a-b):x.days.filter(v=>v!==d);
+      stage("参加曜日の変更",`${label()} に変更`,x.from);
+      renderKids();renderPlan();
+    });
+    tr.querySelector("[data-del]").onclick=()=>{
+      if(!confirm(`${label()} の登録を削除しますか？\n削除すると、この変更はなかったことになります。`))return;
+      state.dayChanges=state.dayChanges.filter(v=>v.id!==x.id);
+      stage("参加曜日の変更",`${label()} を削除`,x.from);
+      renderKids();renderPlan();
+    };
+  });
   lockMasterTables();
 }
 function renderParentNotes(){
@@ -2633,6 +2719,13 @@ document.getElementById("shAdd").onclick=()=>{
   document.getElementById("shDate").value="";
   document.getElementById("shFrom").value="";document.getElementById("shTo").value="";
   renderShift(); renderPlan();
+};
+document.getElementById("addDc").onclick=()=>{
+  state.dayChanges??=[];
+  state.dayChanges.push({id:uid(),childId:"",from:"",days:[],memo:""});
+  stage("参加曜日の変更","変更の行を追加");renderKids();
+  const rows=document.querySelectorAll('#dcTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="from"]')?.focus();
 };
 document.getElementById("addTerm").onclick=()=>{
   state.terms??=[];
