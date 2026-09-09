@@ -325,7 +325,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>特別下校時刻（日付指定の変更）</h2>
-    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。</p>
+    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。優先順位：保護者連絡の個別時刻 ＞ <b>特別下校時刻</b> ＞ 通常の下校時刻。適用された日は虎の巻の要注意事項に表示されます。<br>新しい行は日付・学校・時刻とも空欄で追加されます。未入力の行は色つきで表示され、計画には反映されません。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="spTable"></table></div>
     <button class="btn" id="addSp" style="margin-top:10px">＋ 変更を追加</button>
@@ -705,13 +705,15 @@ function save(){
   pushShared();
 }
 
-/* ========== 日別データは「決定」を押すまで保留（誤操作対策） ==========
-   当日調整・送迎の調整・保護者連絡・タイムライン編集は、画面には即座に反映して
-   結果を確認できるようにしつつ、共有データへの書き込みは「決定」まで行わない。
-   「取り消し」を押すと、最後に確定した内容へ丸ごと戻す。
-   マスタ（こども・メンバー・下校時刻など／管理者のみ）は従来どおり即時保存。 */
-let staged=false, stageBase=null, stageLog=[], stageRemote=null;
-const stageSnap=()=>JSON.stringify({days:state.days||{},parentNotes:state.parentNotes||[]});
+/* ========== 変更は「決定」を押すまで保留（誤操作対策） ==========
+   当日調整・送迎の調整・保護者連絡・タイムライン編集に加えて、マスタ（こども・
+   メンバー・下校時刻・特別下校時刻・会場・移動時間・待ち合わせ場所・長期休暇）も
+   同じ扱い。画面には即座に反映して結果を確認できるようにしつつ、共有データへの
+   書き込みは「決定」まで行わない。「取り消し」で最後に確定した内容へ丸ごと戻す。 */
+let staged=false, stageBase=null, stageLog=[], stageRemote=null, stageRemoteM=null;
+// MASTER_KEYS / DAY_KEYS はこの下で定義しているので、使うのは呼ばれた時点で
+const stageKeys=()=>[...MASTER_KEYS,...DAY_KEYS];
+const stageSnap=()=>JSON.stringify(pick(stageKeys()));
 function stage(kind,text,ds){
   if(!staged){staged=true}
   if(kind)stageLog.push({kind,text,ds:ds||currentDate});
@@ -727,12 +729,12 @@ function renderStageBar(){
     stageLog.length?`未確定の変更が ${stageLog.length}件 あります`:"未確定の変更があります";
   document.getElementById("stageList").innerHTML=
     stageLog.slice(-5).map(l=>`<span class="stagechip">${esc(l.kind)}：${esc(l.text)}</span>`).join("");
-  document.getElementById("stageWarn").hidden=!stageRemote;
+  document.getElementById("stageWarn").hidden=!(stageRemote||stageRemoteM);
 }
 function commitStage(){
   if(!staged)return;
   staged=false;
-  const logs=stageLog; stageLog=[]; stageRemote=null;
+  const logs=stageLog; stageLog=[]; stageRemote=null; stageRemoteM=null;
   save();
   logs.forEach(l=>logChange(l.kind,l.text,l.ds));
   renderStageBar();
@@ -742,9 +744,10 @@ function cancelStage(){
   if(!staged)return;
   if(!confirm(`未確定の変更（${stageLog.length}件）を取り消して、確定済みの内容に戻します。よろしいですか？`))return;
   staged=false;
-  try{const b=JSON.parse(stageBase||"{}");state.days=b.days||{};state.parentNotes=b.parentNotes||[]}catch(e){}
-  const rem=stageRemote; stageRemote=null; stageLog=[];
+  try{const b=JSON.parse(stageBase||"{}");stageKeys().forEach(k=>{if(b[k]!==undefined)state[k]=b[k]})}catch(e){}
+  const rem=stageRemote, remM=stageRemoteM; stageRemote=null; stageRemoteM=null; stageLog=[];
   try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+  if(remM)adoptPart(remM,MASTER_KEYS);
   if(rem)adoptPart(rem,DAY_KEYS);
   renderStageBar();
   rerenderAll();
@@ -787,7 +790,7 @@ function adoptPart(doc,keys){
 }
 function pushShared(){
   if(!dbNS||adopting)return;
-  if(canMasters){
+  if(canMasters&&!staged){
     clearTimeout(pushMTimer);
     pushMTimer=setTimeout(()=>{
       mastersRev++;
@@ -915,7 +918,10 @@ async function connectShared(){
   }catch(e){ console.error(e); setSync("error"); return; }
   dbNS.doc("app/masters").onSnapshot(snap=>{
     const d=snap.exists?snap.data():null;
-    if(d&&d.state&&(d.rev||0)>mastersRev&&!snap.metadata.hasPendingWrites){mastersRev=d.rev;adoptPart(d,MASTER_KEYS);rerenderAll();}
+    if(d&&d.state&&(d.rev||0)>mastersRev&&!snap.metadata.hasPendingWrites){
+      mastersRev=d.rev;
+      if(staged){stageRemoteM=d;renderStageBar();return}   // 編集中は取り込まず、決定/取消まで待つ
+      adoptPart(d,MASTER_KEYS);rerenderAll();}
   },()=>setSync("error"));
   dbNS.doc("shared/days").onSnapshot(snap=>{
     const d=snap.exists?snap.data():null;
@@ -2091,22 +2097,22 @@ function renderKids(){
     const c=state.children.find(x=>x.id===tr.dataset.id);
     const F={name:"名前",kana:"よびな",school:"学校",grade:"学年",memo:"メモ"};
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
-      c[el.dataset.f]=el.dataset.f==="grade"?Number(el.value):el.value;save();
-      logChange("こどもマスタ",`${c.kana||c.name}：${F[el.dataset.f]||el.dataset.f}を「${el.value}」に変更`);renderPlan();
+      c[el.dataset.f]=el.dataset.f==="grade"?Number(el.value):el.value;
+      stage("こどもマスタ",`${c.kana||c.name}：${F[el.dataset.f]||el.dataset.f}を「${el.value}」に変更`);renderPlan();
     });
     tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
-      const d=Number(el.dataset.d);c.days=el.checked?[...c.days,d]:c.days.filter(x=>x!==d);save();
-      logChange("こどもマスタ",`${c.kana||c.name}：参加曜日から${DOWS[d]}を${el.checked?"追加":"削除"}（現在 ${c.days.slice().sort().map(x=>DOWS[x]).join("")}）`);
+      const d=Number(el.dataset.d);c.days=el.checked?[...c.days,d]:c.days.filter(x=>x!==d);
+      stage("こどもマスタ",`${c.kana||c.name}：参加曜日から${DOWS[d]}を${el.checked?"追加":"削除"}（現在 ${c.days.slice().sort().map(x=>DOWS[x]).join("")}）`);
       renderPlan();
     });
-    tr.querySelector("[data-np]").onchange=e=>{c.noPhoto=e.target.checked;save();
-      logChange("こどもマスタ",`${c.kana||c.name}：撮影不可を${e.target.checked?"ON":"OFF"}`);renderPlan()};
-    tr.querySelector("[data-st]").onchange=e=>{c.selfTransport=e.target.checked;save();
-      logChange("こどもマスタ",`${c.kana||c.name}：送迎不要（保護者送迎）を${e.target.checked?"ON":"OFF"}`);renderPlan()};
+    tr.querySelector("[data-np]").onchange=e=>{c.noPhoto=e.target.checked;
+      stage("こどもマスタ",`${c.kana||c.name}：撮影不可を${e.target.checked?"ON":"OFF"}`);renderPlan()};
+    tr.querySelector("[data-st]").onchange=e=>{c.selfTransport=e.target.checked;
+      stage("こどもマスタ",`${c.kana||c.name}：送迎不要（保護者送迎）を${e.target.checked?"ON":"OFF"}`);renderPlan()};
     tr.querySelector("[data-del]").onclick=()=>{
       if(!confirm(`${c.name} を削除しますか？`))return;
-      state.children=state.children.filter(x=>x.id!==c.id);save();
-      logChange("こどもマスタ",`${c.kana||c.name} を削除`);renderKids();renderPlan();
+      state.children=state.children.filter(x=>x.id!==c.id);
+      stage("こどもマスタ",`${c.kana||c.name} を削除`);renderKids();renderPlan();
     };
   });
   renderParentNotes();
@@ -2154,8 +2160,8 @@ function renderDismissal(){
       `<td><input type="time" data-sc="${sc}" data-dow="${d}" data-g="${g}" value="${state.dismissal[sc]?.[d]?.[g]||""}"></td>`)].join("")}</tr>`).join("")}</tbody>`;
   t.querySelectorAll("input").forEach(el=>el.onchange=()=>{
     const{sc,dow,g}=el.dataset;
-    ((state.dismissal[sc]??={})[dow]??={})[g]=el.value;save();
-    logChange("下校時刻",`${schoolOf(sc).short} ${DOWS[dow]}曜 ${g}年 → ${el.value||"（空）"}`);renderPlan();
+    ((state.dismissal[sc]??={})[dow]??={})[g]=el.value;
+    stage("下校時刻",`${schoolOf(sc).short} ${DOWS[dow]}曜 ${g}年 → ${el.value||"（空）"}`);renderPlan();
   });
   sel.onchange=renderDismissal;
   renderTerms();
@@ -2173,8 +2179,8 @@ function renderMeet(){
     </tr>`).join("")}</tbody>`;
   t.querySelectorAll("[data-meet]").forEach(el=>el.onchange=()=>{
     const sc=state.schools.find(x=>x.id===el.dataset.meet); if(!sc)return;
-    sc.meet=el.value;save();
-    logChange("待ち合わせ場所",`${sc.short}：「${el.value||"（空）"}」に変更`);renderPlan();
+    sc.meet=el.value;
+    stage("待ち合わせ場所",`${sc.short}：「${el.value||"（空）"}」に変更`);renderPlan();
   });
 }
 function renderTerms(){
@@ -2185,9 +2191,10 @@ function renderTerms(){
   t.innerHTML=`<thead><tr><th>開始</th><th>終了</th><th>区分</th><th>名称</th><th>開所〜終了</th><th>対象の平日</th><th></th></tr></thead><tbody>${
     list.map(x=>{
       const days=termDays(x);
-      return `<tr data-id="${x.id}">
-      <td><input type="date" value="${esc(x.from||"")}" data-f="from"></td>
-      <td><input type="date" value="${esc(x.to||"")}" data-f="to"></td>
+      const half=!x.from||!x.to;
+      return `<tr data-id="${x.id}" style="${half?"background:var(--warn-soft)":""}">
+      <td><input type="date" value="${esc(x.from||"")}" data-f="from" ${x.from?"":'style="border-color:var(--warn)"'}></td>
+      <td><input type="date" value="${esc(x.to||"")}" data-f="to" ${x.to?"":'style="border-color:var(--warn)"'}></td>
       <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===x.kind?"selected":""}>${v}</option>`).join("")}</select></td>
       <td><input type="text" value="${esc(x.label||"")}" data-f="label" style="width:9em" placeholder="例：冬休み"></td>
       <td>${x.kind==="closed"?'<span class="ro na">–</span>'
@@ -2198,14 +2205,14 @@ function renderTerms(){
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const x=state.terms.find(v=>v.id===tr.dataset.id); if(!x)return;
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
-      x[el.dataset.f]=el.value; save();
-      logChange("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from||"?"}〜${x.to||"?"}／${x.kind==="closed"?"休所":"長期休暇"}）を編集`);
+      x[el.dataset.f]=el.value;
+      stage("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from||"?"}〜${x.to||"?"}／${x.kind==="closed"?"休所":"長期休暇"}）を編集`);
       renderTerms(); renderPlan(); renderShift();
     });
     tr.querySelector("[data-del]").onclick=()=>{
       if(!confirm(`「${x.label||"（名称なし）"}」（${x.from}〜${x.to}）を削除しますか？`))return;
-      state.terms=state.terms.filter(v=>v.id!==x.id); save();
-      logChange("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from}〜${x.to}）を削除`);
+      state.terms=state.terms.filter(v=>v.id!==x.id);
+      stage("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from}〜${x.to}）を削除`);
       renderTerms(); renderPlan(); renderShift();
     };
   });
@@ -2228,26 +2235,30 @@ function renderSpecials(){
   state.specialTimes??=[];
   const list=[...state.specialTimes].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
   t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象学年</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
-    list.map(x=>`<tr data-id="${x.id}">
-      <td><input type="date" value="${esc(x.date||"")}" data-f="date"></td>
-      <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===x.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
+    list.map(x=>{const half=!x.date||!x.school||!x.time||!(x.grades||[]).length;
+      return `<tr data-id="${x.id}" style="${half?"background:var(--warn-soft)":""}">
+      <td><input type="date" value="${esc(x.date||"")}" data-f="date" ${x.date?"":'style="border-color:var(--warn)"'}></td>
+      <td><select data-f="school" ${x.school?"":'style="border-color:var(--warn)"'}><option value="">学校を選択…</option>${state.schools.map(s=>`<option value="${s.id}" ${s.id===x.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
       <td><span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span></td>
-      <td><input type="time" value="${esc(x.time||"")}" data-f="time"></td>
+      <td><input type="time" value="${esc(x.time||"")}" data-f="time" ${x.time?"":'style="border-color:var(--warn)"'}></td>
       <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障"></td>
-      <td><button class="del" data-del>✕</button></td></tr>`).join("")
+      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
     ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const x=state.specialTimes.find(v=>v.id===tr.dataset.id); if(!x)return;
-    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{x[el.dataset.f]=el.value;save();
-      logChange("特別下校時刻",`${x.date} ${schoolOf(x.school).short} ${(x.grades||[]).join("・")}年 ${x.time||""} を編集`,x.date);renderPlan()});
+    tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{x[el.dataset.f]=el.value;
+      stage("特別下校時刻",`${x.date||"（日付なし）"} ${x.school?schoolOf(x.school).short:"（学校なし）"} ${(x.grades||[]).join("・")}年 ${x.time||""} を編集`,x.date);
+      renderSpecials();renderPlan()});
     tr.querySelectorAll("[data-g]").forEach(el=>el.onchange=()=>{
       const g=Number(el.dataset.g);x.grades??=[];
       x.grades=el.checked?[...x.grades,g].sort((a,b)=>a-b):x.grades.filter(v=>v!==g);
-      save();renderPlan();
+      stage("特別下校時刻",`${x.date||"（日付なし）"} ${x.school?schoolOf(x.school).short:"（学校なし）"}：対象学年を ${(x.grades||[]).join("・")||"なし"} に変更`,x.date);
+      renderSpecials();renderPlan();
     });
     tr.querySelector("[data-del]").onclick=()=>{
-      state.specialTimes=state.specialTimes.filter(v=>v.id!==x.id);save();
-      logChange("特別下校時刻",`${x.date} ${schoolOf(x.school).short} の設定を削除`,x.date);renderSpecials();renderPlan();
+      state.specialTimes=state.specialTimes.filter(v=>v.id!==x.id);
+      stage("特別下校時刻",`${x.date||"（日付なし）"} ${x.school?schoolOf(x.school).short:"（学校なし）"} の設定を削除`,x.date);
+      renderSpecials();renderPlan();
     };
   });
   lockMasterTables();
@@ -2266,8 +2277,8 @@ function renderVenues(){
       </tr>`;
     }).join("")}</tbody>`;
   t.querySelectorAll("input").forEach(el=>el.onchange=()=>{
-    state.venues[el.dataset.vd][el.dataset.vf]=el.value;save();
-    logChange("会場",`${DOWS[el.dataset.vd]}曜の${({main:"会場",early:"前半会場",switch:"切替時刻"})[el.dataset.vf]}を「${el.value||"なし"}」に変更`);renderPlan();
+    state.venues[el.dataset.vd][el.dataset.vf]=el.value;
+    stage("会場",`${DOWS[el.dataset.vd]}曜の${({main:"会場",early:"前半会場",switch:"切替時刻"})[el.dataset.vf]}を「${el.value||"なし"}」に変更`);renderPlan();
   });
   lockMasterTables();
 }
@@ -2300,26 +2311,28 @@ function renderStaff(){
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       s[el.dataset.f]=el.dataset.f==="cap"?Number(el.value):el.value;
       if(el.dataset.f==="vehicle")s.cap=el.value==="hiace"?6:el.value==="none"?0:3;
-      save();logChange("メンバーマスタ",`${s.name}：${el.dataset.f} を「${el.value}」に変更`);renderStaff();renderPlan();
+      stage("メンバーマスタ",`${s.name}：${el.dataset.f} を「${el.value}」に変更`);renderStaff();renderPlan();
     });
     tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
-      const d=Number(el.dataset.d);s.days=el.checked?[...s.days,d]:s.days.filter(x=>x!==d);save();
-      logChange("メンバーマスタ",`${s.name}：勤務曜日から${DOWS[d]}を${el.checked?"追加":"削除"}`);renderPlan();
+      const d=Number(el.dataset.d);s.days=el.checked?[...s.days,d]:s.days.filter(x=>x!==d);
+      stage("メンバーマスタ",`${s.name}：勤務曜日から${DOWS[d]}を${el.checked?"追加":"削除"}`);renderPlan();
     });
     tr.querySelectorAll("[data-wdel]").forEach(el=>el.onclick=()=>{
-      s.awayTimes.splice(Number(el.dataset.wdel),1);save();renderStaff();renderPlan();
+      const rmW=s.awayTimes.splice(Number(el.dataset.wdel),1)[0];
+      stage("メンバーマスタ",`${s.name}：毎週の不在時間帯（${DOWS[rmW?.dow]} ${rmW?.from||""}〜${rmW?.to||""}）を削除`);renderStaff();renderPlan();
     });
     tr.querySelector("[data-wadd]").onclick=()=>{
       const dow=Number(tr.querySelector("[data-wdow]").value);
       const from=tr.querySelector("[data-wfrom]").value,to=tr.querySelector("[data-wto]").value;
       const label=tr.querySelector("[data-wlabel]").value.trim();
       if(!from||!to||toMin(to)<=toMin(from)){alert("開始・終了時刻を正しく入力してください");return}
-      (s.awayTimes??=[]).push({dow,from,to,label});save();renderStaff();renderPlan();
+      (s.awayTimes??=[]).push({dow,from,to,label});
+      stage("メンバーマスタ",`${s.name}：毎週の不在時間帯（${DOWS[dow]} ${from}〜${to}${label?" "+label:""}）を追加`);renderStaff();renderPlan();
     };
     tr.querySelector("[data-del]").onclick=()=>{
       if(!confirm(`${s.name} を削除しますか？`))return;
-      state.staff=state.staff.filter(x=>x.id!==s.id);save();
-      logChange("メンバーマスタ",`${s.name} を削除`);renderStaff();renderPlan();
+      state.staff=state.staff.filter(x=>x.id!==s.id);
+      stage("メンバーマスタ",`${s.name} を削除`);renderStaff();renderPlan();
     };
   });
   lockMasterTables();
@@ -2468,13 +2481,14 @@ function renderTravel(){
     }).join("")}</tr>`).join("")}</tbody>`;
   t.querySelectorAll("input[type=number]").forEach(el=>el.onchange=()=>{
     const{a,b}=el.dataset;const v=el.value===""?null:Number(el.value);
-    state.travel[a][b]=v;state.travel[b][a]=v;save();
-    logChange("移動時間",`${a==="base"?"拠点":schoolOf(a).short}〜${b==="base"?"拠点":schoolOf(b).short} を ${v??"（空）"}分に変更`);
+    state.travel[a][b]=v;state.travel[b][a]=v;
+    stage("移動時間",`${a==="base"?"拠点":schoolOf(a).short}〜${b==="base"?"拠点":schoolOf(b).short} を ${v??"（空）"}分に変更`);
     renderTravel();renderPlan();
   });
   t.querySelectorAll("input[data-m]").forEach(el=>el.onchange=()=>{
     if(el.checked)state.travelMeasured[el.dataset.m]=true;else delete state.travelMeasured[el.dataset.m];
-    save();renderPlan();
+    stage("移動時間",`${el.dataset.m.split("|").map(x=>x==="base"?"拠点":schoolOf(x).short).join("〜")}：実測を${el.checked?"ON":"OFF"}`);
+    renderPlan();
   });
   lockMasterTables();
 }
@@ -2499,7 +2513,7 @@ document.getElementById("tabs").addEventListener("click",e=>{
 document.getElementById("dateInput").addEventListener("change",e=>{currentDate=e.target.value||todayStr();renderPlan()});
 document.getElementById("addKid").onclick=()=>{
   state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
-  save();renderKids();renderPlan();
+  stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
   const rows=document.querySelectorAll('#kidsTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
 };
@@ -2582,17 +2596,20 @@ document.getElementById("shAdd").onclick=()=>{
 document.getElementById("addTerm").onclick=()=>{
   state.terms??=[];
   state.terms.push({id:uid(),from:"",to:"",kind:"break",label:"",open:BREAK_OPEN,close:BREAK_CLOSE});
-  save(); renderTerms();
+  stage("長期休暇・休所","期間の行を追加");renderTerms();
   const rows=document.querySelectorAll('#termTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="from"]')?.focus();
 };
 document.getElementById("addSp").onclick=()=>{
-  state.specialTimes.push({id:uid(),date:currentDate,school:state.schools[0].id,grades:[],time:"",memo:""});
-  save();renderSpecials();
+  // 日付・学校は空欄で追加（どれを直せばよいか分からなくなるのを防ぐ）
+  state.specialTimes.push({id:uid(),date:"",school:"",grades:[],time:"",memo:""});
+  stage("特別下校時刻","変更の行を追加");renderSpecials();
+  const rows=document.querySelectorAll('#spTable tr[data-id]');
+  rows[rows.length-1]?.querySelector('input[data-f="date"]')?.focus();
 };
 document.getElementById("addStaff").onclick=()=>{
   state.staff.push({id:uid(),name:"",days:[],role:"drive",vehicle:"own",cap:3,memo:"",awayTimes:[]});
-  save();renderStaff();renderPlan();
+  stage("メンバーマスタ","メンバーの行を追加");renderStaff();renderPlan();
   const rows=document.querySelectorAll('#staffTable tr[data-id]');
   rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
 };
