@@ -421,7 +421,7 @@ body.staging{padding-bottom:110px}
       <tr><th>移動時間</th><td>余裕をもって<b>一律20分枠</b>（実測が貯まった区間から「移動時間」タブで短縮可）</td></tr>
       <tr><th>学校到着</th><td>下校の5分前を目標に到着</td></tr>
       <tr><th>乗車＋待ち時間</th><td>こども1人あたり<b>80分以内</b>（自校出発→会場到着）</td></tr>
-      <tr><th>巡回</th><td>第一交通以外は1便で2校巡回OK（毎回拠点へ戻らなくてよい）。<b>第一交通は1回1校→拠点のみ</b></td></tr>
+      <tr><th>巡回</th><td>第一交通以外は1便で2校巡回OK（毎回拠点へ戻らなくてよい）。<b>第一交通は1回1校→拠点のみ</b>。ただし<b>先に乗ったこどもの乗車時間が40分を超えるぶんは巡回の評価を下げ</b>、一度拠点へ戻って別便にできるならそちらを選ぶ</td></tr>
       <tr><th>直行</th><td>13:00集合からでは間に合わない便は拠点を経由せず学校へ直行（運行前チェックは出発地で実施・虎の巻に表示）</td></tr>
       <tr><th>車両</th><td>ハイエース：こども6名・<b>14:00まで自然学校にあり使用不可</b>／自家用車・タクシー：3名</td></tr>
       <tr><th>行先担当</th><td><b>自然学校は基本ハイエースが対応</b>、難しければこの限りでない。メンバーのこどもが参加する日はその学校をそのメンバー優先（同じく余裕なければこの限りでない）</td></tr>
@@ -446,7 +446,7 @@ body.staging{padding-bottom:110px}
       <div class="step">同じ学校で下校時刻が10分以内の児童は1回のお迎えにまとめる（遅い方の時刻に合わせる）</div>
       <div class="step"><b>各学校で下校時刻から最低20分の待機</b>を計画に組み込む（学校発＝下校＋20分）。先生への相談や友達との会話で遅れてくる子は、この待機で吸収する</div>
       <div class="step">お迎え仕事を時刻の早い順に並べる</div>
-      <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>20分待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
+      <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>20分待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。さらに<b>40分を超える乗車は超過分だけ減点</b>し、いったん拠点へ戻って別便を出せるならそちらを優先する（こどもを早く降ろすため）。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
       <div class="step">巡回候補と新規便候補をスコアで比較して割り当てる。<b>自然学校は基本ハイエースが対応</b>し、ハイエースで難しい場合のみ他の車で対応。メンバーのこどもが参加する日はそのこどもの学校をそのメンバー優先（余裕がなければこの限りではない）。少人数は自家用車を先に使いハイエースの枠を温存</div>
       <div class="step">自動算出の結果は<b>「担当の固定」で手動調整できる</b>（送迎便カードの上）。学校ごとに担当メンバーを固定すると、残りは自動のまま全体を再計算する。固定した担当で時間が成立しない場合は未割当として警告</div>
       <div class="step">定員が足りなければ便を分割。それでも足りなければ第一交通（タクシー）を提案。第一交通は<b>1回1校→拠点（巡回させない）</b>、依頼は<b>2営業日前まで</b>（9月は本永さんのサポート予定も確認）</div>
@@ -556,10 +556,12 @@ const DOWS=["日","月","火","水","木","金","土"];
 const GRADES=[1,2,3,4,5,6];
 let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開所時間に合わせて広げる）
 const PXM=2; // px per minute
-const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, minStaff:3};
+const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）
 // maxRide=80: こどもの乗車＋待ち時間（学校出発→会場到着）の上限
+// rideSoft=40: この分数を超える乗車は避けたい目安。巡回を組むと先に乗った子が長く乗るため、
+//              超える分だけ巡回のスコアを下げ、一度拠点へ戻って別便にできるならそちらを選ぶ
 const kanaOf=c=>c.kana||c.name;
 const toMin=s=>{if(!s)return null;const[a,b]=s.split(":").map(Number);return a*60+b};
 const fmt=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
@@ -1236,6 +1238,23 @@ function planDay(ds){
   const onDuty=state.staff.filter(s=>(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id))&&!day.staffOff.includes(s.id));
   res.staffOnDuty=onDuty.filter(s=>s.role!=="taxi"||day.taxiOn||pinnedIds.has(s.id));
   const drivers=onDuty.filter(s=>s.role==="drive"||(s.role==="taxi"&&(day.taxiOn||pinnedIds.has(s.id))));
+  // 拠点で見守りに入れる人（送迎・私用外出・来訪対応・勤務時間外の人は除いて数える）
+  const baseStaff=onDuty.filter(s=>s.role==="base"||s.role==="drive");
+  function coverAt(t,rts,extra,reasons){
+    let n=0;
+    for(const s of baseStaff){
+      const wt=day.staffTimes?.[s.id];
+      if(wt&&((wt.from&&t<toMin(wt.from))||(wt.to&&t>=toMin(wt.to)))){reasons&&reasons.add(`${s.name}：勤務時間外`);continue}
+      if(rts.some(r=>r.driver.id===s.id&&t>=r.checkAt&&t<r.backAt+SET.unload)){reasons&&reasons.add(`${s.name}：送迎`);continue}
+      if(extra&&extra.id===s.id&&t>=extra.checkAt&&t<extra.backAt+SET.unload){reasons&&reasons.add(`${s.name}：送迎`);continue}
+      const aw=(s.awayTimes||[]).find(w=>Number(w.dow)===dow&&toMin(w.from)!=null&&t>=toMin(w.from)&&t<toMin(w.to));
+      if(aw){reasons&&reasons.add(`${s.name}：${aw.label||"外出"}`);continue}
+      const vv=dayVisits.find(v=>v.host===s.id&&t>=v.s&&t<v.e);
+      if(vv){reasons&&reasons.add(`${s.name}：来訪対応`);continue}
+      n++;
+    }
+    return n;
+  }
   {
     // 必要なメンバー数のチェック。延べ人数ではなく「その時間に何人いるか」で見る
     // （第一交通＝臨時送迎は数えない。勤務時間を変えている人はその時間だけ数える）
@@ -1354,6 +1373,10 @@ function planDay(ds){
         // 延長すると同じ運転手の別の便（手動便含む）と重なる場合は不可
         if(routes.some(o=>o!==r&&o.driver.id===r.driver.id&&r.checkAt<o.backAt+SET.unload&&o.checkAt<projBack+SET.unload)) continue;
         let score=1000-Math.abs(job.time-SET.preArrival-arr); // 5分前到着に近いほど高スコア
+        // 先に乗ったこどもは巡回の間ずっと車内で待つ。目安（40分）を超えるぶんだけ減点し、
+        // 一度拠点へ戻って別便にできる場合はそちらが選ばれるようにする
+        const worstRide=Math.max(0,...r.stops.map(st=>projBack-st.end));
+        score-=Math.max(0,worstRide-SET.rideSoft)*15;
         if(free>=remain.length) score+=50; // 分乗せず全員乗せられる車を優先
         if(job.school==="szn"&&!r.hiace) score-=400; // 自然学校は基本ハイエース対応（難しければこの限りでない）
         if(!best||score>best.score) best={kind:"extend",r,arr,free,score,tv};
@@ -1382,6 +1405,17 @@ function planDay(ds){
           let score=500;
           if(hi){ if(job.school==="szn"||remain.length>3) score+=200; else score-=100; } // 自然学校・大人数はハイエース優先
           if(!hi&&job.school==="szn") score-=200; // 自然学校は基本ハイエース対応
+          // この便を追加すると拠点の見守りが不在（または1名）になる時間帯ができないか。
+          // こどもが拠点にいる時間帯だけを見る（最初の便が戻ってから）
+          {
+            const cand={id:s.id,checkAt:arr-tv-SET.preCheck,backAt:job.time+SET.board+backTv0};
+            const firstBack=routes.length?Math.min(...routes.map(r=>r.backAt+SET.unload)):Infinity;
+            let minCover=99;
+            for(let t=Math.max(firstBack,cand.checkAt);t<cand.backAt+SET.unload;t+=5)
+              minCover=Math.min(minCover,coverAt(t,routes,cand));
+            if(minCover<=0) score-=900;       // 見守りが不在になる組み方は避ける
+            else if(minCover<=1) score-=120;  // 1名になる組み方も控えめに
+          }
           if(s.childId&&remain.some(k=>k.id===s.childId)) score+=250; // メンバーのこどもが乗る便はそのメンバー優先
           if(s.role==="taxi") score-=150;
           if(free>=remain.length) score+=50;
@@ -1447,7 +1481,22 @@ function planDay(ds){
     const distinct=new Set(r.stops.map(s=>s.school));
     if(distinct.size>1){
       const dls=r.stops.filter(s=>s.deadline!=null&&s.school!==r.stops[r.stops.indexOf(s)+1]?.school).map(s=>`${schoolOf(s.school).short}${fmt(s.end)}発（次校まで余裕${s.deadline-s.end}分）`).join("、");
-      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋20分の待機を含む計画${dls?`：${dls}`:""}。待機中、先に乗った児童は降車させず運転者の視界内で`});
+      const rides=r.stops.map(st=>`${st.kids.map(kanaOf).join("・")}＝${r.backAt-st.end}分`).join("、");
+      // 途中で拠点に戻って降ろせないか（戻ると次校の到着が下校5分前に間に合うか）を確かめて理由を添える
+      const why=[];
+      for(let i=1;i<r.stops.length;i++){
+        const prev=r.stops[i-1], st=r.stops[i];
+        if(prev.school===st.school) continue;
+        const a=travelOf(prev.school,"base"), c2=travelOf("base",st.school);
+        if(a==null||c2==null) continue;
+        const via=prev.end+a+SET.unload+c2;
+        if(via>st.time-SET.preArrival)
+          why.push(`${schoolOf(prev.school).short}のあと拠点に戻ると${schoolOf(st.school).short}着が${fmt(via)}となり、下校${fmt(st.time)}の5分前に間に合わないため直接向かいます`);
+      }
+      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋20分の待機を含む計画${dls?`：${dls}`:""}。乗車時間：${rides}。待機中、先に乗った児童は降車させず運転者の視界内で${why.length?`。${why.join("。")}`:""}`});
+      const longRide=r.stops.filter(st=>r.backAt-st.end>SET.rideSoft&&r.backAt-st.end<=SET.maxRide);
+      if(longRide.length)
+        warnings.push({lv:"warn",tag:"長い乗車",text:`${longRide.map(st=>`${st.kids.map(kanaOf).join("・")}は${r.backAt-st.end}分`).join("、")}の乗車になります（目安${SET.rideSoft}分）。移動時間タブの実測値を入れると、拠点に戻って降ろす計画に切り替わる場合があります`});
     }else if(r.stops.length>1){
       warnings.push({lv:"info",tag:"同校2回",text:`第${r.no}便（${r.driver.name}）は${schoolOf(r.stops[0].school).short}で${r.stops.map(s=>fmt(s.time)).join("と")}の下校をまとめて受け取り（現地で待機を継続）`});
     }
@@ -1463,23 +1512,13 @@ function planDay(ds){
     else warnings.push({lv:"info",tag:"来訪",text:`${v.from}〜${v.to} ${v.label||"来訪"}（対応：${host.name}・1名専任）。見学者と児童が1対1にならないよう、必ず運営メンバーの視界内で`});
   }
   // 見守り人数チェック（送迎・私用外出・来訪対応で抜ける人を除く）
-  const baseStaff=onDuty.filter(s=>s.role==="base"||s.role==="drive");
   const kidsArrivals=routes.map(r=>r.backAt+SET.unload);
   const firstKids=kidsArrivals.length?Math.min(...kidsArrivals):null;
   if(firstKids!=null){
     let lowSpans=[],cur=null;
     for(let t=firstKids;t<=1080;t+=5){ // 〜18:00
-      let n=0;const reasons=new Set();
-      for(const s of baseStaff){
-        const wt=day.staffTimes?.[s.id];
-        if(wt&&((wt.from&&t<toMin(wt.from))||(wt.to&&t>=toMin(wt.to)))){reasons.add(`${s.name}：勤務時間外`);continue}
-        if(routes.some(r=>r.driver.id===s.id&&t>=r.checkAt&&t<r.backAt+SET.unload)){reasons.add(`${s.name}：送迎`);continue}
-        const aw=(s.awayTimes||[]).find(w=>Number(w.dow)===dow&&toMin(w.from)!=null&&t>=toMin(w.from)&&t<toMin(w.to));
-        if(aw){reasons.add(`${s.name}：${aw.label||"外出"}`);continue}
-        const vv=dayVisits.find(v=>v.host===s.id&&t>=v.s&&t<v.e);
-        if(vv){reasons.add(`${s.name}：来訪対応`);continue}
-        n++;
-      }
+      const reasons=new Set();
+      const n=coverAt(t,routes,null,reasons);
       if(n<=1){ if(!cur)cur={s:t,e:t,n,reasons:new Set()};cur.e=t+5;cur.n=Math.min(cur.n,n);reasons.forEach(x=>cur.reasons.add(x));}
       else if(cur){lowSpans.push(cur);cur=null}
     }
