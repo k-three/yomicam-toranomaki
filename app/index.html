@@ -184,6 +184,14 @@ body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
 body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable label{pointer-events:none;opacity:.55}
+.tsrc{background:var(--surface2);border-radius:99px;padding:1px 8px;font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.tsrc em{font-style:normal;font-weight:500;color:var(--muted);margin-left:4px}
+/* こども別の下校時刻 */
+#ctTable td{text-align:center}
+#ctTable td:first-child,#ctTable td:nth-child(2){text-align:left}
+#ctTable input[type=time].ctset{border-color:var(--accent);font-weight:700}
+.ctstd{font-size:10px;color:var(--muted);margin-top:1px}
+.ctwarn{color:var(--warn);font-weight:700;font-size:12.5px;margin:0 0 8px}
 /* 参加曜日の変更（開始日つき）の注記 */
 .dcnote{font-size:10.5px;font-weight:700;margin-top:3px;line-height:1.4}
 .dcnote.on{color:var(--accent)}
@@ -295,7 +303,7 @@ body.staging{padding-bottom:110px}
 <section id="tab-kids" hidden>
   <div class="card">
     <h2>こどもマスタ</h2>
-    <p class="help">出典：<b>利用申込書兼同意書（確定情報）</b>。曜日固定の参加曜日にチェック。スポット参加・欠席・個別の下校時刻変更（保護者連絡）は「虎の巻」タブの当日調整で行います。📷撮影不可＝写真・動画の掲載を希望しない児童（虎の巻に自動表示）。🚫送迎不要＝保護者が送迎する児童（OCSIなど。送迎便の計算から除外され、参加人数には含まれます）。</p>
+    <p class="help">出典：<b>利用申込書兼同意書（確定情報）</b>。曜日固定の参加曜日にチェック。<b>利用開始日</b>を入れると、その日から虎の巻に出ます（空欄なら最初から）。先に登録しておけば開始日に何かする必要はありません。スポット参加・欠席・個別の下校時刻変更（保護者連絡）は「虎の巻」タブの当日調整で行います。📷撮影不可＝写真・動画の掲載を希望しない児童（虎の巻に自動表示）。🚫送迎不要＝保護者が送迎する児童（OCSIなど。送迎便の計算から除外され、参加人数には含まれます）。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="kidsTable"></table></div>
     <button class="btn" id="addKid" style="margin-top:10px">＋ こどもを追加</button>
@@ -323,6 +331,14 @@ body.staging{padding-bottom:110px}
     <select id="schoolSel" style="padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-weight:700"></select>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap" style="margin-top:10px"><table class="grid" id="disTable"></table></div>
+  </div>
+  <div class="card">
+    <h2>こども別の下校時刻（学校の時間割と違う場合）</h2>
+    <p class="help">上の表は<b>学校の標準の時間割</b>です。保護者から「うちはこの時間で」と個別に指定がある場合は、ここにそのこどもの曜日別の時刻を入れてください。<b>空欄なら学校の時間割どおり</b>（灰色で表示されているのが学校の時間割の値です）。<br>
+    時刻の優先順位：保護者連絡の個別時刻 ＞ 特別下校時刻 ＞ <b>こども別の下校時刻</b> ＞ 学校の時間割。同じ学校・学年に複数のこどもがいて時刻が違う場合、ここに入れないと片方が取り残される恐れがあります。</p>
+    <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
+    <div id="ctDup"></div>
+    <div class="tblwrap"><table class="grid" id="ctTable"></table></div>
   </div>
   <div class="card">
     <h2>学校別 待ち合わせ場所</h2>
@@ -1086,6 +1102,10 @@ function staffMin(crew,day,open,close){
   return min===Infinity?0:min;
 }
 
+/* 利用開始日より前かどうか／その日の曜日固定参加かどうか */
+const notYet=(c,ds)=>!!(c.startFrom&&ds<c.startFrom);
+const fixedOn=(c,ds,dow)=>!notYet(c,ds)&&daysOf(c,ds).includes(dow);
+
 /* メンバーがその日の出勤かどうか（勤務曜日 or 臨時出勤） */
 const daysOfStaff=(s,dow,day)=>s.days.includes(dow)||(day.staffExtra||[]).includes(s.id);
 
@@ -1153,18 +1173,42 @@ function planDay(ds){
   const appliedSp=new Map();
   const dayNotes=notesOn(ds);
   const noteFor=(cid,kind)=>dayNotes.find(n=>n.childId===cid&&n.kind===kind);
+  const earlyStart=[];
   for(const c of state.children){
     const absent=!!noteFor(c.id,"absent");
     const spotN=noteFor(c.id,"spot");
-    const fixed=daysOf(c,ds).includes(dow), spot=!!spotN;
+    const before=notYet(c,ds);                     // 利用開始日より前
+    const fixed=fixedOn(c,ds,dow), spot=!!spotN;
     if(!(fixed||spot)||absent) continue;
+    if(before&&spot) earlyStart.push(c);
     const tn=noteFor(c.id,"time");
     const ov=tn?.time||spotN?.time||"";
     const sp=ov?null:specialOf(c);
-    const t=ov||sp?.time||state.dismissal[c.school]?.[dow]?.[c.grade]||"";
+    const own=(c.times||{})[dow]||"";               // このこども固有の下校時刻（曜日別）
+    const t=ov||sp?.time||own||state.dismissal[c.school]?.[dow]?.[c.grade]||"";
+    const src=ov?"保護者連絡":sp?"特別下校時刻":own?"こども別の設定":(t?"学校の時間割":"未設定");
     if(sp){const e=appliedSp.get(sp.id)||{sp,kids:[]};e.kids.push(c);appliedSp.set(sp.id,e)}
-    res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp});
+    res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp,ownTime:!ov&&!sp&&!!own,timeSrc:src});
     if(!t&&!c.selfTransport&&!res.breakMode) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
+  }
+  if(earlyStart.length)
+    warnings.push({lv:"warn",tag:"利用開始前",text:`${earlyStart.map(c=>`${kanaOf(c)}（利用開始 ${c.startFrom}）`).join("・")} は利用開始日より前ですが、スポット参加が登録されています。体験・見学であればそのまま、登録ミスであれば当日調整で取り消してください`});
+  // 同じ学校・学年に複数いて、全員が学校の時間割そのままの場合の気づき
+  {
+    const g={};
+    for(const a of res.attendees){
+      if(a.selfTransport||a.timeSrc!=="学校の時間割") continue;
+      (g[`${a.school}|${a.grade}`]??=[]).push(a);
+    }
+    const dup=Object.entries(g).filter(([,v])=>v.length>1);
+    if(dup.length){
+      const list=dup.map(([k,v])=>{
+        const[sc,gr]=k.split("|");
+        return `${schoolOf(sc).short}${gr}年の ${v.map(kanaOf).join("・")} は学校の時間割（${v[0].time}）で計算しています`;
+      }).join("、");
+      warnings.push({lv:"info",tag:"同学年",
+        text:`${list}。保護者から別の時刻を指定されている子がいれば「下校時刻」タブの「こども別の下校時刻」に登録してください`});
+    }
   }
   for(const {sp,kids} of appliedSp.values())
     warnings.push({lv:"warn",tag:"特別時刻",text:`${schoolOf(sp.school).short}${
@@ -1715,7 +1759,7 @@ function applyRoleUI(){
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
-  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable","dcTable"].forEach(id=>{
+  ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable","dcTable","ctTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
   });
@@ -1800,9 +1844,9 @@ function renderPlanInner(){
 
 function renderDayEdit(plan){
   const day=plan.day;const ds=currentDate;const dow=plan.dow;
-  const fixed=state.children.filter(c=>daysOf(c,ds).includes(dow));
+  const fixed=state.children.filter(c=>fixedOn(c,ds,dow));
   const spotIds=notesOn(ds).filter(n=>n.kind==="spot").map(n=>n.childId);
-  const spotCands=state.children.filter(c=>!daysOf(c,ds).includes(dow));
+  const spotCands=state.children.filter(c=>!fixedOn(c,ds,dow));
   const rows=[];
   const listed=new Set();
   for(const c of fixed){listed.add(c.id);
@@ -1810,7 +1854,10 @@ function renderDayEdit(plan){
     const ov=getNote(ds,c.id,"time")?.time||"";
     rows.push(`<div class="att">
       <label class="toggle"><input type="checkbox" data-att="${c.id}" ${absent?"":"checked"}> <span class="nm">${esc(c.name)}</span></label>
-      ${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>${c.noPhoto?'<span class="chip alert" style="font-size:11px">📷不可</span>':""}${plan.attendees.find(a=>a.id===c.id)?.special?'<span class="chip warn" style="font-size:11px">特別時刻</span>':""}${c.selfTransport?'<span class="chip base" style="font-size:11px">保護者送迎</span>':""}
+      ${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>${c.noPhoto?'<span class="chip alert" style="font-size:11px">📷不可</span>':""}${plan.attendees.find(a=>a.id===c.id)?.special?'<span class="chip warn" style="font-size:11px">特別時刻</span>':""}${c.selfTransport?'<span class="chip base" style="font-size:11px">保護者送迎</span>':""}${(()=>{
+        const a=plan.attendees.find(x=>x.id===c.id);
+        return a&&a.time?`<span class="tsrc" title="この日の下校時刻とその出どころ">${esc(a.time)}<em>${esc(a.timeSrc)}</em></span>`:"";
+      })()}
       <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${c.id}" value="${ov}">
       ${ov?`<button class="del" data-ovclr="${c.id}" title="個別時刻を取り消して通常の下校時刻に戻す">取消</button>`:""}
       ${absent?'<span class="chip alert">欠席</span>':""}${ov?'<span class="chip warn">保護者連絡で変更</span>':""}
@@ -1853,7 +1900,7 @@ function renderDayEdit(plan){
     <div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="spotSel" style="padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
         <option value="">スポット参加を追加…</option>
-        ${spotCands.filter(c=>!spotIds.includes(c.id)).map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(schoolOf(c.school).short)}${c.grade}年）</option>`).join("")}
+        ${spotCands.filter(c=>!spotIds.includes(c.id)).map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(schoolOf(c.school).short)}${c.grade}年${notYet(c,ds)?`・${esc(c.startFrom)}利用開始`:""}）</option>`).join("")}
       </select>
     </div>
     <h3>メンバー（チェック＝出勤。出退勤時刻は変更がある日だけ入力）</h3>
@@ -2183,12 +2230,15 @@ function dayChecks(days,cb){
 }
 function renderKids(){
   const t=document.getElementById("kidsTable");
-  t.innerHTML=`<thead><tr><th>名前</th><th>よびな（虎の巻表示）</th><th>学校</th><th>学年</th><th>参加曜日</th><th>📷撮影不可</th><th>🚫送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
+  const today0=todayStr();
+  t.innerHTML=`<thead><tr><th>名前</th><th>よびな（虎の巻表示）</th><th>学校</th><th>学年</th><th>利用開始日</th><th>参加曜日</th><th>📷撮影不可</th><th>🚫送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
     state.children.map(c=>`<tr data-id="${c.id}">
       <td><input type="text" value="${esc(c.name)}" data-f="name" style="width:9em"></td>
       <td><input type="text" value="${esc(c.kana||"")}" data-f="kana" style="width:6em" placeholder="ひらがな"></td>
       <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===c.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
       <td><select data-f="grade">${GRADES.map(g=>`<option ${g===c.grade?"selected":""}>${g}</option>`).join("")}</select></td>
+      <td><input type="date" value="${esc(c.startFrom||"")}" data-f="startFrom" title="この日から虎の巻に出ます。空欄なら最初から">${
+        c.startFrom&&c.startFrom>today0?`<div class="dcnote next">📅 ${esc(c.startFrom)}から利用開始</div>`:""}</td>
       <td>${(()=>{
         const now=daysChangeAt(c.id,todayStr());
         const fut=futureChanges(c.id);
@@ -2205,10 +2255,13 @@ function renderKids(){
       <td><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const c=state.children.find(x=>x.id===tr.dataset.id);
-    const F={name:"名前",kana:"よびな",school:"学校",grade:"学年",memo:"メモ"};
+    const F={name:"名前",kana:"よびな",school:"学校",grade:"学年",memo:"メモ",startFrom:"利用開始日"};
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       c[el.dataset.f]=el.dataset.f==="grade"?Number(el.value):el.value;
-      stage("こどもマスタ",`${c.kana||c.name}：${F[el.dataset.f]||el.dataset.f}を「${el.value}」に変更`);renderPlan();
+      stage("こどもマスタ",`${c.kana||c.name}：${F[el.dataset.f]||el.dataset.f}を「${el.value||"（空）"}」に変更`);
+      // 利用開始日・学校・学年は他の表示（注記や下校時刻）に効くので描き直す
+      if(["startFrom","school","grade"].includes(el.dataset.f))renderKids();
+      renderPlan();
     });
     tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
       const d=Number(el.dataset.d);c.days=el.checked?[...c.days,d]:c.days.filter(x=>x!==d);
@@ -2318,9 +2371,51 @@ function renderDismissal(){
   });
   sel.onchange=renderDismissal;
   renderTerms();
+  renderChildTimes();
   renderMeet();
   renderVenues();
   renderSpecials();
+  lockMasterTables();
+}
+function renderChildTimes(){
+  const t=document.getElementById("ctTable"); if(!t)return;
+  const std=(c,d)=>state.dismissal[c.school]?.[d]?.[c.grade]||"";
+  t.innerHTML=`<thead><tr><th style="width:9em">こども</th><th>学校・学年</th>${
+    [1,2,3,4,5].map(d=>`<th>${DOWS[d]}</th>`).join("")}<th>メモ</th></tr></thead><tbody>${
+    state.children.map(c=>`<tr data-id="${c.id}">
+      <td><b>${esc(c.kana||c.name)}</b></td>
+      <td style="font-size:12px;color:var(--muted)">${esc(schoolOf(c.school).short)}${c.grade}年</td>
+      ${[1,2,3,4,5].map(d=>{
+        const v=(c.times||{})[d]||"";
+        return `<td><input type="time" data-ct="${d}" value="${esc(v)}" placeholder="${esc(std(c,d))}" title="${
+          std(c,d)?`学校の時間割：${esc(std(c,d))}`:"学校の時間割は未設定"}"${v?' class="ctset"':""}>${
+          std(c,d)?`<div class="ctstd">${v&&v!==std(c,d)?"学校 ":""}${esc(std(c,d))}</div>`:""}</td>`;
+      }).join("")}
+      <td><input type="text" data-ctmemo value="${esc(c.timesMemo||"")}" style="width:10em" placeholder="例：保護者指定"></td>
+    </tr>`).join("")||'<tr><td colspan="8" style="color:var(--muted)">こどもが登録されていません</td></tr>'}</tbody>`;
+  t.querySelectorAll("tr[data-id]").forEach(tr=>{
+    const c=state.children.find(x=>x.id===tr.dataset.id); if(!c)return;
+    tr.querySelectorAll("[data-ct]").forEach(el=>el.onchange=()=>{
+      const d=Number(el.dataset.ct); c.times??={};
+      if(el.value)c.times[d]=el.value; else delete c.times[d];
+      stage("こども別の下校時刻",`${c.kana||c.name}：${DOWS[d]}曜 → ${el.value||"学校の時間割どおり"}`);
+      renderChildTimes();renderPlan();
+    });
+    const mm=tr.querySelector("[data-ctmemo]");
+    if(mm)mm.onchange=()=>{c.timesMemo=mm.value;
+      stage("こども別の下校時刻",`${c.kana||c.name}：メモを「${mm.value}」に変更`);renderPlan()};
+  });
+  // 同じ学校・学年に複数いる組み合わせを知らせる
+  const g={};
+  state.children.forEach(c=>{(g[`${c.school}|${c.grade}`]??=[]).push(c)});
+  const dup=Object.entries(g).filter(([,v])=>v.length>1);
+  const box=document.getElementById("ctDup");
+  if(box) box.innerHTML=dup.length
+    ? `<p class="ctwarn">⚠ 同じ学校・学年に複数のこどもがいます：${dup.map(([k,v])=>{
+        const[sc,gr]=k.split("|");
+        return `${esc(schoolOf(sc).short)}${gr}年（${v.map(c=>esc(c.kana||c.name)).join("・")}）`;
+      }).join("、")}。下校時刻が違う場合は、必ずこの表に個別の時刻を入れてください。</p>`
+    : `<p class="help" style="margin:0 0 8px">同じ学校・学年に複数のこどもがいる組み合わせは今のところありません。</p>`;
   lockMasterTables();
 }
 function renderMeet(){
