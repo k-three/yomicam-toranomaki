@@ -1086,6 +1086,9 @@ function staffMin(crew,day,open,close){
   return min===Infinity?0:min;
 }
 
+/* メンバーがその日の出勤かどうか（勤務曜日 or 臨時出勤） */
+const daysOfStaff=(s,dow,day)=>s.days.includes(dow)||(day.staffExtra||[]).includes(s.id);
+
 /* 参加曜日は「開始日つきの変更」で上書きできる。指定日以前の変更のうち最も新しいものを使う。
    変更が1つもなければ、こどもマスタの参加曜日。 */
 function daysChangeAt(cid,ds){
@@ -1189,6 +1192,11 @@ function planDay(ds){
     const nmOf=id=>state.staff.find(s=>s.id===id)?.name||id;
     const ex=(day.staffExtra||[]).filter(id=>!day.staffOff.includes(id));
     if(ex.length) warnings.push({lv:"info",tag:"臨時出勤",text:`臨時出勤：${ex.map(nmOf).join("・")}`});
+    // 来訪対応に、この日の出勤に入っていない人が指定されている場合
+    const onIds=new Set(state.staff.filter(s=>s.role!=="taxi"
+      &&(daysOfStaff(s,dow,day))&&!day.staffOff.includes(s.id)).map(s=>s.id));
+    const offHosts=[...new Set((day.visits||[]).map(v=>v.host).filter(h=>h&&!onIds.has(h)))];
+    if(offHosts.length) warnings.push({lv:"warn",tag:"来訪対応",text:`来訪対応の ${offHosts.map(nmOf).join("・")} はこの日の出勤に入っていません。当日いらっしゃるなら「メンバー予定」または当日調整で臨時出勤にしてください（見守りの人数にも数えられます）`});
     const wt=Object.entries(day.staffTimes||{}).filter(([id,v])=>(v.from||v.to));
     if(wt.length) warnings.push({lv:"info",tag:"勤務変更",text:wt.map(([id,v])=>`${nmOf(id)}＝${v.from||"13:00"}〜${v.to||"19:00"}`).join("、")});
   }
@@ -1869,7 +1877,15 @@ function renderDayEdit(plan){
       <input type="text" id="vLabel" placeholder="内容（例：見学 ◯◯様・こども同伴）" style="border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--surface);width:min(100%,240px)">
       <select id="vHost" style="padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
         <option value="">対応メンバー…</option>
-        ${dayStaff.filter(s=>!day.staffOff.includes(s.id)).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
+        ${(()=>{
+          const onDutyToday=dayStaff.filter(s=>!day.staffOff.includes(s.id));
+          const ids=new Set(onDutyToday.map(s=>s.id));
+          // 応援メンバーなど、この日の出勤に入っていない人も選べるようにする
+          const others=state.staff.filter(s=>s.role!=="taxi"&&!ids.has(s.id));
+          const opt=s=>`<option value="${s.id}">${esc(s.name)}</option>`;
+          return `<optgroup label="この日の出勤">${onDutyToday.map(opt).join("")}</optgroup>`
+            +(others.length?`<optgroup label="その他（応援メンバーなど）">${others.map(opt).join("")}</optgroup>`:"");
+        })()}
       </select>
       <button class="btn" id="vAdd">＋ 追加</button>
     </div>
