@@ -48,6 +48,7 @@ header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 
 .datebox{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow)}
 .datebox input{border:none;background:none;font-weight:700;font-variant-numeric:tabular-nums}
 .datebox input:focus{outline:2px solid var(--accent);border-radius:6px}
+.datebox .daystep{padding:3px 9px;font-size:12px;box-shadow:none}
 .dowchip{font-weight:900;font-family:"Zen Maru Gothic";background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:99px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
 .btn:hover{border-color:var(--accent)}
@@ -262,7 +263,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="spacer"></div>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
-  <div class="datebox">📅 <input type="date" id="dateInput"> <span class="dowchip" id="dowChip">–</span></div>
+  <div class="datebox">📅 <button class="btn daystep" id="dPrev" title="前の平日へ">◀ 前日</button><input type="date" id="dateInput"><button class="btn daystep" id="dNext" title="次の平日へ">翌日 ▶</button> <span class="dowchip" id="dowChip">–</span></div>
   <button class="btn" id="slackBtn" title="Slack・LINE投稿用の運行概要テキストをコピー">📣 投稿文</button>
   <button class="btn" id="snapBtn" title="この日の虎の巻を1枚のHTMLファイルとして保存（LINE・メール等で配布用）">📤 配布用</button>
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
@@ -283,6 +284,7 @@ body.staging{padding-bottom:110px}
 
 <!-- ============ 虎の巻 (plan) ============ -->
 <section id="tab-plan">
+  <div class="card noprint" id="issueBar" hidden></div>
   <div class="card" id="summaryCard"></div>
   <div class="card noprint" id="dayEditCard"></div>
   <div class="card" id="runsCard"></div>
@@ -459,13 +461,14 @@ body.staging{padding-bottom:110px}
     <h3>2. この規模なら「厳密解」より「確実な貪欲法」</h3>
     <p>学校は最大6か所、車両は1日2〜3台。組合せは高々数百通りで、汎用ソルバーは不要です。本アプリは<b>時刻順の貪欲法＋連結（チェイニング）</b>を使います。</p>
     <div class="steps">
-      <div class="step">参加児童を確定（曜日固定＋スポット−欠席）。下校時刻は「保護者連絡の個別時刻 ＞ 学校×曜日×学年の時刻」の優先順で決める</div>
-      <div class="step">同じ学校で下校時刻が10分以内の児童は1回のお迎えにまとめる（遅い方の時刻に合わせる）</div>
+      <div class="step">参加児童を確定（曜日固定＋スポット−欠席）。下校時刻は「①保護者連絡の個別時刻 ＞ ②特別下校時刻 ＞ ③こども別の下校時刻 ＞ ④学校×曜日×学年の時間割」の優先順で決める</div>
+      <div class="step">同じ学校で下校時刻が10分以内の児童は1回のお迎えにまとめる（遅い方の時刻に合わせる）。ただし<b>違うメンバーに固定したこどもはまとめない</b>（同じ学校でも便が分かれる）</div>
       <div class="step"><b>各学校で下校時刻から最低20分の待機</b>を計画に組み込む（学校発＝下校＋20分）。先生への相談や友達との会話で遅れてくる子は、この待機で吸収する</div>
       <div class="step">お迎え仕事を時刻の早い順に並べる</div>
       <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>20分待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。さらに<b>40分を超える乗車は超過分だけ減点</b>し、いったん拠点へ戻って別便を出せるならそちらを優先する（こどもを早く降ろすため）。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
       <div class="step">巡回候補と新規便候補をスコアで比較して割り当てる。<b>自然学校は基本ハイエースが対応</b>し、ハイエースで難しい場合のみ他の車で対応。メンバーのこどもが参加する日はそのこどもの学校をそのメンバー優先（余裕がなければこの限りではない）。少人数は自家用車を先に使いハイエースの枠を温存</div>
-      <div class="step">自動算出の結果は<b>「担当の固定」で手動調整できる</b>（送迎便カードの上）。学校ごとに担当メンバーを固定すると、残りは自動のまま全体を再計算する。固定した担当で時間が成立しない場合は未割当として警告</div>
+      <div class="step">自動算出の結果は<b>「送迎の調整」で手動調整できる</b>（送迎便カードの上）。固定には<b>学校単位</b>（その学校のすべての便が同じメンバー）と<b>こども単位</b>（そのこどもだけメンバーを固定。学校単位より優先）があり、こども単位を使うと同じ学校でも第1便と第3便で別のメンバーにできる。残りは自動のまま全体を再計算し、固定した担当で時間が成立しない場合は未割当として警告</div>
+      <div class="step">計画は表示中の日だけでなく、<b>今日から先の平日をまとめて試算</b>し、乗せる車がないこどもがいる日を虎の巻の上部にまとめて出す（先の日の見落としを防ぐ）</div>
       <div class="step">定員が足りなければ便を分割。それでも足りなければ第一交通（タクシー）を提案。第一交通は<b>1回1校→拠点（巡回させない）</b>、依頼は<b>2営業日前まで</b>（9月は本永さんのサポート予定も確認）</div>
     </div>
     <p>出発時刻は<b>逆算</b>します：下校時刻 −「学校到着の余裕（5分）」−「移動時間」＝会場出発。学校からの出発は「下校時刻＋20分」に固定。逆算の結果が13:00の集合より前になる便は、拠点を経由せず<b>学校へ直行</b>とし、虎の巻に直行フラグを表示します。</p>
@@ -1061,10 +1064,25 @@ function renderRequests(){
     catch(e){alert("削除できませんでした（権限がない可能性があります）")}
   });
 }
+/* dayRO を立てている間は state.days に書き込まない（他の日をまとめて試算するとき用）。
+   計画の試算だけのために空の日データを作ってしまうと、未変更なのに「変更あり」になるため。 */
+let dayRO=false;
+const DAY_BLANK=()=>({venue:"",absent:[],spots:[],timeOverrides:{},staffOff:[],taxiOn:false,notes:"",
+  visits:[],pins:{},kidPins:{},evEdits:{},evCustom:[],customRuns:[],staffExtra:[],staffTimes:{}});
 function getDay(ds){
-  if(!state.days[ds]) state.days[ds]={venue:"",absent:[],spots:[],timeOverrides:{},staffOff:[],taxiOn:false,notes:"",visits:[],pins:{}};
+  if(!state.days[ds]){
+    const fresh=DAY_BLANK();
+    if(dayRO) return fresh;
+    state.days[ds]=fresh;
+  }
+  if(dayRO){
+    const c={...state.days[ds]};
+    for(const [k,v] of Object.entries(DAY_BLANK())) if(c[k]==null) c[k]=v;
+    return c;
+  }
   state.days[ds].visits??=[];
   state.days[ds].pins??={};
+  state.days[ds].kidPins??={};
   state.days[ds].evEdits??={};
   state.days[ds].evCustom??=[];
   state.days[ds].customRuns??=[];
@@ -1280,21 +1298,18 @@ function planDay(ds){
     res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
   const selfKids=res.breakMode?[]:res.attendees.filter(a=>a.selfTransport);
   if(selfKids.length) warnings.push({lv:"info",tag:"保護者送迎",text:`送迎不要（保護者が送迎）：${selfKids.map(kanaOf).join("・")}。到着時刻は保護者と個別に確認`});
-  const jobs=[];
-  for(const [sc,list] of Object.entries(bySchool)){
-    list.sort((a,b)=>toMin(a.time)-toMin(b.time));
-    let cur=null;
-    for(const a of list){
-      if(cur&&toMin(a.time)-cur.time<=SET.mergeGap){cur.kids.push(a);cur.time=Math.max(cur.time,toMin(a.time))}
-      else{cur={school:sc,kids:[a],time:toMin(a.time)};jobs.push(cur)}
-    }
-  }
-  jobs.sort((a,b)=>a.time-b.time);
-  res.schoolsToday=[...new Set(jobs.map(j=>j.school))];
+  // 送迎の対象になるこども（担当固定の選択肢にも使う）
+  const transported=Object.values(bySchool).flat();
+  const schOrderP=new Map(state.schools.map((sc,i)=>[sc.id,i]));
+  res.pinKids=[...transported].sort((a,b)=>
+    (schOrderP.get(a.school)??99)-(schOrderP.get(b.school)??99)||toMin(a.time)-toMin(b.time)||
+    String(kanaOf(a)).localeCompare(String(kanaOf(b)),"ja"))
+    .map(a=>({id:a.id,name:kanaOf(a),school:a.school,time:toMin(a.time)}));
 
   // --- 運転手（担当固定＝手動調整を考慮） ---
-  const pins=day.pins||{};
-  const pinnedIds=new Set(Object.values(pins).filter(Boolean));
+  const pins=day.pins||{};              // {学校: メンバー}
+  const kidPins=day.kidPins||{};        // {こども: メンバー}（学校単位より優先）
+  const pinnedIds=new Set([...Object.values(pins),...Object.values(kidPins)].filter(Boolean));
   const onDuty=state.staff.filter(s=>(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id))&&!day.staffOff.includes(s.id));
   res.staffOnDuty=onDuty.filter(s=>s.role!=="taxi"||day.taxiOn||pinnedIds.has(s.id));
   const drivers=onDuty.filter(s=>s.role==="drive"||(s.role==="taxi"&&(day.taxiOn||pinnedIds.has(s.id))));
@@ -1338,10 +1353,45 @@ function planDay(ds){
       warnings.push({lv:"alert",tag:"担当固定",text:`${schoolOf(sc).short}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。この学校は自動割当に戻して計算しています`});
     }
   }
-  if(Object.keys(activePins).length)
-    warnings.push({lv:"info",tag:"手動調整",text:`担当を固定中：${Object.entries(activePins).map(([sc,sid])=>`${schoolOf(sc).short}＝${state.staff.find(s=>s.id===sid)?.name}`).join("、")}（自動に戻すには送迎便の「担当の固定」で「自動」を選択）`});
-  // 固定された学校を最優先で割り当て、担当者を確保する（そのあと残りを自動配分）
-  jobs.sort((a,b)=>((activePins[a.school]?0:1)-(activePins[b.school]?0:1))||a.time-b.time);
+  // こども単位の固定。その日の送迎対象でないこども（欠席・保護者送迎など）の指定は無視する
+  const activeKidPins={};
+  for(const [cid,sid] of Object.entries(kidPins)){
+    if(!sid) continue;
+    const kid=transported.find(a=>a.id===cid);
+    if(!kid) continue;
+    if(drivers.some(s=>s.id===sid)) activeKidPins[cid]=sid;
+    else{
+      const nm=state.staff.find(s=>s.id===sid)?.name||sid;
+      warnings.push({lv:"alert",tag:"担当固定",text:`${kanaOf(kid)}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。このこどもは自動割当に戻して計算しています`});
+    }
+  }
+  {
+    const list=[
+      ...Object.entries(activePins).map(([sc,sid])=>`${schoolOf(sc).short}（学校）＝${state.staff.find(s=>s.id===sid)?.name}`),
+      ...Object.entries(activeKidPins).map(([cid,sid])=>`${kanaOf(transported.find(a=>a.id===cid))}＝${state.staff.find(s=>s.id===sid)?.name}`),
+    ];
+    if(list.length)
+      warnings.push({lv:"info",tag:"手動調整",text:`担当を固定中：${list.join("、")}（自動に戻すには送迎便の「送迎の調整」で「自動」を選択）`});
+  }
+
+  // --- 便のもと（job）を作る ---
+  // 同じ学校でも下校時刻が10分より離れていれば別の便。さらに、
+  // 違う担当に固定されたこどもは同じ便にできないので、そこでも分ける
+  // （これで「第1便はAさん・第3便はBさん」のような調整ができる）
+  const pinFor=a=>activeKidPins[a.id]||activePins[a.school]||"";
+  const jobs=[];
+  for(const [sc,list] of Object.entries(bySchool)){
+    list.sort((a,b)=>toMin(a.time)-toMin(b.time)||pinFor(a).localeCompare(pinFor(b)));
+    const cur={};   // 固定先ごとに「直前の便」を覚えておく
+    for(const a of list){
+      const p=pinFor(a), c=cur[p];
+      if(c&&toMin(a.time)-c.time<=SET.mergeGap){c.kids.push(a);c.time=Math.max(c.time,toMin(a.time))}
+      else{cur[p]={school:sc,kids:[a],time:toMin(a.time),pin:p};jobs.push(cur[p])}
+    }
+  }
+  // 固定のある便を最優先で割り当て、担当者を確保する（そのあと残りを自動配分）
+  jobs.sort((a,b)=>((a.pin?0:1)-(b.pin?0:1))||a.time-b.time);
+  res.schoolsToday=[...new Set(jobs.map(j=>j.school))];
 
   // --- 不在時間帯・来訪対応（運転手の使えない時間） ---
   const dayVisits=(day.visits||[]).map(v=>({s:toMin(v.from),e:toMin(v.to),host:v.host,label:v.label}))
@@ -1410,7 +1460,7 @@ function planDay(ds){
   for(const job of jobs){
     let remain=[...job.kids];
     let guard=0;
-    const pin=activePins[job.school]||"";
+    const pin=job.pin||"";
     while(remain.length&&guard++<20){
       let best=null;
       // 既存ルートの延長
@@ -1777,7 +1827,43 @@ function lockMasterTables(){
 }
 function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" style="background:${s.color}">${esc(s.short)}</span>`}
 
+/* ===== 先の日付までまとめて点検する =====
+   表示している日だけを見ていると、先の日に「乗せる車がないこども」がいても気づけない。
+   今日から先の平日（＋データのある将来日）を試算して、上部に一覧で出す。
+   試算は dayRO で行うので、state.days に空の日データを作らない（＝未変更のまま）。 */
+const SCAN_AHEAD_DAYS=60;
+function scanUnassigned(){
+  const today=todayStr(), set=new Set(), d=new Date(today+"T12:00:00");
+  for(let i=0;i<=SCAN_AHEAD_DAYS;i++){set.add(dstr(d));d.setDate(d.getDate()+1)}
+  for(const ds of Object.keys(state.days||{})) if(ds>=today) set.add(ds);
+  const out=[], prev=dayRO;
+  dayRO=true;
+  try{
+    for(const ds of [...set].sort()){
+      const w=dowOf(ds); if(w===0||w===6) continue;
+      let p; try{p=planDay(ds)}catch(e){continue}
+      if(!p.unassigned?.length) continue;
+      out.push({ds,kids:p.unassigned.flatMap(u=>u.kids.map(kanaOf))});
+    }
+  }finally{dayRO=prev}
+  return out;
+}
+function renderIssueBar(){
+  const host=document.getElementById("issueBar"); if(!host)return;
+  const list=scanUnassigned();
+  if(!list.length){host.hidden=true;host.innerHTML="";return}
+  host.hidden=false;
+  host.innerHTML=`<h2 style="color:var(--alert)">❗ 送迎に乗せられないこどもがいる日があります（${list.length}日）</h2>
+    <p class="help" style="margin:0 0 8px">表示中の日付に関係なく、今日から先の平日をまとめて点検した結果です。日付を押すとその日を開きます。<br>
+    第一交通をONにする／メンバーの出勤を追加する／担当の固定を「自動」に戻す／下校時刻を確認する、のいずれかで解消できます。</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${list.map(x=>
+      `<button class="btn" data-jump="${x.ds}" style="border-color:var(--alert);color:var(--alert)">${
+        (x.ds.slice(0,4)===todayStr().slice(0,4)?x.ds.slice(5):x.ds).replaceAll("-","/")
+      }（${DOWS[dowOf(x.ds)]}）<span style="font-weight:500">　${esc(x.kids.join("・"))}</span></button>`).join("")}</div>`;
+  host.querySelectorAll("[data-jump]").forEach(el=>el.onclick=()=>goDate(el.dataset.jump));
+}
 function renderPlan(){
+  try{renderIssueBar()}catch(err){console.error(err)}
   try{renderPlanInner()}
   catch(err){
     console.error(err);
@@ -2035,19 +2121,35 @@ function renderRuns(plan){
     <div class="stops"><span class="stop" style="background:var(--alert-soft);color:var(--alert)">${esc(schoolOf(u.job.school).short)}<small>${fmt(u.job.time)}下校</small></span></div>
     <p class="help" style="margin:6px 0 0">乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください。</p>
   </div>`).join("");
-  const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
-    <b style="font-size:12.5px">📌 担当の固定（手動調整）：</b><span style="font-size:11.5px;color:var(--muted)">変更は「✅ 決定して反映」を押すまで共有されません</span>
-    ${plan.schoolsToday.map(sc=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(sc).short)}
-      <select data-pin="${sc}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
+  const selSty=`style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"`;
+  const drvOptsFor=sel=>state.staff.filter(s=>s.cap>0)
+    .map(s=>`<option value="${s.id}" ${sel===s.id?"selected":""}>${esc(s.name)}</option>`).join("");
+  const kidPinRow=(plan.pinKids||[]).length?`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">
+    <b style="font-size:12.5px">🧒 こども単位：</b>
+    ${plan.pinKids.map(k=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(k.school).short)} ${esc(k.name)}<small style="font-weight:500;color:var(--muted)"> ${fmt(k.time)}</small>
+      <select data-kidpin="${k.id}" ${selSty}>
         <option value="">自動</option>
-        ${state.staff.filter(s=>s.cap>0).map(s=>`<option value="${s.id}" ${plan.day.pins?.[sc]===s.id?"selected":""}>${esc(s.name)}</option>`).join("")}
+        ${drvOptsFor(plan.day.kidPins?.[k.id])}
       </select></label>`).join("")}
+    <span style="font-size:11.5px;color:var(--muted);flex-basis:100%">違うメンバーに固定したこどもは<b>必ず別の便</b>になります（同じ学校でも分けられます）。こども単位は学校単位より優先。<b>下の送迎便がその場で組み直されます</b>ので、結果を見ながら調整してください</span>
   </div>`:"";
-  const drvOpts=sel=>state.staff.filter(s=>s.cap>0).map(s=>`<option value="${s.id}" ${s.id===sel?"selected":""}>${esc(s.name)}</option>`).join("");
+  const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <b style="font-size:12.5px">📌 担当の固定：</b><span style="font-size:11.5px;color:var(--muted)">変更は「✅ 決定して反映」を押すまで共有されません</span>
+      <span style="font-size:12.5px;font-weight:700;flex-basis:100%">🏫 学校単位：</span>
+      ${plan.schoolsToday.map(sc=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(sc).short)}
+        <select data-pin="${sc}" ${selSty}>
+          <option value="">自動</option>
+          ${drvOptsFor(plan.day.pins?.[sc])}
+        </select></label>`).join("")}
+      <span style="font-size:11.5px;color:var(--muted);flex-basis:100%">その学校のすべての便が同じメンバーになります。便ごとに分けたいときは下の「こども単位」で指定してください</span>
+    </div>
+    ${kidPinRow}
+  </div>`:"";
   const crBar=`<div class="noprint" style="display:grid;gap:8px;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:8px 12px">
     <b style="font-size:12.5px">🔧 手動の便（自由編成：担当と巡回順を指定。時間の無理は警告で表示）</b>
     ${(plan.day.customRuns||[]).map((cr,i)=>`<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12.5px">
-      担当 <select data-crdrv="${i}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"><option value="">選択…</option>${drvOpts(cr.driver)}</select>
+      担当 <select data-crdrv="${i}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"><option value="">選択…</option>${drvOptsFor(cr.driver)}</select>
       巡回順：${(cr.schools||[]).map((sc,j)=>`<span class="chip">${esc(schoolOf(sc)?.short||sc)} <button class="del" data-crdel="${i}:${j}">✕</button></span><span class="arrow">→</span>`).join("")}
       <select data-cradd="${i}" style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)">
         <option value="">学校を追加…</option>
@@ -2058,7 +2160,7 @@ function renderRuns(plan){
     <div><button class="btn" id="addCr" style="padding:3px 10px;font-size:12.5px">＋ 手動の便を追加</button></div>
   </div>`;
   const adjOpen=!!ui.runAdjOpen;
-  const pinN=Object.values(plan.day.pins||{}).filter(Boolean).length;
+  const pinN=[...Object.values(plan.day.pins||{}),...Object.values(plan.day.kidPins||{})].filter(Boolean).length;
   const crN=(plan.day.customRuns||[]).length;
   const adjBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px">
     <button class="btn" id="adjToggle" style="font-size:12.5px;padding:4px 12px">${adjOpen?"▾":"▸"} 送迎の調整${(pinN||crN)?`（固定${pinN}・手動便${crN}）`:""}</button>
@@ -2077,6 +2179,14 @@ function renderRuns(plan){
       const day=getDay(currentDate);
       if(el.value) day.pins[el.dataset.pin]=el.value; else delete day.pins[el.dataset.pin];
       stage("送迎の調整",`${schoolOf(el.dataset.pin).short}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
+      renderPlan();
+    });
+    host.querySelectorAll("[data-kidpin]").forEach(el=>el.onchange=()=>{
+      const day=getDay(currentDate);
+      day.kidPins??={};
+      if(el.value) day.kidPins[el.dataset.kidpin]=el.value; else delete day.kidPins[el.dataset.kidpin];
+      const kid=state.children.find(c=>c.id===el.dataset.kidpin);
+      stage("送迎の調整",`${kid?kanaOf(kid):el.dataset.kidpin}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
       renderPlan();
     });
     const addCr=host.querySelector("#addCr");
@@ -2796,6 +2906,19 @@ document.getElementById("tabs").addEventListener("click",e=>{
   const b=e.target.closest(".tab");if(b)showTab(b.dataset.tab);
 });
 document.getElementById("dateInput").addEventListener("change",e=>{currentDate=e.target.value||todayStr();renderPlan()});
+/* 前日・翌日ボタン。土日は開所しないので飛ばして平日へ移動する */
+function stepDate(n){
+  const d=new Date((currentDate||todayStr())+"T12:00:00");
+  do{d.setDate(d.getDate()+n)}while(d.getDay()===0||d.getDay()===6);
+  goDate(dstr(d));
+}
+function goDate(ds){
+  currentDate=ds;
+  const el=document.getElementById("dateInput"); if(el)el.value=ds;
+  renderPlan();
+}
+document.getElementById("dPrev").onclick=()=>stepDate(-1);
+document.getElementById("dNext").onclick=()=>stepDate(1);
 document.getElementById("addKid").onclick=()=>{
   state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
   stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
