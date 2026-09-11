@@ -343,8 +343,10 @@ body.staging{padding-bottom:110px}
     <div class="tblwrap"><table class="grid" id="ctTable"></table></div>
   </div>
   <div class="card">
-    <h2>学校別 待ち合わせ場所</h2>
-    <p class="help">こどもを迎えに行ったときに合流する場所です。虎の巻のタイムライン（各校の到着）にも自動で表示されます。</p>
+    <h2>学校別 待ち合わせ場所・待機時間</h2>
+    <p class="help"><b>待ち合わせ場所</b>＝こどもを迎えに行ったときに合流する場所。虎の巻のタイムライン（各校の到着）にも自動で表示されます。<br>
+    <b>待機時間</b>＝下校時刻のあと、その学校で待つ時間です。先生への相談や友達との会話で遅れてくる子は、この待機で吸収します。<b>短くすると送迎はつながりやすくなりますが、遅れへの余裕はその分なくなります</b>（残って待つ計画に変わったときは要注意事項に出ます）。空欄なら既定値を使います。</p>
+    <p class="help" style="margin-top:0">既定の待機時間：<input type="number" id="waitDef" min="5" max="60" step="5" style="width:5em"> 分（全校共通。学校別に変えたいときは下の表で上書き）</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="meetTable"></table></div>
   </div>
@@ -463,11 +465,13 @@ body.staging{padding-bottom:110px}
     <div class="steps">
       <div class="step">参加児童を確定（曜日固定＋スポット−欠席）。下校時刻は「①保護者連絡の個別時刻 ＞ ②特別下校時刻 ＞ ③こども別の下校時刻 ＞ ④学校×曜日×学年の時間割」の優先順で決める</div>
       <div class="step">同じ学校で下校時刻が10分以内の児童は1回のお迎えにまとめる（遅い方の時刻に合わせる）。ただし<b>違うメンバーに固定したこどもはまとめない</b>（同じ学校でも便が分かれる）</div>
-      <div class="step"><b>各学校で下校時刻から最低20分の待機</b>を計画に組み込む（学校発＝下校＋20分）。先生への相談や友達との会話で遅れてくる子は、この待機で吸収する</div>
+      <div class="step"><b>各学校で下校時刻から待機（既定20分）</b>を計画に組み込む（学校発＝下校＋待機）。先生への相談や友達との会話で遅れてくる子は、この待機で吸収する。待機時間は「下校時刻」タブで全校共通・学校別に変更できる（短くすると送迎はつながりやすくなるが遅れへの余裕は減るので、その日の要注意事項に出る）</div>
       <div class="step">お迎え仕事を時刻の早い順に並べる</div>
-      <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>20分待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。さらに<b>40分を超える乗車は超過分だけ減点</b>し、いったん拠点へ戻って別便を出せるならそちらを優先する（こどもを早く降ろすため）。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
+      <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。さらに<b>40分を超える乗車は超過分だけ減点</b>し、いったん拠点へ戻って別便を出せるならそちらを優先する（こどもを早く降ろすため）。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
       <div class="step">巡回候補と新規便候補をスコアで比較して割り当てる。<b>自然学校は基本ハイエースが対応</b>し、ハイエースで難しい場合のみ他の車で対応。メンバーのこどもが参加する日はそのこどもの学校をそのメンバー優先（余裕がなければこの限りではない）。少人数は自家用車を先に使いハイエースの枠を温存</div>
       <div class="step">自動算出の結果は<b>「送迎の調整」で手動調整できる</b>（送迎便カードの上）。固定には<b>学校単位</b>（その学校のすべての便が同じメンバー）と<b>こども単位</b>（そのこどもだけメンバーを固定。学校単位より優先）があり、こども単位を使うと同じ学校でも第1便と第3便で別のメンバーにできる。残りは自動のまま全体を再計算し、固定した担当で時間が成立しない場合は未割当として警告</div>
+      <div class="step">同じ学校であとから下校する子がいて、<b>車がまだその学校にいる</b>なら、そのまま待って一緒に乗せる。ただし先に下校した子を待たせすぎないよう、いちばん早い下校から<b>40分</b>を超えるなら別の便にする（待たせる場合は要注意事項に何分待つかを出す）</div>
+      <div class="step">1回で乗せられないこどもが出たら、<b>その学校を先に決め直して組み直し</b>、乗せられない人数がいちばん少なくなる組み方を採用する（時刻の早い順に決めるだけだと、先の便が車を使い切ってしまうことがあるため）</div>
       <div class="step">計画は表示中の日だけでなく、<b>今日から先の平日をまとめて試算</b>し、乗せる車がないこどもがいる日を虎の巻の上部にまとめて出す（先の日の見落としを防ぐ）</div>
       <div class="step">定員が足りなければ便を分割。それでも足りなければ第一交通（タクシー）を提案。第一交通は<b>1回1校→拠点（巡回させない）</b>、依頼は<b>2営業日前まで</b>（9月は本永さんのサポート予定も確認）</div>
     </div>
@@ -476,8 +480,8 @@ body.staging{padding-bottom:110px}
     <h3>3. 遅れてくる子は「計画の待機20分」で吸収する</h3>
     <p>このアプリは<b>計画（虎の巻づくり）だけ</b>を扱います。当日の細かい判断は現場・拠点の運用の話として切り分け、計画側では次の2つで遅れに備えます。</p>
     <ul>
-      <li><b>各校で最低20分の待機</b>：学校発は必ず下校＋20分。ふつうの遅れはここで吸収され、後続の学校に影響しません。</li>
-      <li><b>余白のない巡回は組まない</b>：20分待機を含めて次校の下校に間に合わない連結は計画に載せません。巡回便には参考として「次校に間に合う出発期限」と余裕分数を表示します。</li>
+      <li><b>各校で待機（既定20分）</b>：学校発は必ず下校＋待機。ふつうの遅れはここで吸収され、後続の学校に影響しません。学校別に短くもできますが、その分だけ遅れへの余裕は減ります。</li>
+      <li><b>余白のない巡回は組まない</b>：待機を含めて次校の下校に間に合わない連結は計画に載せません。巡回便には参考として「次校に間に合う出発期限」と余裕分数を表示します。</li>
       <li><b>常態化したら計画側を直す</b>：特定の学校でいつも20分を超えて遅れるなら、その学校の下校時刻マスタを実態に合わせて更新し、翌週の虎の巻に反映します（実測主義）。</li>
     </ul>
 
@@ -576,12 +580,19 @@ const DOWS=["日","月","火","水","木","金","土"];
 const GRADES=[1,2,3,4,5,6];
 let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開所時間に合わせて広げる）
 const PXM=2; // px per minute
-const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3};
+const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
-// board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）
+// board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
+// stayMax=40: 同じ学校であとから下校する子も乗せるとき、先に下校した子を待たせてよい上限。
+//             これを超えるなら別の便にする（車が学校に長く居座って先の子が待ち続けるのを防ぐ）
 // maxRide=80: こどもの乗車＋待ち時間（学校出発→会場到着）の上限
 // rideSoft=40: この分数を超える乗車は避けたい目安。巡回を組むと先に乗った子が長く乗るため、
 //              超える分だけ巡回のスコアを下げ、一度拠点へ戻って別便にできるならそちらを選ぶ
+/* 各学校で下校後に待つ時間。既定は SET.board（20分）で、学校ごとに短くもできる。
+   短くすると遅れてくる子を吸収する余裕が減るので、計画には警告を出す */
+const waitDefault=()=>{const v=Number(state.settings?.board);return Number.isFinite(v)&&v>=5&&v<=60?v:SET.board};
+const waitOf=sc=>{const v=Number((state.schools||[]).find(x=>x.id===sc)?.wait);
+  return Number.isFinite(v)&&v>=5&&v<=60?v:waitDefault()};
 const kanaOf=c=>c.kana||c.name;
 const toMin=s=>{if(!s)return null;const[a,b]=s.split(":").map(Number);return a*60+b};
 const fmt=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
@@ -795,7 +806,7 @@ function cancelStage(){
 /* データは2層：
    - マスタ（こども・メンバー・下校時刻・移動時間・会場・特別下校時刻）… 編集は admin/所有者のみ
    - 日別データ（当日調整・担当固定・手動便・タイムライン編集・保護者連絡）… 閲覧メンバーも編集可 */
-const MASTER_KEYS=["schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","terms","dayChanges","shareUrl","requestFormUrl","_v"];
+const MASTER_KEYS=["settings","schools","dismissal","travel","travelMeasured","venues","staff","children","specialTimes","terms","dayChanges","shareUrl","requestFormUrl","_v"];
 const DAY_KEYS=["days","parentNotes"];
 let dbNS=null, adopting=false;
 let mastersRev=0, daysRev=0, canMasters=false, canDays=false;
@@ -1413,22 +1424,29 @@ function planDay(ds){
   const overlaps=(a,b,list)=>list.some(w=>a<w.e&&w.s<b);
 
   // --- 割当（貪欲＋チェイニング） ---
-  const routes=[]; // {driver,cap,stops:[{school,kids,arrive,time,end}],onboard,hiace}
-  const unassigned=[];
-  const unmeasuredUsed=new Set();
+  // 時刻の早い順に決めていく貪欲法なので、先に決めた便が車を使い切ってしまい、
+  // あとの学校に車が残らないことがある。乗せられないこどもが出たら、その学校を
+  // 先に決め直して組み直し、いちばん良い結果を採用する（attempt を複数回まわす）。
+  let unmeasuredUsed=new Set();   // 実測していない移動時間を使った区間
+  let planWarn=[];                // その試行だけの警告（採用した試行のものだけ最後に足す）
   function useTravel(a,b){
     if(a===b) return 0;
     const v=travelOf(a,b);
-    if(v==null){warnings.push({lv:"alert",tag:"移動時間なし",text:`${a==="base"?"拠点":schoolOf(a).short} → ${b==="base"?"拠点":schoolOf(b).short} の移動時間が未入力です（移動時間タブ）`});return 15}
+    if(v==null){planWarn.push({lv:"alert",tag:"移動時間なし",text:`${a==="base"?"拠点":schoolOf(a).short} → ${b==="base"?"拠点":schoolOf(b).short} の移動時間が未入力です（移動時間タブ）`});return 15}
     if(!measured(a,b)) unmeasuredUsed.add(`${a==="base"?"拠点":schoolOf(a).short}→${b==="base"?"拠点":schoolOf(b).short} ${v}分`);
     return v;
   }
+  const jobKey=j=>`${j.school}@${j.time}`;
+  function attempt(priority){
+    const routes=[]; // {driver,cap,stops:[{school,kids,arrive,time,end}],onboard,hiace}
+    const unassigned=[];
+    unmeasuredUsed=new Set(); planWarn=[];
   // --- 手動の便 第2段階：時刻を計算してルート化（ルール違反は警告に落とす） ---
   for(const {cr,stops} of customPlans){
     const drv=state.staff.find(s=>s.id===cr.driver);
     if(!drv) continue;
     if(!onDuty.some(s=>s.id===drv.id))
-      warnings.push({lv:"alert",tag:"手動便",text:`手動の便の担当 ${drv.name} は当日出勤していません（出勤チェック・勤務曜日を確認）`});
+      planWarn.push({lv:"alert",tag:"手動便",text:`手動の便の担当 ${drv.name} は当日出勤していません（出勤チェック・勤務曜日を確認）`});
     const hi=drv.vehicle==="hiace";
     let prev="base",cursor=0,depart=0;
     for(const st of stops){
@@ -1440,29 +1458,32 @@ function planDay(ds){
         depart=arrive-tv;cursor=depart;
       }else arrive=cursor+tv;
       st.arrive=arrive;st.from=prev;
-      st.end=Math.max(st.time+SET.board,arrive+5);
+      st.end=Math.max(st.time+waitOf(st.school),arrive+5);
       for(const k of st.kids){
         const w=arrive-toMin(k.time);
-        if(w>SET.board)warnings.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）：${kanaOf(k)}は${schoolOf(st.school).short}で約${w}分待ち（待機20分を超過）。承知の上で運用してください`});
+        if(w>waitOf(st.school))planWarn.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）：${kanaOf(k)}は${schoolOf(st.school).short}で約${w}分待ち（待機${waitOf(st.school)}分を超過）。承知の上で運用してください`});
       }
-      if(hi&&arrive<SET.hiaceFrom)warnings.push({lv:"warn",tag:"手動便",text:`ハイエースは14:00まで使用不可ですが、手動の便の${schoolOf(st.school).short}到着が${fmt(arrive)}です`});
+      if(hi&&arrive<SET.hiaceFrom)planWarn.push({lv:"warn",tag:"手動便",text:`ハイエースは14:00まで使用不可ですが、手動の便の${schoolOf(st.school).short}到着が${fmt(arrive)}です`});
       prev=st.school;cursor=st.end;
     }
     const backAt=cursor+useTravel(prev,"base");
     const onboard=stops.reduce((n,s)=>n+s.kids.length,0);
     if(onboard>drv.cap)
-      warnings.push({lv:"alert",tag:"手動便",text:`手動の便（${drv.name}）の乗車${onboard}名が定員${drv.cap}名を超えています`});
+      planWarn.push({lv:"alert",tag:"手動便",text:`手動の便（${drv.name}）の乗車${onboard}名が定員${drv.cap}名を超えています`});
     for(const st of stops){
       const ride=backAt-st.end;
-      if(ride>SET.maxRide)warnings.push({lv:"warn",tag:"手動便",text:`手動の便：${schoolOf(st.school).short}出発からの乗車＋待ち時間が約${ride}分（上限80分を超過）`});
+      if(ride>SET.maxRide)planWarn.push({lv:"warn",tag:"手動便",text:`手動の便：${schoolOf(st.school).short}出発からの乗車＋待ち時間が約${ride}分（上限80分を超過）`});
     }
     if(overlaps(depart-SET.preCheck,backAt+SET.unload,driverBlocks(drv.id)))
-      warnings.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）が不在時間帯・来訪対応と重なっています`});
+      planWarn.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）が不在時間帯・来訪対応と重なっています`});
     routes.push({driver:drv,cap:drv.cap,hiace:hi,taxi:drv.role==="taxi",manual:true,
       depart,checkAt:depart-SET.preCheck,stops,onboard,backAt});
   }
 
-  for(const job of jobs){
+  const order=priority.size
+    ? [...jobs].sort((a,b)=>((priority.has(jobKey(b))?1:0)-(priority.has(jobKey(a))?1:0))||0)
+    : jobs;
+  for(const job of order){
     let remain=[...job.kids];
     let guard=0;
     const pin=job.pin||"";
@@ -1477,12 +1498,21 @@ function planDay(ds){
         const free=r.cap-r.onboard;
         if(free<=0) continue;
         const tv=travelOf(last.school,job.school); if(tv==null) continue;
-        let arr=last.end+tv;
+        // 同じ学校なら車はまだそこにいる。次の下校まで待てば乗せられるので、
+        // 「到着時刻」はすでに着いている時刻を使う（出発は遅いほうの下校に合わせて延びる）
+        const sameSchool=last.school===job.school;
+        let arr=sameSchool?last.arrive:last.end+tv;
         if(r.hiace) arr=Math.max(arr,SET.hiaceFrom);
         if(arr>job.time) continue;
+        if(sameSchool){
+          // 先に下校した子を待たせすぎない。いちばん早い下校から stayMax 分を超えるなら別の便へ
+          let firstT=job.time;
+          for(let i=r.stops.length-1;i>=0&&r.stops[i].school===job.school;i--) firstT=Math.min(firstT,r.stops[i].time);
+          if(job.time+waitOf(job.school)-firstT>SET.stayMax) continue;
+        }
         // こどもの乗車＋待ち時間（学校出発→会場到着）が80分を超える連結はしない
         const backTv=travelOf(job.school,"base"); if(backTv==null) continue;
-        const projBack=job.time+SET.board+backTv;
+        const projBack=job.time+waitOf(job.school)+backTv;
         if(r.stops.some(st=>projBack-st.end>SET.maxRide)) continue;
         if(overlaps(r.checkAt,projBack+SET.unload,driverBlocks(r.driver.id))) continue;
         // 延長すると同じ運転手の別の便（手動便含む）と重なる場合は不可。
@@ -1511,7 +1541,7 @@ function planDay(ds){
           const backTv0=travelOf(job.school,"base"); if(backTv0==null) continue;
           // 既存の便（手動便含む）の空き時間帯に差し込めるかを探す
           let arr=Math.max(job.time-SET.preArrival, hi?SET.hiaceFrom:0), fits=true;
-          const spanE=job.time+SET.board+backTv0+SET.unload;
+          const spanE=job.time+waitOf(job.school)+backTv0+SET.unload;
           for(let iter=0;iter<5;iter++){
             const spanS=arr-tv-5;
             const conf=routes.find(r=>r.driver.id===s.id&&spanS<r.backAt+SET.unload&&r.checkAt<spanE);
@@ -1529,7 +1559,7 @@ function planDay(ds){
           // この便を追加すると拠点の見守りが不在（または1名）になる時間帯ができないか。
           // こどもが拠点にいる時間帯だけを見る（最初の便が戻ってから）
           {
-            const cand={id:s.id,checkAt:arr-tv-SET.preCheck,backAt:job.time+SET.board+backTv0};
+            const cand={id:s.id,checkAt:arr-tv-SET.preCheck,backAt:job.time+waitOf(job.school)+backTv0};
             const firstBack=routes.length?Math.min(...routes.map(r=>r.backAt+SET.unload)):Infinity;
             let minCover=99;
             for(let t=Math.max(firstBack,cand.checkAt);t<cand.backAt+SET.unload;t+=5)
@@ -1548,10 +1578,10 @@ function planDay(ds){
       remain=remain.slice(best.free);
       if(best.kind==="extend"){
         const r=best.r;
-        r.stops.push({school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+SET.board,tv:best.tv,from:r.stops[r.stops.length-1].school});
+        r.stops.push({school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+waitOf(job.school),tv:best.tv,from:r.stops[r.stops.length-1].school});
         r.onboard+=take.length;
         const back=useTravel(job.school,"base"); // count usage
-        r.backAt=job.time+SET.board+back;
+        r.backAt=job.time+waitOf(job.school)+back;
         useTravel(r.stops[r.stops.length-2].school,job.school);
       }else{
         const back=useTravel(job.school,"base");
@@ -1559,11 +1589,33 @@ function planDay(ds){
         const depart=best.arr-best.tv;
         routes.push({driver:best.driver,cap:best.driver.cap,hiace:best.driver.vehicle==="hiace",taxi:best.driver.role==="taxi",
           depart,checkAt:depart-SET.preCheck,
-          stops:[{school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+SET.board,tv:best.tv,from:"base"}],
-          onboard:take.length, backAt:job.time+SET.board+back});
+          stops:[{school:job.school,kids:take,arrive:best.arr,time:job.time,end:job.time+waitOf(job.school),tv:best.tv,from:"base"}],
+          onboard:take.length, backAt:job.time+waitOf(job.school)+back});
       }
     }
   }
+    return {routes,unassigned,unmeasured:unmeasuredUsed,warn:planWarn};
+  }
+  // 良し悪しの順番：乗せられないこどもが少ない → アラートが少ない → 便が少ない
+  const scoreOf=a=>[a.unassigned.reduce((n,u)=>n+u.kids.length,0),
+    a.warn.filter(w=>w.lv==="alert").length, a.routes.length];
+  const better=(a,b)=>{const x=scoreOf(a),y=scoreOf(b);
+    for(let i=0;i<x.length;i++){if(x[i]!==y[i])return x[i]<y[i]} return false};
+  let bestPlan=attempt(new Set());
+  {
+    const pri=new Set();
+    for(let i=0;i<3&&bestPlan.unassigned.length;i++){
+      const before=pri.size;
+      bestPlan.unassigned.forEach(u=>pri.add(jobKey(u.job)));
+      if(pri.size===before) break;          // 前と同じ顔ぶれなら打ち切り
+      const cand=attempt(new Set(pri));
+      if(better(cand,bestPlan)) bestPlan=cand; else break;
+    }
+  }
+  const routes=bestPlan.routes, unassigned=bestPlan.unassigned;
+  unmeasuredUsed=bestPlan.unmeasured;
+  warnings.push(...bestPlan.warn);
+
   routes.sort((a,b)=>a.depart-b.depart);
   // 運転手ごとに時系列で並べ、初便＝運行前チェック20分・2便目以降＝出発前確認5分に整理
   const byDrvR={};
@@ -1591,10 +1643,26 @@ function planDay(ds){
       warnings.push({lv:"alert",tag:"車両不足",text:`${schoolOf(u.job.school).short} ${fmt(u.job.time)}下校の ${names} を乗せる車がありません。${pinNote}`});
     }
   }
+  {
+    // 待機を既定より短くしている学校は、遅れへの余裕がその分ないことを毎日知らせる
+    const short=(res.schoolsToday||[]).filter(sc=>waitOf(sc)<SET.board)
+      .map(sc=>`${schoolOf(sc).short}${waitOf(sc)}分`);
+    if(short.length)
+      warnings.push({lv:"warn",tag:"待機時間",text:`待機を短くしています：${short.join("、")}（設計上の目安は${SET.board}分）。遅れてくる子を吸収する余裕がその分ありません。待ち合わせ場所で待つ時間が短くなるので、こどもには「少し早めに出てきてね」と伝え、遅れそうなときは学校・保護者へ連絡してください`});
+  }
   if(unmeasuredUsed.size)
     warnings.push({lv:"warn",tag:"暫定値",text:`未実測の移動時間を使用：${[...unmeasuredUsed].join("、")}。運行後に実測し「移動時間」タブへ反映してください`});
   for(const r of routes){
     if(r.direct) warnings.push({lv:"info",tag:"直行",text:`第${r.no}便（${r.driver.name}）は13:00の集合前に出発するため、拠点を経由せず学校へ直行（${fmt(r.depart)}発）。運行前チェックは出発地で実施し、出発をSlackで一報`});
+    // 同じ学校で続けて待つ場合、その学校を実際に出発する時刻（最後のひとかたまりの発）
+    const leaveAt=i=>{let e=r.stops[i].end;
+      for(let j=i+1;j<r.stops.length&&r.stops[j].school===r.stops[i].school;j++) e=Math.max(e,r.stops[j].end);
+      return e};
+    r.stops.forEach((st,i)=>{
+      const w=leaveAt(i)-st.time, std=waitOf(st.school);
+      if(w>std) warnings.push({lv:"warn",tag:"長い待機",
+        text:`${r.driver.name}便：${st.kids.map(kanaOf).join("・")}は${schoolOf(st.school).short}で${w}分待ちます（既定の待機${std}分）。あとから下校するこどもを同じ便で乗せるため、その学校で待ち続ける計画です。待っている時間も運転者の視界内で、車内に残す場合は必ず同乗してください`});
+    });
     for(const st of r.stops){
       if(st.from===st.school) continue;
       // 下校時刻より遅い到着は、こどもが学校でひとり待つことになる。
@@ -1619,7 +1687,7 @@ function planDay(ds){
         if(via>st.time-SET.preArrival)
           why.push(`${schoolOf(prev.school).short}のあと拠点に戻ると${schoolOf(st.school).short}着が${fmt(via)}となり、下校${fmt(st.time)}の5分前に間に合わないため直接向かいます`);
       }
-      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋20分の待機を含む計画${dls?`：${dls}`:""}。乗車時間：${rides}。待機中、先に乗った児童は降車させず運転者の視界内で${why.length?`。${why.join("。")}`:""}`});
+      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋待機（既定${waitDefault()}分）を含む計画${dls?`：${dls}`:""}。乗車時間：${rides}。待機中、先に乗った児童は降車させず運転者の視界内で${why.length?`。${why.join("。")}`:""}`});
       const longRide=r.stops.filter(st=>r.backAt-st.end>SET.rideSoft&&r.backAt-st.end<=SET.maxRide);
       if(longRide.length)
         warnings.push({lv:"warn",tag:"長い乗車",text:`${longRide.map(st=>`${st.kids.map(kanaOf).join("・")}は${r.backAt-st.end}分`).join("、")}の乗車になります（目安${SET.rideSoft}分）。移動時間タブの実測値を入れると、拠点に戻って降ろす計画に切り替わる場合があります`});
@@ -1762,7 +1830,7 @@ function buildEvents(res){
   }
   for(const r of runs){
     for(const st of r.stops)
-      kidsEv.push({s:st.time,e:st.end,type:"t-kids",label:`${S(st.school).short}下校（${st.kids.map(kanaOf).join("・")}）`,detail:`第${r.no}便（${r.driver.name}）に乗車。下校＋20分待機を含む`});
+      kidsEv.push({s:st.time,e:st.end,type:"t-kids",label:`${S(st.school).short}下校（${st.kids.map(kanaOf).join("・")}）`,detail:`第${r.no}便（${r.driver.name}）に乗車。下校＋待機${waitOf(st.school)}分を含む`});
     kidsEv.push({s:r.backAt,e:r.backAt+5,type:"t-kmove",label:`${venueAt(r.backAt)}着（${r.stops.flatMap(st=>st.kids).map(kanaOf).join("・")}）`,detail:`第${r.no}便到着。出迎え・コドモン入館打刻（保護者へ自動通知）`});
   }
   if(firstArr!=null){
@@ -1777,7 +1845,7 @@ function buildEvents(res){
     kidsEv.push({s:1060,e:1080,type:"t-kids",label:"帰りの集まり",detail:"ふりかえり・持ち物確認・忘れ物チェック"});
   }
   for(const u of res.unassigned||[])
-    kidsEv.push({s:u.job.time,e:u.job.time+SET.board,type:"t-alert",label:`❗未割当 ${S(u.job.school).short}下校（${u.kids.map(kanaOf).join("・")}）`,detail:"乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください"});
+    kidsEv.push({s:u.job.time,e:u.job.time+waitOf(u.job.school),type:"t-alert",label:`❗未割当 ${S(u.job.school).short}下校（${u.kids.map(kanaOf).join("・")}）`,detail:"乗せる車がありません。第一交通をONにする／メンバーの出勤を確認／時刻調整を検討してください"});
   for(const v of dayVisits){
     const hn=state.staff.find(s=>s.id===v.host)?.name||"未定";
     kidsEv.push({s:v.s,e:v.e,type:"t-visit",label:`来訪：${v.label||""}`,detail:`対応：${hn}。見学者と児童が1対1にならないように`});
@@ -1833,6 +1901,7 @@ function applyRoleUI(){
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
+  {const w=document.getElementById("waitDef"); if(w)w.disabled=true}
   ["kidsTable","staffTable","disTable","spTable","venueTable","travelTable","meetTable","termTable","dcTable","ctTable"].forEach(id=>{
     const t=document.getElementById(id); if(!t)return;
     t.querySelectorAll("input,select,textarea,button").forEach(el=>{el.disabled=true});
@@ -2232,15 +2301,16 @@ function renderRuns(plan){
   if(!plan.runs.length){host.innerHTML=`<h2>送迎便</h2>${adjBar}<div class="runs">${unCards}</div>`;bindPins();return}
   const V=plan.venue;
   const venueAt=m=>(V.early&&V.switchMin&&m<V.switchMin)?V.early:V.main;
-  host.innerHTML=`<h2>送迎便（${plan.runs.length}便）<span style="font-size:12px;color:var(--muted);font-weight:500">　各校で下校＋20分待機を含む</span></h2>${adjBar}<div class="runs">${plan.runs.map(r=>{
+  host.innerHTML=`<h2>送迎便（${plan.runs.length}便）<span style="font-size:12px;color:var(--muted);font-weight:500">　各校で下校＋待機（既定${waitDefault()}分）を含む</span></h2>${adjBar}<div class="runs">${plan.runs.map(r=>{
     const veh=r.hiace?"ハイエース（定員6）":r.taxi?"タクシー（定員3）":"自家用車（定員3）";
     const cap=Array.from({length:r.cap},(_,i)=>`<i class="${i<r.onboard?"full":""}"></i>`).join("");
     const stops=[`<span class="stop home">${esc(r.direct?"直行":venueAt(r.depart))}<small>${fmt(r.depart)}発</small></span>`];
     for(const st of r.stops){
-      stops.push('<span class="arrow">→</span>');
-      const late=st.from!==st.school&&st.arrive>st.time?st.arrive-st.time:0;
-      stops.push(`<span class="stop"${late?' style="background:var(--alert-soft);color:var(--alert)"':""}>${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${
-        late?`着${fmt(st.arrive)}＝下校に${late}分おくれ・`:""}${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
+      stops.push(`<span class="arrow">${st.from===st.school?"･･":"→"}</span>`);
+      const stay=st.from===st.school;
+      const late=!stay&&st.arrive>st.time?st.arrive-st.time:0;
+      stops.push(`<span class="stop"${late?' style="background:var(--alert-soft);color:var(--alert)"':""}>${stay?"↳ ":""}${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${
+        late?`着${fmt(st.arrive)}＝下校に${late}分おくれ・`:stay?"そのまま待機・":""}${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
     }
     stops.push('<span class="arrow">→</span>');
     stops.push(`<span class="stop home">${esc(venueAt(r.backAt))}<small>${fmt(r.backAt)}着</small></span>`);
@@ -2556,15 +2626,34 @@ function renderChildTimes(){
 }
 function renderMeet(){
   const t=document.getElementById("meetTable"); if(!t)return;
-  t.innerHTML=`<thead><tr><th style="width:9em">学校</th><th>待ち合わせ場所</th></tr></thead><tbody>${
+  const def=waitDefault();
+  const wd=document.getElementById("waitDef");
+  if(wd){
+    wd.value=def;
+    wd.onchange=()=>{
+      const v=Math.min(60,Math.max(5,Number(wd.value)||SET.board));
+      (state.settings??={}).board=v; wd.value=v;
+      stage("待機時間",`既定の待機時間を${v}分に変更`);renderMeet();renderPlan();
+    };
+  }
+  t.innerHTML=`<thead><tr><th style="width:9em">学校</th><th>待ち合わせ場所</th><th style="width:9em">待機時間</th></tr></thead><tbody>${
     state.schools.map(sc=>`<tr>
       <td><b style="color:${esc(sc.color||"#888")}">${esc(sc.name)}</b></td>
       <td><input type="text" data-meet="${sc.id}" value="${esc(sc.meet||"")}" style="width:100%;min-width:18em" placeholder="例：児童玄関前付近"></td>
+      <td><input type="number" data-wait="${sc.id}" value="${sc.wait||""}" min="5" max="60" step="5" style="width:4.5em" placeholder="${def}">分</td>
     </tr>`).join("")}</tbody>`;
   t.querySelectorAll("[data-meet]").forEach(el=>el.onchange=()=>{
     const sc=state.schools.find(x=>x.id===el.dataset.meet); if(!sc)return;
     sc.meet=el.value;
     stage("待ち合わせ場所",`${sc.short}：「${el.value||"（空）"}」に変更`);renderPlan();
+  });
+  t.querySelectorAll("[data-wait]").forEach(el=>el.onchange=()=>{
+    const sc=state.schools.find(x=>x.id===el.dataset.wait); if(!sc)return;
+    const v=Number(el.value);
+    if(el.value===""||!Number.isFinite(v)){delete sc.wait;el.value=""}
+    else{sc.wait=Math.min(60,Math.max(5,v));el.value=sc.wait}
+    stage("待機時間",`${sc.short}の待機時間を${sc.wait?sc.wait+"分":"既定（"+waitDefault()+"分）"}に変更`);
+    renderPlan();
   });
 }
 function renderTerms(){
