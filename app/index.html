@@ -1485,8 +1485,14 @@ function planDay(ds){
         const projBack=job.time+SET.board+backTv;
         if(r.stops.some(st=>projBack-st.end>SET.maxRide)) continue;
         if(overlaps(r.checkAt,projBack+SET.unload,driverBlocks(r.driver.id))) continue;
-        // 延長すると同じ運転手の別の便（手動便含む）と重なる場合は不可
-        if(routes.some(o=>o!==r&&o.driver.id===r.driver.id&&r.checkAt<o.backAt+SET.unload&&o.checkAt<projBack+SET.unload)) continue;
+        // 延長すると同じ運転手の別の便（手動便含む）と重なる場合は不可。
+        // 見るのは「この便の出発より後ろにかかる便」だけ。延長は便の終わりを後ろへ
+        // 伸ばすだけなので、出発前に帰着ずみの便とは新たに重ならない。
+        // （ここで前の便まで見ると、初便の直後に出る便は運行前チェック20分が
+        //   前の便の帰着と重なるため、延長できるはずの便を取りこぼしていた。
+        //   2便目以降の出発前確認は5分で、実際の開始時刻は帰着後にずれる）
+        if(routes.some(o=>o!==r&&o.driver.id===r.driver.id
+          &&o.backAt+SET.unload>r.depart&&o.checkAt<projBack+SET.unload)) continue;
         let score=1000-Math.abs(job.time-SET.preArrival-arr); // 5分前到着に近いほど高スコア
         // 先に乗ったこどもは巡回の間ずっと車内で待つ。目安（40分）を超えるぶんだけ減点し、
         // 一度拠点へ戻って別便にできる場合はそちらが選ばれるようにする
