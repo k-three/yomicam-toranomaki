@@ -168,8 +168,9 @@ button.del[data-ovclr]:hover{border-color:var(--alert)}
 .algo ol,.algo ul{padding-left:1.4em}
 .algo li{margin:4px 0}
 .steps{counter-reset:s;display:grid;gap:10px;margin:12px 0}
-.step{display:flex;gap:12px;background:var(--surface2);border-radius:12px;padding:10px 14px}
-.step::before{counter-increment:s;content:counter(s);font-family:"Zen Maru Gothic";font-weight:900;font-size:18px;color:var(--accent);min-width:1.2em}
+/* 番号は絶対配置。flex にすると <b> ごとに列が分かれて文章が崩れるため */
+.step{position:relative;background:var(--surface2);border-radius:12px;padding:10px 14px 10px 42px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:8px;font-family:"Zen Maru Gothic";font-weight:900;font-size:18px;color:var(--accent)}
 .kbd{background:var(--chip);border-radius:6px;padding:0 6px;font-size:12px;font-weight:700}
 .prov{color:var(--warn);font-weight:700}
 @media print{
@@ -278,6 +279,7 @@ body.staging{padding-bottom:110px}
   <button class="tab" data-tab="staff">🧑‍🤝‍🧑 メンバー・車両</button>
   <button class="tab" data-tab="travel">🗺 移動時間</button>
   <button class="tab" data-tab="algo">🧭 アルゴリズム</button>
+  <button class="tab" data-tab="man">📖 マニュアル</button>
   <button class="tab" data-tab="req" id="reqTab">📮 要望</button>
   <button class="tab" data-tab="hist" id="histTab" hidden>🕘 変更履歴</button>
 </nav>
@@ -521,6 +523,91 @@ body.staging{padding-bottom:110px}
       <button class="btn" id="histReload" style="padding:3px 12px;font-size:12.5px">🔄 更新</button>
     </div>
     <div id="histList"></div>
+  </div>
+</section>
+
+<!-- ============ マニュアル ============ -->
+<section id="tab-man" hidden>
+  <div class="card">
+    <h2>はじめに読むページ</h2>
+    <p class="help">運行管理を引き継ぐ人・はじめて使う人向けの手引きです。<b>迷ったらこのタブに戻ってきてください。</b><br>
+    ページは2つあります。<b>閲覧用</b>＝その日の虎の巻を見るためのページ（メンバー全員／スマホ可）。<b>管理用</b>＝いま開いているこのページで、当日調整や設定の変更ができます。パスワードは運行管理担当に確認してください。</p>
+  </div>
+
+  <div class="card">
+    <h2>1日の使い方</h2>
+    <div class="steps">
+      <div class="step"><b>朝：今日を開く</b>　ヘッダーの「今日」を押すと今日の虎の巻に飛びます。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
+      <div class="step"><b>連絡が入ったら：当日調整に入れる</b>　欠席・スポット参加・下校時刻の変更（保護者からの連絡）、メンバーの休み・勤務時間の変更、来訪予定、会場の変更、連絡メモ。入れると送迎便とタイムラインがその場で組み直されます。</div>
+      <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にあります。第一交通を使う／担当の固定（学校単位・こども単位）／手動の便。</div>
+      <div class="step"><b>最後に「✅ 決定して反映」</b>　<b>これを押すまで、変更はほかのメンバーに共有されません。</b>画面下に「未確定の変更が N件 あります」と出ます。間違えたときは「↩ 取り消し」で確定前の状態に戻せます。</div>
+      <div class="step"><b>要注意事項を確認する</b>　ページ下部です。<b style="color:var(--alert)">要対応</b>（赤）は、そのままにすると運行が成り立たない・こどもが待つことになるものです。必ず消してから終わってください。「注意」「参考」は承知の上で進めて構いません。</div>
+      <div class="step"><b>共有する</b>　「📣 投稿文」でSlack・LINE用のテキストをコピーできます。閲覧用ページは<b>毎営業日12時に自動で更新</b>されるので、手作業は不要です。</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>こんなときは</h2>
+    <div class="tblwrap"><table class="grid">
+      <thead><tr><th style="width:17em">できごと</th><th>どこで、どうする</th></tr></thead>
+      <tbody>
+      <tr><td><b>「今日は休みます」と連絡が来た</b></td><td>虎の巻タブ →「当日調整」→ こどものチェックを外す。先の日付の連絡も、日付を移動すれば同じように入れられます。</td></tr>
+      <tr><td><b>「今日だけ◯時に迎えに来て」</b></td><td>「当日調整」→ そのこどもの時刻欄に入力。<b>その日だけ</b>効き、ほかのどの設定よりも優先されます。</td></tr>
+      <tr><td><b>スクリレで学校から特別な下校時刻の通知</b></td><td>下校時刻タブ →「特別下校時刻」に日付・学校・学年（または対象のこども）・時刻を登録。<b>1年2組だけ違う</b>ようなときは、学年ではなく<b>こどもを選んで</b>登録してください。</td></tr>
+      <tr><td><b>学校の時間割そのものが変わった</b></td><td>下校時刻タブ →「学校別・曜日別・学年別」を更新。以後ずっと効きます。</td></tr>
+      <tr><td><b>スポットで参加する子がいる</b></td><td>「当日調整」→「スポット参加を追加」から選ぶ。</td></tr>
+      <tr><td><b>メンバーが休む／時間を変える</b></td><td>「当日調整」のメンバー欄でチェックを外す・時刻を入れる。先の予定は<b>メンバー・車両タブの「メンバー予定」</b>で月単位に入れられます。</td></tr>
+      <tr><td><b>応援メンバーに入ってもらう</b></td><td>「当日調整」→「臨時出勤を追加」から選ぶ。ふだん勤務曜日のない応援メンバーは、臨時出勤を入れた日だけ予定表に出ます。</td></tr>
+      <tr><td><b>車が足りない（赤い「車両不足」）</b></td><td>まず「送迎の調整」→「🚕 第一交通を使う」をON。それでも足りなければ運転できるメンバーを1名臨時出勤に。<b>上の赤いお知らせに、日付ごとにどちらが必要か出ています。</b>第一交通の依頼は<b>2営業日前まで</b>。</td></tr>
+      <tr><td><b>この便はこの人に担当してほしい</b></td><td>「送迎の調整」→ 担当の固定。学校単位はその学校の全部の便が同じ人になります。<b>便ごとに分けたいときは「こども単位」</b>で指定してください（違う人に固定した子は必ず別の便になります）。</td></tr>
+      <tr><td><b>自動の計算と違う組み方にしたい</b></td><td>「送迎の調整」→「手動の便」で担当と巡回順を指定。時間的に無理があるときは警告が出ます（下校時刻に間に合わない場合は赤い「到着が遅い」）。</td></tr>
+      <tr><td><b>見学・来客がある</b></td><td>「当日調整」→「来訪予定」に時間・用件・対応するメンバーを登録。対応中はそのメンバーが見守りから外れる前提で計算されます。</td></tr>
+      <tr><td><b>新しいこどもが来月から利用開始</b></td><td>こどもタブで登録し、<b>利用開始日</b>を入れておく。その日から自動で虎の巻に出ます。当日に何かする必要はありません。</td></tr>
+      <tr><td><b>参加曜日が来月から変わる</b></td><td>こどもタブの「参加曜日の変更（開始日つき）」に、開始日と変更後の曜日を登録。当日に直す必要はありません。</td></tr>
+      <tr><td><b>長期休暇・年末年始</b></td><td>下校時刻タブの「長期休暇・休所日」に期間を登録。長期休暇は開所時間が変わり送迎便がなくなります（登所・降所とも保護者送迎）。休所は開所しません。</td></tr>
+      <tr><td><b>実際にかかった移動時間が分かった</b></td><td>移動時間タブで更新し「実測」にチェック。<b>ここが正確になるほど計画の精度が上がります</b>（初期値はすべて暫定の20分です）。</td></tr>
+      <tr><td><b>改善してほしいことがある</b></td><td>「📮 要望」タブから送れます。閲覧用ページからも送れます。</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2>下校時刻はどれが使われるか</h2>
+    <p class="help">同じこどもに複数の指定があるときは、この順で上から優先されます。上書きが起きた日は要注意事項に出ます。</p>
+    <div class="steps">
+      <div class="step"><b>① 保護者からの個別連絡</b>（当日調整／保護者連絡）— その日だけ。いちばん強い</div>
+      <div class="step"><b>② 特別下校時刻</b>（学校からの通知）— 日付を指定して登録したもの</div>
+      <div class="step"><b>③ こども別の下校時刻</b>（申込時に保護者から指定された時間）— 曜日ごとにずっと効く</div>
+      <div class="step"><b>④ 学校の時間割</b>（学校×曜日×学年）— 何も指定がなければこれ</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>要注意事項の読み方</h2>
+    <p class="help">計画を自動でチェックした結果です。<b>上から順に重要度が高い</b>並びになっています。</p>
+    <ul class="wlist">
+      <li class="alert"><span class="tag">要対応</span><span>そのままでは運行が成り立たない／こどもが待つことになるもの。<b>車両不足・到着が遅い・見守り0名・人員不足・来訪の対応者未設定</b>など。必ず解消してから終わってください。</span></li>
+      <li><span class="tag">注意</span><span>成り立つが、承知しておいてほしいもの。<b>長い乗車・長い待機・余裕なし・待機時間を短くしている</b>など。現場に一言伝えるかどうかの判断材料です。</span></li>
+      <li class="info"><span class="tag">参考</span><span>記録・共有のための情報。<b>臨時出勤・勤務変更・保護者連絡・締切済</b>など。対応は不要です。</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>だれが何を変えられるか</h2>
+    <p class="help"><b>日別のこと（当日調整・送迎の調整・保護者連絡・タイムラインの手直し）は全員</b>が変えられます。<br>
+    <b>マスタ（こども・下校時刻・メンバー・車両・移動時間・長期休暇）の編集は管理者だけ</b>です。管理者以外の画面では入力欄が無効になっています。変更が必要なときは「📮 要望」から連絡してください。<br>
+    変更した人と内容は記録され、管理者は「🕘 変更履歴」タブで確認できます。</p>
+  </div>
+
+  <div class="card">
+    <h2>気をつけること</h2>
+    <ul style="margin:0;padding-left:1.2em;line-height:1.9">
+      <li><b>「決定して反映」を押し忘れない。</b>押すまでは自分の画面にしか反映されていません。ページを閉じようとすると確認が出ます。</li>
+      <li><b>赤い要注意事項を残したまま終わらない。</b>特に「車両不足」「到着が遅い」「見守り0名」は、こどもが待つ・ひとりになる可能性があるものです。</li>
+      <li><b>こどもの名前は外に出さない。</b>閲覧用ページはパスワードで保護されています。画面のスクリーンショットをSNS等に載せないでください。</li>
+      <li><b>📷撮影不可のこども</b>は画面上部と一覧に表示されます。写真・動画の写り込みに注意してください。</li>
+      <li><b>計算はあくまで計画です。</b>当日の判断は現場が優先です。無理のある計画になっていたら、時刻や担当を見直してください。</li>
+    </ul>
   </div>
 </section>
 
@@ -1103,7 +1190,6 @@ function getDay(ds){
 }
 const schoolOf=id=>state.schools.find(s=>s.id===id)||{id,name:String(id),short:String(id),color:"#888",meet:""};
 const travelOf=(a,b)=>{const v=state.travel[a]?.[b];return (v==null||v==="")?null:Number(v)};
-const measured=(a,b)=>state.travelMeasured[[a,b].sort().join("|")];
 
 /* その日の勤務時間をふまえて、必要人数を下回る時間帯を返す。
    勤務時間を入れていない人は開所〜閉所まで在席とみなす。 */
@@ -1284,9 +1370,7 @@ function planDay(ds,over){
     const wt=Object.entries(day.staffTimes||{}).filter(([id,v])=>(v.from||v.to));
     if(wt.length) warnings.push({lv:"info",tag:"勤務変更",text:wt.map(([id,v])=>`${nmOf(id)}＝${v.from||"13:00"}〜${v.to||"19:00"}`).join("、")});
   }
-  const noPhotoKids=res.attendees.filter(a=>a.noPhoto);
-  if(noPhotoKids.length)
-    warnings.push({lv:"warn",tag:"撮影不可",text:`📷 写真・動画の掲載不可：${noPhotoKids.map(kanaOf).join("・")}。撮影・SNS掲載時に写り込みに注意してください`});
+  // 📷撮影不可は画面上部のチップとこども一覧に出るので、要注意事項には重ねない
 
   // --- 手動の便（自由編成）第1段階：対象児童の確定 ---
   // 担当が消えた（メンバー削除など）手動の便は無効にする。
@@ -1430,20 +1514,18 @@ function planDay(ds,over){
   // 時刻の早い順に決めていく貪欲法なので、先に決めた便が車を使い切ってしまい、
   // あとの学校に車が残らないことがある。乗せられないこどもが出たら、その学校を
   // 先に決め直して組み直し、いちばん良い結果を採用する（attempt を複数回まわす）。
-  let unmeasuredUsed=new Set();   // 実測していない移動時間を使った区間
   let planWarn=[];                // その試行だけの警告（採用した試行のものだけ最後に足す）
   function useTravel(a,b){
     if(a===b) return 0;
     const v=travelOf(a,b);
     if(v==null){planWarn.push({lv:"alert",tag:"移動時間なし",text:`${a==="base"?"拠点":schoolOf(a).short} → ${b==="base"?"拠点":schoolOf(b).short} の移動時間が未入力です（移動時間タブ）`});return 15}
-    if(!measured(a,b)) unmeasuredUsed.add(`${a==="base"?"拠点":schoolOf(a).short}→${b==="base"?"拠点":schoolOf(b).short} ${v}分`);
     return v;
   }
   const jobKey=j=>`${j.school}@${j.time}`;
   function attempt(priority){
     const routes=[]; // {driver,cap,stops:[{school,kids,arrive,time,end}],onboard,hiace}
     const unassigned=[];
-    unmeasuredUsed=new Set(); planWarn=[];
+    planWarn=[];
   // --- 手動の便 第2段階：時刻を計算してルート化（ルール違反は警告に落とす） ---
   for(const {cr,stops} of customPlans){
     const drv=state.staff.find(s=>s.id===cr.driver);
@@ -1597,7 +1679,7 @@ function planDay(ds,over){
       }
     }
   }
-    return {routes,unassigned,unmeasured:unmeasuredUsed,warn:planWarn};
+    return {routes,unassigned,warn:planWarn};
   }
   // 良し悪しの順番：乗せられないこどもが少ない → アラートが少ない → 便が少ない
   const scoreOf=a=>[a.unassigned.reduce((n,u)=>n+u.kids.length,0),
@@ -1616,7 +1698,6 @@ function planDay(ds,over){
     }
   }
   const routes=bestPlan.routes, unassigned=bestPlan.unassigned;
-  unmeasuredUsed=bestPlan.unmeasured;
   warnings.push(...bestPlan.warn);
 
   routes.sort((a,b)=>a.depart-b.depart);
@@ -1653,10 +1734,7 @@ function planDay(ds,over){
     if(short.length)
       warnings.push({lv:"warn",tag:"待機時間",text:`待機を短くしています：${short.join("、")}（設計上の目安は${SET.board}分）。遅れてくる子を吸収する余裕がその分ありません。待ち合わせ場所で待つ時間が短くなるので、こどもには「少し早めに出てきてね」と伝え、遅れそうなときは学校・保護者へ連絡してください`});
   }
-  if(unmeasuredUsed.size)
-    warnings.push({lv:"warn",tag:"暫定値",text:`未実測の移動時間を使用：${[...unmeasuredUsed].join("、")}。運行後に実測し「移動時間」タブへ反映してください`});
   for(const r of routes){
-    if(r.direct) warnings.push({lv:"info",tag:"直行",text:`第${r.no}便（${r.driver.name}）は13:00の集合前に出発するため、拠点を経由せず学校へ直行（${fmt(r.depart)}発）。運行前チェックは出発地で実施し、出発をSlackで一報`});
     // 同じ学校で続けて待つ場合、その学校を実際に出発する時刻（最後のひとかたまりの発）
     const leaveAt=i=>{let e=r.stops[i].end;
       for(let j=i+1;j<r.stops.length&&r.stops[j].school===r.stops[i].school;j++) e=Math.max(e,r.stops[j].end);
@@ -1677,28 +1755,14 @@ function planDay(ds,over){
     }
     const distinct=new Set(r.stops.map(s=>s.school));
     if(distinct.size>1){
-      const dls=r.stops.filter(s=>s.deadline!=null&&s.school!==r.stops[r.stops.indexOf(s)+1]?.school).map(s=>`${schoolOf(s.school).short}${fmt(s.end)}発（次校まで余裕${s.deadline-s.end}分）`).join("、");
-      const rides=r.stops.map(st=>`${st.kids.map(kanaOf).join("・")}＝${r.backAt-st.end}分`).join("、");
-      // 途中で拠点に戻って降ろせないか（戻ると次校の到着が下校5分前に間に合うか）を確かめて理由を添える
-      const why=[];
-      for(let i=1;i<r.stops.length;i++){
-        const prev=r.stops[i-1], st=r.stops[i];
-        if(prev.school===st.school) continue;
-        const a=travelOf(prev.school,"base"), c2=travelOf("base",st.school);
-        if(a==null||c2==null) continue;
-        const via=prev.end+a+SET.unload+c2;
-        if(via>st.time-SET.preArrival)
-          why.push(`${schoolOf(prev.school).short}のあと拠点に戻ると${schoolOf(st.school).short}着が${fmt(via)}となり、下校${fmt(st.time)}の5分前に間に合わないため直接向かいます`);
-      }
-      warnings.push({lv:"info",tag:"巡回",text:`第${r.no}便（${r.driver.name}）は${[...distinct].map(s=>schoolOf(s).short).join("→")}の巡回。各校で下校＋待機（既定${waitDefault()}分）を含む計画${dls?`：${dls}`:""}。乗車時間：${rides}。待機中、先に乗った児童は降車させず運転者の視界内で${why.length?`。${why.join("。")}`:""}`});
+      // 巡回の順路・直行・出発期限は送迎便カードとタイムラインで分かるので、要注意事項には出さない。
+      // こどもの乗車が長くなるときだけ知らせる
       const longRide=r.stops.filter(st=>r.backAt-st.end>SET.rideSoft&&r.backAt-st.end<=SET.maxRide);
       if(longRide.length)
         warnings.push({lv:"warn",tag:"長い乗車",text:`${longRide.map(st=>`${st.kids.map(kanaOf).join("・")}は${r.backAt-st.end}分`).join("、")}の乗車になります（目安${SET.rideSoft}分）。移動時間タブの実測値を入れると、拠点に戻って降ろす計画に切り替わる場合があります`});
     }else if(r.stops.length>1){
       warnings.push({lv:"info",tag:"同校2回",text:`第${r.no}便（${r.driver.name}）は${schoolOf(r.stops[0].school).short}で${r.stops.map(s=>fmt(s.time)).join("と")}の下校をまとめて受け取り（現地で待機を継続）`});
     }
-    if(r.onboard===1&&r.stops.reduce((n,s)=>n+s.kids.length,0)===1)
-      warnings.push({lv:"info",tag:"1対1",text:`第${r.no}便（${r.driver.name}）は大人1名＋こども1名。出発／到着／乗車完了／拠点到着の4点をSlackで一報`});
   }
   // 来訪予定の警告
   for(const v of day.visits||[]){
@@ -1716,16 +1780,14 @@ function planDay(ds,over){
     for(let t=firstKids;t<=1080;t+=5){ // 〜18:00
       const reasons=new Set();
       const n=coverAt(t,routes,null,reasons);
-      if(n<=1){ if(!cur)cur={s:t,e:t,n,reasons:new Set()};cur.e=t+5;cur.n=Math.min(cur.n,n);reasons.forEach(x=>cur.reasons.add(x));}
+      if(n<=0){ if(!cur)cur={s:t,e:t,n,reasons:new Set()};cur.e=t+5;cur.n=Math.min(cur.n,n);reasons.forEach(x=>cur.reasons.add(x));}
       else if(cur){lowSpans.push(cur);cur=null}
     }
     if(cur)lowSpans.push(cur);
     for(const sp of lowSpans){
       const why=sp.reasons.size?`（${[...sp.reasons].join("、")}）`:"";
-      warnings.push({lv:sp.n===0?"alert":"warn",tag:sp.n===0?"見守り0名":"見守り1名",
-        text:sp.n===0
-          ?`${fmt(sp.s)}〜${fmt(sp.e)} こどもの見守りが不在になります${why}。便の組み替え、来訪時間の調整、または事務局への応援依頼が必要です`
-          :`${fmt(sp.s)}〜${fmt(sp.e)} 見守りが1名になります${why}。該当メンバーは玄関・受付から持ち場を離れないでください。頻発する曜日は事務局に応援を依頼してください`});
+      warnings.push({lv:"alert",tag:"見守り0名",
+        text:`${fmt(sp.s)}〜${fmt(sp.e)} こどもの見守りが不在になります${why}。便の組み替え、来訪時間の調整、または事務局への応援依頼が必要です`});
     }
   }
   // 情報締切（2営業日前）
@@ -2111,7 +2173,6 @@ function renderDayEdit(plan){
           <option value="">臨時出勤を追加…</option>
           ${extraCands.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
         </select>
-        <label class="toggle"><input type="checkbox" id="taxiOn" ${day.taxiOn?"checked":""}> 🚕 第一交通を使う</label>
       </div></div>
     <h3>来訪予定（見学など・対応1名専任）</h3>
     ${(day.visits||[]).map((v,i)=>{
@@ -2196,8 +2257,6 @@ function renderDayEdit(plan){
   document.getElementById("spotSel").onchange=e=>{
     if(!e.target.value)return; setNote(currentDate,e.target.value,"spot"); renderPlan();
   };
-  document.getElementById("taxiOn").onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;
-    stage("当日調整",`第一交通（タクシー）を${e.target.checked?"使う":"使わない"}に変更`);renderPlan()};
   document.querySelectorAll("[data-unvisit]").forEach(el=>el.onclick=()=>{
     const day=getDay(currentDate);const v=day.visits[Number(el.dataset.unvisit)];
     day.visits.splice(Number(el.dataset.unvisit),1);
@@ -2240,6 +2299,10 @@ function renderRuns(plan){
       </select></label>`).join("")}
     <span style="font-size:11.5px;color:var(--muted);flex-basis:100%">違うメンバーに固定したこどもは<b>必ず別の便</b>になります（同じ学校でも分けられます）。こども単位は学校単位より優先。<b>下の送迎便がその場で組み直されます</b>ので、結果を見ながら調整してください</span>
   </div>`:"";
+  const taxiBar=`<div class="noprint" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
+    <label class="toggle" style="font-size:12.5px;font-weight:700"><input type="checkbox" id="taxiOn" ${plan.day.taxiOn?"checked":""}> 🚕 第一交通を使う</label>
+    <span style="font-size:11.5px;color:var(--muted)">車が足りない日にONにすると、1校→拠点の便として計算に入ります。依頼は2営業日前まで</span>
+  </div>`;
   const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
       <b style="font-size:12.5px">📌 担当の固定：</b><span style="font-size:11.5px;color:var(--muted)">変更は「✅ 決定して反映」を押すまで共有されません</span>
@@ -2269,18 +2332,22 @@ function renderRuns(plan){
   const adjOpen=!!ui.runAdjOpen;
   const pinN=[...Object.values(plan.day.pins||{}),...Object.values(plan.day.kidPins||{})].filter(Boolean).length;
   const crN=(plan.day.customRuns||[]).length;
-  const adjBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px">
-    <button class="btn" id="adjToggle" style="font-size:12.5px;padding:4px 12px">${adjOpen?"▾":"▸"} 送迎の調整${(pinN||crN)?`（固定${pinN}・手動便${crN}）`:""}</button>
-    <div id="adjBody" ${adjOpen?"":"hidden"} style="margin-top:8px">${pinBar}${crBar}</div>
-  </div>`:"";
+  const adjSum=[plan.day.taxiOn?"第一交通":"",pinN?`固定${pinN}`:"",crN?`手動便${crN}`:""].filter(Boolean).join("・");
+  const adjBar=`<div class="noprint" style="margin:0 0 10px">
+    <button class="btn" id="adjToggle" style="font-size:12.5px;padding:4px 12px">${adjOpen?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}</button>
+    <div id="adjBody" ${adjOpen?"":"hidden"} style="margin-top:8px">${taxiBar}${pinBar}${crBar}</div>
+  </div>`;
   function bindPins(){
+    const tx=host.querySelector("#taxiOn");
+    if(tx)tx.onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;
+      stage("送迎の調整",`第一交通（タクシー）を${e.target.checked?"使う":"使わない"}に変更`);renderPlan()};
     const at=host.querySelector("#adjToggle");
     if(at)at.onclick=()=>{
       ui.runAdjOpen=!ui.runAdjOpen;
       try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
       const body=host.querySelector("#adjBody");
       body.hidden=!ui.runAdjOpen;
-      at.textContent=`${ui.runAdjOpen?"▾":"▸"} 送迎の調整${(pinN||crN)?`（固定${pinN}・手動便${crN}）`:""}`;
+      at.textContent=`${ui.runAdjOpen?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}`;
     };
     host.querySelectorAll("[data-pin]").forEach(el=>el.onchange=()=>{
       const day=getDay(currentDate);
@@ -2438,7 +2505,10 @@ function renderWarnings(plan){
   if(!plan.warnings.length){host.innerHTML=`<h2>要注意事項</h2><p class="help">警告はありません。</p>`;return}
   const order={alert:0,warn:1,info:2};
   const ws=plan.warnings.slice().sort((a,b)=>order[a.lv]-order[b.lv]);
-  host.innerHTML=`<h2>要注意事項（自動チェック）</h2><ul class="wlist">${
+  const nA=ws.filter(w=>w.lv==="alert").length, nW=ws.filter(w=>w.lv==="warn").length;
+  const head=[nA?`<span style="color:var(--alert)">要対応 ${nA}件</span>`:"",nW?`注意 ${nW}件`:"",
+    ws.length-nA-nW?`参考 ${ws.length-nA-nW}件`:""].filter(Boolean).join("・");
+  host.innerHTML=`<h2>要注意事項（自動チェック）<span style="font-size:12.5px;font-weight:700;margin-left:10px">${head}</span></h2><ul class="wlist">${
     ws.map(w=>`<li class="${w.lv}"><span class="tag">${esc(w.tag)}</span><span>${esc(w.text)}</span></li>`).join("")
   }</ul>`;
 }
@@ -3022,7 +3092,7 @@ let curTab="plan";
 function showTab(name){
   curTab=name;
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===name));
-  ["plan","kids","times","staff","travel","algo","req","hist"].forEach(t=>
+  ["plan","kids","times","staff","travel","algo","man","req","hist"].forEach(t=>
     document.getElementById("tab-"+t).hidden=(t!==name));
   if(name==="req")renderRequests();
   if(name==="hist")renderHistory();
