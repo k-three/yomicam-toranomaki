@@ -134,6 +134,7 @@ ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener nor
   <span class="btn vbtn" id="dayPrev">◀ 前の日</span>
   <select id="daySel" class="vinput vsel">${nav}</select>
   <span class="btn vbtn" id="dayNext">次の日 ▶</span>
+  <span class="btn vbtn" id="dayToday" title="今日の虎の巻を表示">今日</span>
   <label class="help" style="margin:0 0 0 6px">カレンダーで <input type="date" id="dayPick" class="vinput" min="${sections[0].ds}" max="${sections[sections.length-1].ds}"></label>
   <span id="dayMsg" class="daymsg" hidden></span>
 </nav>
@@ -189,6 +190,26 @@ ${refHtml}
     var v=this.value; msg.hidden=true; if(!v)return;
     if(document.getElementById('d'+v)){showTop('plan');location.hash='d'+v;route();}
     else{msg.textContent='その日は収録されていません（前後の営業日を選んでください）';msg.hidden=false}
+  });
+  // 今日へ。収録されていない日（土日や更新前など）はいちばん近い日を開く
+  function nowStr(){var d=new Date();
+    return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)}
+  function nearest(t){
+    var best=null,bd=Infinity,base=new Date(t+'T12:00:00');
+    for(var i=0;i<all.length;i++){
+      var gap=Math.abs(new Date(all[i]+'T12:00:00')-base);
+      if(gap<bd){bd=gap;best=all[i]}
+    }
+    return best;
+  }
+  var tbtn=document.getElementById('dayToday');
+  if(tbtn)tbtn.addEventListener('click',function(){
+    var t=nowStr(); msg.hidden=true; showTop('plan');
+    if(document.getElementById('d'+t)){location.hash='d'+t;route();return}
+    var n=nearest(t); if(!n)return;
+    location.hash='d'+n; route();
+    msg.textContent='今日（'+t.slice(5).replace('-','/')+'）は収録されていません。いちばん近い '+n.slice(5).replace('-','/')+' を表示しています';
+    msg.hidden=false;
   });
   // メンバー予定：2週間ごとの切り替え
   var blks=[].slice.call(document.querySelectorAll('.shblk'));

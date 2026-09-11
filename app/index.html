@@ -263,7 +263,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="spacer"></div>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
-  <div class="datebox">📅 <button class="btn daystep" id="dPrev" title="前の平日へ">◀ 前日</button><input type="date" id="dateInput"><button class="btn daystep" id="dNext" title="次の平日へ">翌日 ▶</button> <span class="dowchip" id="dowChip">–</span></div>
+  <div class="datebox">📅 <button class="btn daystep" id="dPrev" title="前の平日へ">◀ 前日</button><input type="date" id="dateInput"><button class="btn daystep" id="dNext" title="次の平日へ">翌日 ▶</button><button class="btn daystep" id="dToday" title="今日の虎の巻を表示">今日</button> <span class="dowchip" id="dowChip">–</span></div>
   <button class="btn" id="slackBtn" title="Slack・LINE投稿用の運行概要テキストをコピー">📣 投稿文</button>
   <button class="btn" id="snapBtn" title="この日の虎の巻を1枚のHTMLファイルとして保存（LINE・メール等で配布用）">📤 配布用</button>
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
@@ -1987,6 +1987,8 @@ function renderPlanInner(){
   if(plan.editCount) rb.textContent=`✎ 手動編集 ${plan.editCount}件をリセット`;
   const day=plan.day||getDay(ds);
   document.getElementById("dowChip").textContent=DOWS[new Date(ds+"T12:00:00").getDay()];
+  {const t=document.getElementById("dToday");
+   if(t){const now=ds===todayStr(); t.disabled=now; t.style.opacity=now?.45:1; t.title=now?"いま今日を表示しています":"今日の虎の巻を表示"}}
   const sum=document.getElementById("summaryCard");
   if(plan.weekend||plan.closed){
     const why=plan.closed
@@ -3046,6 +3048,7 @@ function goDate(ds){
 }
 document.getElementById("dPrev").onclick=()=>stepDate(-1);
 document.getElementById("dNext").onclick=()=>stepDate(1);
+document.getElementById("dToday").onclick=()=>goDate(todayStr());
 document.getElementById("addKid").onclick=()=>{
   state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
   stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
