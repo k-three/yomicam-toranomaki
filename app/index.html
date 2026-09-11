@@ -1162,10 +1162,13 @@ function termOn(ds){
 const BREAK_OPEN="09:00", BREAK_CLOSE="19:00";
 
 /* ========== プランナー ========== */
-function planDay(ds){
+/* over を渡すと、その日の設定を一時的に上書きして試算できる（state は変えない）。
+   「第一交通をONにしたら乗れるか」「応援を1名足したら乗れるか」の確認に使う */
+function planDay(ds,over){
   const d=new Date(ds+"T12:00:00");
   const dow=d.getDay();
-  const day=getDay(ds);
+  const day0=getDay(ds);
+  const day=over?{...day0,...over}:day0;
   const warnings=[];
   const res={dow,day,warnings,attendees:[],runs:[],events:{},staffOnDuty:[],weekend:(dow===0||dow===6)};
   if(res.weekend) return res;
@@ -1917,6 +1920,21 @@ function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" styl
    今日から先の平日（＋データのある将来日）を試算して、上部に一覧で出す。
    試算は dayRO で行うので、state.days に空の日データを作らない（＝未変更のまま）。 */
 const SCAN_AHEAD_DAYS=60;
+/* その日を解消する手立てを探す。第一交通 → 応援1名 → 両方、の順に試す */
+function fixFor(ds,day){
+  const none=r=>!r.unassigned?.length;
+  try{ if(none(planDay(ds,{taxiOn:true}))) return "第一交通をONにすれば解消"; }catch(e){}
+  const base=day.staffExtra||[];
+  const cands=state.staff.filter(s=>s.cap>0&&s.role==="drive"&&!(s.days||[]).includes(dowOf(ds))
+    &&!base.includes(s.id)&&!(day.staffOff||[]).includes(s.id)).slice(0,3);
+  for(const h of cands){
+    try{ if(none(planDay(ds,{staffExtra:[...base,h.id]}))) return `運転できる人を1名（${h.name}など）足せば解消`; }catch(e){}
+  }
+  for(const h of cands){
+    try{ if(none(planDay(ds,{taxiOn:true,staffExtra:[...base,h.id]}))) return "第一交通＋運転できる人1名で解消"; }catch(e){}
+  }
+  return "第一交通・応援1名でも足りません";
+}
 function scanUnassigned(){
   const today=todayStr(), set=new Set(), d=new Date(today+"T12:00:00");
   for(let i=0;i<=SCAN_AHEAD_DAYS;i++){set.add(dstr(d));d.setDate(d.getDate()+1)}
@@ -1928,7 +1946,7 @@ function scanUnassigned(){
       const w=dowOf(ds); if(w===0||w===6) continue;
       let p; try{p=planDay(ds)}catch(e){continue}
       if(!p.unassigned?.length) continue;
-      out.push({ds,kids:p.unassigned.flatMap(u=>u.kids.map(kanaOf))});
+      out.push({ds,kids:p.unassigned.flatMap(u=>u.kids.map(kanaOf)),fix:fixFor(ds,p.day)});
     }
   }finally{dayRO=prev}
   return out;
@@ -1940,11 +1958,13 @@ function renderIssueBar(){
   host.hidden=false;
   host.innerHTML=`<h2 style="color:var(--alert)">❗ 送迎に乗せられないこどもがいる日があります（${list.length}日）</h2>
     <p class="help" style="margin:0 0 8px">表示中の日付に関係なく、今日から先の平日をまとめて点検した結果です。日付を押すとその日を開きます。<br>
-    第一交通をONにする／メンバーの出勤を追加する／担当の固定を「自動」に戻す／下校時刻を確認する、のいずれかで解消できます。</p>
+    <b>第一交通のONも臨時出勤も「その日だけ」の設定です</b>ので、1日ぶん直してもこの一覧は1日しか減りません。日付ごとに、何をすれば解消するかを右に出しています。</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap">${list.map(x=>
       `<button class="btn" data-jump="${x.ds}" style="border-color:var(--alert);color:var(--alert)">${
         (x.ds.slice(0,4)===todayStr().slice(0,4)?x.ds.slice(5):x.ds).replaceAll("-","/")
-      }（${DOWS[dowOf(x.ds)]}）<span style="font-weight:500">　${esc(x.kids.join("・"))}</span></button>`).join("")}</div>`;
+      }（${DOWS[dowOf(x.ds)]}）<span style="font-weight:500">　${esc(x.kids.join("・"))}</span>${
+        x.fix?`<span style="font-weight:500;color:var(--muted);font-size:11.5px">　→ ${esc(x.fix)}</span>`:""
+      }</button>`).join("")}</div>`;
   host.querySelectorAll("[data-jump]").forEach(el=>el.onclick=()=>goDate(el.dataset.jump));
 }
 function renderPlan(){
