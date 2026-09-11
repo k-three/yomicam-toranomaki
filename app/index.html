@@ -1275,7 +1275,12 @@ function planDay(ds){
     warnings.push({lv:"warn",tag:"撮影不可",text:`📷 写真・動画の掲載不可：${noPhotoKids.map(kanaOf).join("・")}。撮影・SNS掲載時に写り込みに注意してください`});
 
   // --- 手動の便（自由編成）第1段階：対象児童の確定 ---
-  const customRunsRaw=(day.customRuns||[]).filter(cr=>cr.driver&&(cr.schools||[]).length);
+  // 担当が消えた（メンバー削除など）手動の便は無効にする。
+  // ここで拾ってしまうと、その便のこどもが自動割当からも外れて計画から消える
+  for(const cr of (day.customRuns||[]))
+    if(cr.driver&&!state.staff.some(s=>s.id===cr.driver))
+      warnings.push({lv:"alert",tag:"手動便",text:`手動の便の担当メンバーが見つかりません。この便は無効として計算しています（送迎便の「送迎の調整」で担当を選び直すか、便を削除してください）`});
+  const customRunsRaw=(day.customRuns||[]).filter(cr=>cr.driver&&(cr.schools||[]).length&&state.staff.some(s=>s.id===cr.driver));
   const coveredIds=new Set();
   const customPlans=[];
   for(const cr of customRunsRaw){
@@ -1585,7 +1590,12 @@ function planDay(ds){
   for(const r of routes){
     if(r.direct) warnings.push({lv:"info",tag:"直行",text:`第${r.no}便（${r.driver.name}）は13:00の集合前に出発するため、拠点を経由せず学校へ直行（${fmt(r.depart)}発）。運行前チェックは出発地で実施し、出発をSlackで一報`});
     for(const st of r.stops){
-      if(st.from!==st.school&&st.arrive>st.time-SET.preArrival&&st.arrive<=st.time)
+      if(st.from===st.school) continue;
+      // 下校時刻より遅い到着は、こどもが学校でひとり待つことになる。
+      // 自動の計算では起こらないが、手動の便では起こりうるので必ず知らせる
+      if(st.arrive>st.time)
+        warnings.push({lv:"alert",tag:"到着が遅い",text:`${r.driver.name}便の${schoolOf(st.school).short}到着が${fmt(st.arrive)}で、下校${fmt(st.time)}に${st.arrive-st.time}分おくれます。${st.kids.map(kanaOf).join("・")}が学校でひとりで待つことになります。前の学校からの移動時間を実測して見直す／この学校を別の便に分ける／下校時刻を確認する、のいずれかで解消してください`});
+      else if(st.arrive>st.time-SET.preArrival)
         warnings.push({lv:"warn",tag:"余裕なし",text:`${r.driver.name}便の${schoolOf(st.school).short}到着が下校${fmt(st.time)}の${st.time-st.arrive}分前。余裕が5分未満です`});
     }
     const distinct=new Set(r.stops.map(s=>s.school));
@@ -2222,7 +2232,9 @@ function renderRuns(plan){
     const stops=[`<span class="stop home">${esc(r.direct?"直行":venueAt(r.depart))}<small>${fmt(r.depart)}発</small></span>`];
     for(const st of r.stops){
       stops.push('<span class="arrow">→</span>');
-      stops.push(`<span class="stop">${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
+      const late=st.from!==st.school&&st.arrive>st.time?st.arrive-st.time:0;
+      stops.push(`<span class="stop"${late?' style="background:var(--alert-soft);color:var(--alert)"':""}>${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${
+        late?`着${fmt(st.arrive)}＝下校に${late}分おくれ・`:""}${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
     }
     stops.push('<span class="arrow">→</span>');
     stops.push(`<span class="stop home">${esc(venueAt(r.backAt))}<small>${fmt(r.backAt)}着</small></span>`);
