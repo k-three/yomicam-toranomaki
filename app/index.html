@@ -278,6 +278,7 @@ body.staging{padding-bottom:110px}
   <button class="tab" data-tab="times">🏫 下校時刻</button>
   <button class="tab" data-tab="staff">🧑‍🤝‍🧑 メンバー・車両</button>
   <button class="tab" data-tab="travel">🗺 移動時間</button>
+  <button class="tab" data-tab="taxi">🚕 第一交通</button>
   <button class="tab" data-tab="algo">🧭 アルゴリズム</button>
   <button class="tab" data-tab="man">📖 マニュアル</button>
   <button class="tab" data-tab="req" id="reqTab">📮 要望</button>
@@ -526,6 +527,16 @@ body.staging{padding-bottom:110px}
   </div>
 </section>
 
+<!-- ============ 第一交通 ============ -->
+<section id="tab-taxi" hidden>
+  <div class="card">
+    <h2>第一交通（タクシー）の依頼状況</h2>
+    <p class="help">第一交通を使う予定の日を、今日から先の分までまとめています。<b>依頼は2営業日前まで</b>。電話で依頼したら「依頼済み」にチェックを入れてください。<br>
+    チェックを入れると、そのときの便の内容が記録されます。<b>あとで計画が変わった日は「変更あり」</b>と出るので、変更連絡が必要かどうかが分かります。連絡が済んだら、チェックをいったん外して入れ直すと今の内容で記録し直せます。<span class="editnote"><br><b>変更は画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b></span></p>
+    <div class="tblwrap"><table class="grid" id="taxiTable"></table></div>
+  </div>
+</section>
+
 <!-- ============ マニュアル ============ -->
 <section id="tab-man" hidden>
   <div class="card">
@@ -559,7 +570,8 @@ body.staging{padding-bottom:110px}
       <tr><td><b>メンバーが休む／時間を変える</b></td><td>「当日調整」のメンバー欄でチェックを外す・時刻を入れる。先の予定は<b>メンバー・車両タブの「メンバー予定」</b>で月単位に入れられます。</td></tr>
       <tr><td><b>応援メンバーに入ってもらう</b></td><td>「当日調整」→「臨時出勤を追加」から選ぶ。ふだん勤務曜日のない応援メンバーは、臨時出勤を入れた日だけ予定表に出ます。</td></tr>
       <tr><td><b>車が足りない（赤い「車両不足」）</b></td><td>まず「送迎の調整」→「🚕 第一交通を使う」をON。それでも足りなければ運転できるメンバーを1名臨時出勤に。<b>上の赤いお知らせに、日付ごとにどちらが必要か出ています。</b></td></tr>
-      <tr><td><b>第一交通を頼んだ／頼み忘れていないか見たい</b></td><td>依頼は<b>2営業日前まで</b>。電話で依頼したら「送迎の調整」の<b>「依頼済み」にチェック</b>を入れてください。入れるまで要注意事項に出続け、<b>期限を過ぎるとオレンジから赤（要対応）に変わります</b>。送迎便カードにも「⚠未依頼／✅依頼済み」が出ます。使わないことにしたのに依頼済みのままなら、キャンセル確認をうながします。</td></tr>
+      <tr><td><b>第一交通を頼んだ／頼み忘れていないか見たい</b></td><td><b>「🚕 第一交通」タブ</b>に、使う予定の日が期限つきで一覧で出ます。ここで依頼済みのチェックを入れられます（虎の巻の「送迎の調整」からでも同じです）。依頼は<b>2営業日前まで</b>。未依頼のままだと要注意事項に出続け、<b>期限を過ぎると赤（要対応）</b>になります。</td></tr>
+      <tr><td><b>依頼したあとに下校時刻や人数が変わった</b></td><td>依頼済みにした時点の便の内容が記録されているので、変わった日は第一交通タブに<b>「⚠ 依頼から変更あり」</b>と出ます（依頼したときの内容も並べて表示）。第一交通へ変更を伝えたら、チェックをいったん外して入れ直すと今の内容で記録し直せます。</td></tr>
       <tr><td><b>この便はこの人に担当してほしい</b></td><td>「送迎の調整」→ 担当の固定。学校単位はその学校の全部の便が同じ人になります。<b>便ごとに分けたいときは「こども単位」</b>で指定してください（違う人に固定した子は必ず別の便になります）。</td></tr>
       <tr><td><b>自動の計算と違う組み方にしたい</b></td><td>「送迎の調整」→「手動の便」で担当と巡回順を指定。時間的に無理があるときは警告が出ます（下校時刻に間に合わない場合は赤い「到着が遅い」）。</td></tr>
       <tr><td><b>見学・来客がある</b></td><td>「当日調整」→「来訪予定」に時間・用件・対応するメンバーを登録。対応中はそのメンバーが見守りから外れる前提で計算されます。</td></tr>
@@ -1167,6 +1179,7 @@ function renderRequests(){
    計画の試算だけのために空の日データを作ってしまうと、未変更なのに「変更あり」になるため。 */
 let dayRO=false;
 const DAY_BLANK=()=>({venue:"",absent:[],spots:[],timeOverrides:{},staffOff:[],taxiOn:false,taxiOrdered:false,
+  taxiOrderAt:"",taxiOrderPlan:"",
   notes:"",visits:[],pins:{},kidPins:{},evEdits:{},evCustom:[],customRuns:[],staffExtra:[],staffTimes:{}});
 function getDay(ds){
   if(!state.days[ds]){
@@ -1811,6 +1824,11 @@ function planDay(ds,over){
     }
     if(!hasTaxi&&day.taxiOrdered&&!past)
       warnings.push({lv:"warn",tag:"第一交通",text:`第一交通を「依頼済み」にしていますが、いまの計画に第一交通の便がありません。キャンセルの連絡が必要か確認してください`});
+    if(hasTaxi&&day.taxiOrdered&&!past&&day.taxiOrderPlan){
+      const now=taxiPlanText(res);
+      if(now&&now!==day.taxiOrderPlan)
+        warnings.push({lv:"alert",tag:"第一交通",text:`第一交通の便が依頼したときの内容から変わっています。依頼時：${day.taxiOrderPlan}／いま：${now}。第一交通へ変更の連絡が必要か確認してください（連絡済みなら「依頼済み」をいったん外して入れ直すと、いまの内容で記録されます）`});
+    }
   }
 
   buildEvents(res);
@@ -1995,6 +2013,12 @@ function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" styl
    表示している日だけを見ていると、先の日に「乗せる車がないこども」がいても気づけない。
    今日から先の平日（＋データのある将来日）を試算して、上部に一覧で出す。
    試算は dayRO で行うので、state.days に空の日データを作らない（＝未変更のまま）。 */
+/* 第一交通の便の内容を1行にまとめる。依頼したときの内容と見比べて、
+   変更連絡が要るかどうかを自動で判断するために使う */
+const taxiPlanText=pl=>(pl.runs||[]).filter(r=>r.taxi)
+  .map(r=>r.stops.map(st=>`${schoolOf(st.school).short}${fmt(st.time)}下校 ${st.kids.length}名`).join("＋"))
+  .join("／");
+
 /* 日別データに中身があるか（空の日＝その日を開いただけ、と区別する） */
 function dayHasData(v){
   if(!v) return false;
@@ -2054,9 +2078,6 @@ function renderIssueBar(){
     }</button>`;
   const rest=list.slice(ISSUE_HEAD);
   host.innerHTML=`<h2 style="color:var(--alert)">❗ 送迎に乗せられないこどもがいる日があります（${list.length}日）</h2>
-    <p class="help" style="margin:0 0 8px">表示中の日付に関係なく、今日から先の平日をまとめて点検した結果です。日付を押すとその日を開きます。<br>
-    <b>第一交通のONも臨時出勤も「その日だけ」の設定です</b>ので、1日ぶん直してもこの一覧は1日しか減りません。日付ごとに、何をすれば解消するかを右に出しています。<br>
-    まず<b>近い${ISSUE_HEAD}日</b>を出しています。先の日は下のボタンで開けます。</p>
     <div style="display:flex;gap:6px;flex-wrap:wrap">${list.slice(0,ISSUE_HEAD).map(btn).join("")}</div>
     ${rest.length?`<div id="issueMore" ${ui.issueOpen?"":"hidden"} style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${rest.map(btn).join("")}</div>
       <button class="btn" id="issueToggle" style="margin-top:8px;font-size:12.5px;padding:3px 12px">${
@@ -2343,7 +2364,7 @@ function renderRuns(plan){
     <label class="toggle" style="font-size:12.5px;font-weight:700"><input type="checkbox" id="taxiOn" ${plan.day.taxiOn?"checked":""}> 🚕 第一交通を使う</label>
     ${plan.day.taxiOn?`<label class="toggle" style="font-size:12.5px;font-weight:700;color:${plan.day.taxiOrdered?"var(--accent)":"var(--alert)"}">
       <input type="checkbox" id="taxiOrdered" ${plan.day.taxiOrdered?"checked":""}> ${plan.day.taxiOrdered?"✅ 依頼済み":"☎ 依頼済みにする"}</label>
-      <span style="font-size:11.5px;color:var(--muted)">依頼期限：${plan.taxiDue||"—"}（2営業日前）${plan.taxiOverdue?"　<b style=\"color:var(--alert)\">期限を過ぎています</b>":""}</span>`
+      <span style="font-size:11.5px;color:var(--muted)">${plan.day.taxiOrdered&&plan.day.taxiOrderAt?`依頼日：${plan.day.taxiOrderAt.slice(5).replace("-","/")}　`:""}依頼期限：${plan.taxiDue||"—"}（2営業日前）${plan.taxiOverdue&&!plan.day.taxiOrdered?"　<b style=\"color:var(--alert)\">期限を過ぎています</b>":""}</span>`
     :`<span style="font-size:11.5px;color:var(--muted)">車が足りない日にONにすると、1校→拠点の便として計算に入ります。依頼は2営業日前まで</span>`}
   </div>`;
   const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
@@ -2386,8 +2407,15 @@ function renderRuns(plan){
     if(tx)tx.onchange=e=>{getDay(currentDate).taxiOn=e.target.checked;
       stage("送迎の調整",`第一交通（タクシー）を${e.target.checked?"使う":"使わない"}に変更`);renderPlan()};
     const to=host.querySelector("#taxiOrdered");
-    if(to)to.onchange=e=>{getDay(currentDate).taxiOrdered=e.target.checked;
-      stage("送迎の調整",`第一交通を${e.target.checked?"依頼済み":"未依頼"}に変更`);renderPlan()};
+    if(to)to.onchange=e=>{
+      const day=getDay(currentDate);
+      day.taxiOrdered=e.target.checked;
+      // 依頼した日と、そのときの便の内容を残す。あとで計画が変わったら知らせるため
+      if(e.target.checked){day.taxiOrderAt=todayStr();day.taxiOrderPlan=taxiPlanText(plan)}
+      else{day.taxiOrderAt="";day.taxiOrderPlan=""}
+      stage("送迎の調整",`第一交通を${e.target.checked?`依頼済み（${taxiPlanText(plan)||"内容なし"}）`:"未依頼"}に変更`);
+      renderPlan();
+    };
     const at=host.querySelector("#adjToggle");
     if(at)at.onclick=()=>{
       ui.runAdjOpen=!ui.runAdjOpen;
@@ -3137,10 +3165,69 @@ function renderTravel(){
 
 /* ========== 画面制御 ========== */
 let curTab="plan";
+/* ===== 第一交通の依頼状況 =====
+   今日から先で第一交通を使う日を並べ、依頼期限・依頼済み・依頼日・
+   依頼したときから内容が変わっていないかを1画面で確認できるようにする */
+function taxiDays(){
+  const today=todayStr(), set=new Set(), d=new Date(today+"T12:00:00");
+  for(let i=0;i<=SCAN_AHEAD_DAYS;i++){set.add(dstr(d));d.setDate(d.getDate()+1)}
+  for(const [ds,v] of Object.entries(state.days||{})) if(ds>=today&&dayHasData(v)) set.add(ds);
+  const out=[], prev=dayRO;
+  dayRO=true;
+  try{
+    for(const ds of [...set].sort()){
+      const w=dowOf(ds); if(w===0||w===6) continue;
+      const day=state.days?.[ds]; if(!day?.taxiOn) continue;
+      let pl; try{pl=planDay(ds)}catch(e){continue}
+      const now=taxiPlanText(pl);
+      out.push({ds, plan:now, ordered:!!day.taxiOrdered, at:day.taxiOrderAt||"",
+        was:day.taxiOrderPlan||"", due:pl.taxiDue||"", overdue:!!pl.taxiOverdue,
+        changed:!!(day.taxiOrdered&&day.taxiOrderPlan&&now&&now!==day.taxiOrderPlan),
+        none:!now});
+    }
+  }finally{dayRO=prev}
+  return out;
+}
+function renderTaxi(){
+  const t=document.getElementById("taxiTable"); if(!t)return;
+  const list=taxiDays();
+  if(!list.length){
+    t.innerHTML=`<tbody><tr><td style="padding:14px">今日から先に、第一交通を使う予定の日はありません。<br>
+      <span class="help">使う日は「虎の巻」タブ →「送迎の調整」→「🚕 第一交通を使う」でONにしてください。</span></td></tr></tbody>`;
+    return;
+  }
+  const md=ds=>`${ds.slice(5).replace("-","/")}（${DOWS[dowOf(ds)]}）`;
+  t.innerHTML=`<thead><tr><th style="width:8.5em">日付</th><th>便の内容</th><th style="width:6em">依頼期限</th>
+    <th style="width:11em">状態</th><th style="width:6em">依頼日</th></tr></thead><tbody>${
+    list.map(x=>{
+      let cls="", st="";
+      if(x.none){cls="var(--warn-soft)";st='<b>便がありません</b><br><span class="help">ONのままなら外すか、依頼済みならキャンセル連絡を</span>'}
+      else if(x.changed){cls="var(--alert-soft)";st=`<b style="color:var(--alert)">⚠ 依頼から変更あり</b><br><span class="help">依頼時：${esc(x.was)}</span>`}
+      else if(x.ordered){st='<b style="color:var(--accent)">✅ 依頼済み</b>'}
+      else if(x.overdue){cls="var(--alert-soft)";st='<b style="color:var(--alert)">⚠ 未依頼（期限超過）</b><br><span class="help">至急、電話で依頼・確認を</span>'}
+      else{cls="var(--warn-soft)";st='<b>未依頼</b>'}
+      return `<tr style="${cls?`background:${cls}`:""}">
+        <td><button class="btn" data-taxijump="${x.ds}" style="padding:2px 8px;font-size:12px">${md(x.ds)}</button></td>
+        <td>${esc(x.plan||"—")}</td>
+        <td style="font-variant-numeric:tabular-nums">${esc(x.due||"—")}</td>
+        <td><label class="toggle" style="font-weight:700"><input type="checkbox" data-taxiord="${x.ds}" ${x.ordered?"checked":""}> ${st}</label></td>
+        <td style="font-variant-numeric:tabular-nums">${x.at?esc(md(x.at).split("（")[0]):"—"}</td>
+      </tr>`}).join("")}</tbody>`;
+  t.querySelectorAll("[data-taxijump]").forEach(el=>el.onclick=()=>{showTab("plan");goDate(el.dataset.taxijump)});
+  t.querySelectorAll("[data-taxiord]").forEach(el=>el.onchange=()=>{
+    const ds=el.dataset.taxiord, day=getDay(ds);
+    day.taxiOrdered=el.checked;
+    if(el.checked){day.taxiOrderAt=todayStr();
+      const prev=dayRO;dayRO=true;try{day.taxiOrderPlan=taxiPlanText(planDay(ds))}catch(e){day.taxiOrderPlan=""}finally{dayRO=prev}}
+    else{day.taxiOrderAt="";day.taxiOrderPlan=""}
+    stage("送迎の調整",`${md(ds)}の第一交通を${el.checked?"依頼済み":"未依頼"}に変更`,ds);
+    renderTaxi(); renderPlan();
+  });
+}
 function showTab(name){
   curTab=name;
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===name));
-  ["plan","kids","times","staff","travel","algo","man","req","hist"].forEach(t=>
+  ["plan","kids","times","staff","travel","taxi","algo","man","req","hist"].forEach(t=>
     document.getElementById("tab-"+t).hidden=(t!==name));
   if(name==="req")renderRequests();
   if(name==="hist")renderHistory();
@@ -3148,6 +3235,7 @@ function showTab(name){
   if(name==="times")renderDismissal();
   if(name==="staff")renderStaff();
   if(name==="travel")renderTravel();
+  if(name==="taxi")renderTaxi();
 }
 document.getElementById("tabs").addEventListener("click",e=>{
   const b=e.target.closest(".tab");if(b)showTab(b.dataset.tab);
