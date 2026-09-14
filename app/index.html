@@ -144,6 +144,23 @@ table.grid th{background:var(--surface2);font-family:"Zen Maru Gothic";font-size
 table.grid input[type=time],table.grid input[type=number]{width:6.2em;border:1px solid var(--line);border-radius:6px;padding:2px 4px;background:var(--surface)}
 table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:var(--surface)}
 .tblwrap{overflow-x:auto}
+/* ===== スマホ：横に長い表は「1件＝1カード」に積み替える =====
+   見出し行は隠し、各セルの前に見出しをラベルとして出す（data-label）。
+   曜日×学年のような行列の表（.matrix）は形が崩れるので横スクロールのまま。 */
+.scrollhint{display:none;font-size:11.5px;color:var(--muted);margin:0 0 4px}
+@media (max-width:700px){
+  table.grid.stack thead{display:none}
+  table.grid.stack,table.grid.stack tbody,table.grid.stack tr,table.grid.stack td{display:block;width:auto}
+  table.grid.stack tr{border:1px solid var(--line);border-radius:12px;margin:0 0 10px;padding:6px 10px 8px;background:var(--surface)}
+  table.grid.stack td{border:none;border-bottom:1px dashed var(--line);padding:5px 0;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  table.grid.stack td:last-child{border-bottom:none}
+  table.grid.stack td::before{content:attr(data-label);flex:0 0 7em;font-size:11.5px;font-weight:700;color:var(--muted);padding-top:3px}
+  table.grid.stack td:not([data-label]){justify-content:flex-end}
+  table.grid.stack td:not([data-label])::before{content:"";flex:0}
+  table.grid.stack td>input[type=text],table.grid.stack td>input[type=date],table.grid.stack td>select,table.grid.stack td>textarea{flex:1 1 8em;min-width:0;max-width:100%}
+  table.grid.stack td>.daycheck{flex:1 1 100%}
+  .scrollhint{display:block}
+}
 .daycheck{display:inline-flex;gap:4px}
 .daycheck label{width:26px;height:26px;border-radius:8px;background:var(--chip);display:grid;place-items:center;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
 .daycheck input{display:none}
@@ -2007,6 +2024,40 @@ function lockMasterTables(){
     const b=document.getElementById(id); if(b)b.disabled=true;
   });
 }
+/* 表の見出しを各セルのラベルにコピーする。スマホで1件＝1カードに見せるため。
+   行列の表（下校時刻・移動時間・メンバー予定）は積み替えず、横スクロールの案内を出す */
+const MATRIX_TABLES=new Set(["disTable","travelTable","shiftTable"]);
+function applyStack(root){
+  for(const t of (root||document).querySelectorAll("table.grid")){
+    if(MATRIX_TABLES.has(t.id)){
+      t.classList.add("matrix");
+      const w=t.closest(".tblwrap");
+      if(w&&!w.previousElementSibling?.classList?.contains("scrollhint")){
+        const h=document.createElement("p"); h.className="scrollhint"; h.textContent="← 横にスクロールできます →";
+        w.parentNode.insertBefore(h,w);
+      }
+      continue;
+    }
+    const hs=[...t.querySelectorAll("thead th")].map(th=>th.textContent.trim());
+    if(!hs.length) continue;
+    t.classList.add("stack");
+    for(const tr of t.querySelectorAll("tbody tr"))
+      [...tr.cells].forEach((td,i)=>{
+        if(hs[i]) td.setAttribute("data-label",hs[i]); else td.removeAttribute("data-label");
+      });
+  }
+}
+/* 表は編集のたびに作り直されるので、中身が変わったら自動で当て直す。
+   （見ているのは childList だけ。data-label は属性なので観測対象外＝ループしない） */
+{
+  let queued=false;
+  const obs=new MutationObserver(()=>{
+    if(queued) return; queued=true;
+    requestAnimationFrame(()=>{queued=false;try{applyStack()}catch(e){console.error(e)}});
+  });
+  const start=()=>obs.observe(document.body,{childList:true,subtree:true});
+  if(document.body) start(); else document.addEventListener("DOMContentLoaded",start);
+}
 function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" style="background:${s.color}">${esc(s.short)}</span>`}
 
 /* ===== 先の日付までまとめて点検する =====
@@ -3426,6 +3477,7 @@ function buildSnapshotParts(){
 function staticize(node,shiftBlocks){
   const c=node.cloneNode(true);
   c.removeAttribute("hidden");
+  applyStack(c);   // スマホ用のラベルを控えにも持たせる（監視は非同期なので、ここで確実に当てる）
   c.querySelectorAll(".noprint,.mroNote,.editnote,.addrow").forEach(n=>n.remove());
   c.querySelectorAll("button").forEach(n=>n.remove());
   c.querySelectorAll(".daycheck input").forEach(n=>n.setAttribute("disabled",""));
@@ -3460,6 +3512,7 @@ function staticize(node,shiftBlocks){
     const tbl=c.querySelector("#shiftTable"), wrap=tbl&&tbl.closest(".tblwrap");
     if(wrap){const box=document.createElement("div");box.innerHTML=shiftBlocks;wrap.parentNode.replaceChild(box,wrap)}
     const note=c.querySelector("#shShort"); if(note)note.remove();
+    applyStack(c);   // 差し込んだ月ごとの表にも当て直す
   }
   return c;
 }
