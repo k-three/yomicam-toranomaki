@@ -119,6 +119,8 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 .mbtn.on{background:var(--surface2);color:var(--ink);border-color:var(--muted)}
 .daynav{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;align-items:center}
 .snapnote{color:var(--muted);font-size:11.5px;text-align:center;margin:20px 0}
+.asof{font-size:12px;font-weight:700;color:var(--muted);background:var(--chip);border-radius:99px;padding:4px 12px;white-space:nowrap}
+.asofnote{font-size:12px;color:var(--muted);background:var(--warn-soft);border-radius:10px;padding:8px 12px;margin:0 0 12px;line-height:1.7}
 .ev{cursor:default}
 .reqbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);color:var(--muted);text-decoration:none;font-weight:700;font-size:12px;border-radius:99px;padding:4px 12px;white-space:nowrap;line-height:1.5}
 .reqbtn:hover{border-color:var(--accent);color:var(--accent)}
@@ -127,7 +129,9 @@ const html = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta n
 <header class="app"><div class="brand"><div class="mark">🚐</div>
 <div><h1>よみキャン運営虎の巻（閲覧用）</h1></div></div>
 <div class="spacer"></div>
+<span class="asof" title="このページは自動で作られた控えです。この時点より後の変更は入っていません">🕘 ${now} 時点</span>
 ${reqUrl ? `<a class="reqbtn" href="${reqUrl}" target="_blank" rel="noopener noreferrer" title="気づいたこと・改善してほしいことを運行管理担当へ">📮 要望を送る</a>` : ''}</header>
+<p class="asofnote">このページは <b>${now} 時点</b>の控えです。毎営業日に自動で作り直しています。<b>それ以降の当日調整（第一交通の追加・欠席・担当の変更など）は入っていません。</b>最新は管理用ページで確認してください。</p>
 <nav class="topnav" id="topNav">${topNav}</nav>
 <div id="planWrap">
 <nav class="daynav" id="dayNav">

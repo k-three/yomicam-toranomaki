@@ -3197,8 +3197,8 @@ function renderTaxi(){
     return;
   }
   const md=ds=>`${ds.slice(5).replace("-","/")}（${DOWS[dowOf(ds)]}）`;
-  t.innerHTML=`<thead><tr><th style="width:8.5em">日付</th><th>便の内容</th><th style="width:6em">依頼期限</th>
-    <th style="width:11em">状態</th><th style="width:6em">依頼日</th></tr></thead><tbody>${
+  t.innerHTML=`<thead><tr><th style="width:9.5em">日付</th><th>便の内容</th><th style="width:6em">依頼期限</th>
+    <th style="width:4em">依頼</th><th style="width:11em">状態</th><th style="width:6em">依頼日</th></tr></thead><tbody>${
     list.map(x=>{
       let cls="", st="";
       if(x.none){cls="var(--warn-soft)";st='<b>便がありません</b><br><span class="help">ONのままなら外すか、依頼済みならキャンセル連絡を</span>'}
@@ -3207,10 +3207,12 @@ function renderTaxi(){
       else if(x.overdue){cls="var(--alert-soft)";st='<b style="color:var(--alert)">⚠ 未依頼（期限超過）</b><br><span class="help">至急、電話で依頼・確認を</span>'}
       else{cls="var(--warn-soft)";st='<b>未依頼</b>'}
       return `<tr style="${cls?`background:${cls}`:""}">
-        <td><button class="btn" data-taxijump="${x.ds}" style="padding:2px 8px;font-size:12px">${md(x.ds)}</button></td>
+        <td><b style="font-variant-numeric:tabular-nums">${md(x.ds)}</b>
+          <button class="btn noprint" data-taxijump="${x.ds}" style="padding:1px 7px;font-size:11px">開く</button></td>
         <td>${esc(x.plan||"—")}</td>
         <td style="font-variant-numeric:tabular-nums">${esc(x.due||"—")}</td>
-        <td><label class="toggle" style="font-weight:700"><input type="checkbox" data-taxiord="${x.ds}" ${x.ordered?"checked":""}> ${st}</label></td>
+        <td style="text-align:center"><input type="checkbox" data-taxiord="${x.ds}" ${x.ordered?"checked":""} title="依頼済みならチェック"></td>
+        <td>${st}</td>
         <td style="font-variant-numeric:tabular-nums">${x.at?esc(md(x.at).split("（")[0]):"—"}</td>
       </tr>`}).join("")}</tbody>`;
   t.querySelectorAll("[data-taxijump]").forEach(el=>el.onclick=()=>{showTab("plan");goDate(el.dataset.taxijump)});
@@ -3518,7 +3520,10 @@ function buildRefSnapshot(){
   secs.push({id:"staff",label:"🧑‍🤝‍🧑 メンバー・車両",html:staticize(document.getElementById("tab-staff"),buildShiftBlocks()).innerHTML});
   renderTravel();
   secs.push({id:"travel",label:"🗺 移動時間",html:staticize(document.getElementById("tab-travel")).innerHTML});
+  renderTaxi();
+  secs.push({id:"taxi",label:"🚕 第一交通",html:staticize(document.getElementById("tab-taxi")).innerHTML});
   secs.push({id:"algo",label:"🧭 アルゴリズム",html:staticize(document.getElementById("tab-algo")).innerHTML});
+  secs.push({id:"man",label:"📖 マニュアル",html:staticize(document.getElementById("tab-man")).innerHTML});
   return secs;
 }
 function buildSnapshotHTML(){
