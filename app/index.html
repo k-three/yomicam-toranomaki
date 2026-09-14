@@ -159,6 +159,9 @@ table.grid select{border:1px solid var(--line);border-radius:6px;padding:2px 4px
    見出し行は隠し、各セルの前に見出しをラベルとして出す（data-label）。
    曜日×学年のような行列の表（.matrix）は形が崩れるので横スクロールのまま。 */
 .scrollhint{display:none;font-size:11.5px;color:var(--muted);margin:0 0 4px}
+/* 追加したばかりの行。どれを足したのかすぐ分かるように、少しのあいだ色を変える */
+tr.justadded>td{background:var(--accent-soft);transition:background 1.2s ease-out}
+tr.justadded>td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 @media (max-width:700px){
   /* td に flex を使わない（Safari では表のセルで効かないことがあり、入力欄が
      つぶれて空欄に見える）。見出しを上、値を下に積むだけの単純な作りにする */
@@ -226,6 +229,17 @@ button.del[data-ovclr]:hover{border-color:var(--alert)}
 /* マスタ閲覧のみモード（当日調整モードの閲覧メンバー） */
 .mroNote{display:none;color:var(--warn);font-size:12.5px;font-weight:700;margin:0 0 8px}
 body.mro .mroNote{display:block}
+/* 閲覧のみのパスワードで入ったとき。見るのは全部見えるが、入力欄には触れない */
+#roNote{border-left:4px solid var(--warn);background:var(--warn-soft)}
+body.ro section[id^="tab-"] input:not([type=button]):not([type=submit]),
+body.ro section[id^="tab-"] select,
+body.ro section[id^="tab-"] textarea,
+body.ro section[id^="tab-"] .del,
+body.ro section[id^="tab-"] .addrow,
+body.ro section[id^="tab-"] .editnote{pointer-events:none;opacity:.55}
+/* 要望フォームだけは閲覧のみでも使える（連絡手段を残すため） */
+body.ro #tab-req input,body.ro #tab-req select,
+body.ro #tab-req textarea,body.ro #tab-req button{pointer-events:auto;opacity:1}
 body.mro #kidsTable input,body.mro #kidsTable select,body.mro #kidsTable button,body.mro #kidsTable label,body.mro #addKid,
 body.mro #staffTable input,body.mro #staffTable select,body.mro #staffTable button,body.mro #staffTable label,body.mro #addStaff,
 body.mro #disTable input,body.mro #spTable input,body.mro #spTable select,body.mro #spTable button,body.mro #spTable label,body.mro #addSp,
@@ -294,7 +308,9 @@ body.staging{padding-bottom:110px}
 
 <div id="login" hidden><div class="box"><div class="mark">🚐🔒</div>
   <h2>よみキャン運営虎の巻</h2>
-  <p>メンバー共有のパスワードを入力してください<br>（管理者パスワードを入れるとマスタも編集できます）</p>
+  <p>パスワードを入力してください<br>
+  <small>閲覧のみのパスワード＝すべて見られますが変更はできません。<br>
+  管理者パスワード＝当日調整・送迎の調整・マスタまで変更できます。</small></p>
   <form id="loginForm"><input id="loginPw" type="password" autocomplete="current-password" placeholder="パスワード">
   <button type="submit">開く</button></form>
   <div id="loginBusy" hidden>確認中…</div><div id="loginErr" hidden>パスワードが違います</div>
@@ -328,6 +344,12 @@ body.staging{padding-bottom:110px}
   <button class="tab" data-tab="req" id="reqTab">📮 要望</button>
   <button class="tab" data-tab="hist" id="histTab" hidden>🕘 変更履歴</button>
 </nav>
+
+<div class="card noprint" id="roNote" hidden>
+  👀 <b>閲覧のみのパスワードで開いています。</b>
+  すべての日・すべてのタブを見られますが、変更は保存できません。
+  変更が必要なときは「📮 要望」タブから連絡するか、管理者パスワードで入り直してください（ヘッダーの「🔓 ログイン切替」）。
+</div>
 
 <!-- ============ 虎の巻 (plan) ============ -->
 <section id="tab-plan">
@@ -590,6 +612,17 @@ body.staging{padding-bottom:110px}
   </div>
 
   <div class="card">
+    <h2>パスワードは2つ</h2>
+    <p class="help">この管理用ページは、入れたパスワードによってできることが変わります。<b>見られるものは同じ</b>で、変えられるかどうかだけが違います。</p>
+    <table class="grid"><thead><tr><th>パスワード</th><th>できること</th><th>渡す相手</th></tr></thead><tbody>
+      <tr><td><b>管理者</b></td><td>当日調整・送迎の調整・保護者連絡・マスタ（こども／下校時刻／メンバー／移動時間／会場）まで<b>すべて変更できる</b></td><td>運行管理担当だけ</td></tr>
+      <tr><td><b>閲覧のみ</b></td><td>すべての日・すべてのタブを<b>見られる</b>。変更はできない（「📮 要望」からの連絡は送れる）</td><td>メンバー全員</td></tr>
+    </tbody></table>
+    <p class="help">閲覧のみで開いているときは、画面の上に「👀 閲覧のみのパスワードで開いています」と出ます。変更したいのに変更できないときは、ヘッダーの「🔓 ログイン切替」から管理者パスワードで入り直してください。</p>
+    <p class="help">どちらのパスワードで何ができるかは、画面の作りだけでなく<b>サーバー側（Firestoreのセキュリティルール）でも止めています</b>ので、閲覧のみのパスワードを知っている人がデータを書き換えることはできません。</p>
+  </div>
+
+  <div class="card">
     <h2>1日の使い方</h2>
     <div class="steps">
       <div class="step"><b>朝：今日を開く</b>　ヘッダーの「今日」を押すと今日の虎の巻に飛びます。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
@@ -735,7 +768,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-15a";
+const APP_VERSION="2026-09-15c";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -919,7 +952,24 @@ let staged=false, stageBase=null, stageLog=[], stageRemote=null, stageRemoteM=nu
 // MASTER_KEYS / DAY_KEYS はこの下で定義しているので、使うのは呼ばれた時点で
 const stageKeys=()=>[...MASTER_KEYS,...DAY_KEYS];
 const stageSnap=()=>JSON.stringify(pick(stageKeys()));
+/* 閲覧のみのパスワードのときは、どの操作から来ても編集が残らないようにする。
+   編集はすべてこの stage() を通るので、ここで確定済みの内容に戻してしまう。
+   （Firestoreのルールでもサーバー側で拒否しているが、画面の側でも見た目が
+     変わったまま残らないようにする。見るのは全部見られる） */
+const editLocked=()=>!!dbNS&&!canDays;
+let roNoticeAt=0;
+function revertEdit(){
+  try{const b=JSON.parse(stageBase||"{}");stageKeys().forEach(k=>{if(b[k]!==undefined)state[k]=b[k]})}catch(e){}
+  try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
+  staged=false;stageLog=[];renderStageBar();
+  setTimeout(()=>{try{rerenderAll()}catch(e){}},0);
+  if(Date.now()-roNoticeAt>1500){   // 入力のたびに出さない
+    roNoticeAt=Date.now();
+    alert("閲覧のみのパスワードで開いています。\n変更は保存されません。\n\n変更が必要なときは「📮 要望」タブから連絡するか、管理者パスワードで入り直してください。");
+  }
+}
 function stage(kind,text,ds){
+  if(editLocked()){revertEdit();return}
   if(!staged){staged=true}
   if(kind)stageLog.push({kind,text,ds:ds||currentDate});
   try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
@@ -973,10 +1023,12 @@ function setSync(mode){
   const el=document.getElementById("syncChip"); if(!el)return;
   if(mode==="shared"){el.textContent="☁ 共有データ（管理者）";el.className="chip acc";el.title="すべてのデータを編集できます（メンバー全員に共有）"}
   else if(mode==="days"){el.textContent="📝 当日調整モード";el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
-  else if(mode==="readonly"){el.textContent="👀 閲覧モード";el.className="chip warn";el.title="閲覧権限のため、編集は保存されません。連絡は「📮 要望」タブからどうぞ"}
+  else if(mode==="readonly"){el.textContent="👀 閲覧モード";el.className="chip warn";el.title="閲覧のみのパスワードです。すべて見られますが、変更は保存されません。連絡は「📮 要望」タブからどうぞ"}
   else if(mode==="error"){el.textContent="⚠ 同期エラー";el.className="chip alert";el.title="共有データと同期できません。再読み込みしてください"}
   else{el.textContent="💾 この端末のみ";el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
   document.body.classList.toggle("mro",!!dbNS&&!canMasters);
+  document.body.classList.toggle("ro",!!dbNS&&!canDays);
+  const rn=document.getElementById("roNote"); if(rn)rn.hidden=!(!!dbNS&&!canDays);
 }
 function setSyncMode(){
   if(!dbNS)return setSync("local");
@@ -1046,9 +1098,11 @@ async function initFirebase(){
 function applyFbUser(user){
   dbNS=firebase.firestore();
   canMasters=(user.email||"").toLowerCase()===FB_ADMIN_EMAIL;
-  canDays=true;
+  /* 閲覧用アカウントは一切書き込めない（当日調整・送迎の調整・保護者連絡も含む）。
+     Firestoreのルールでもサーバー側で拒否している */
+  canDays=canMasters;
   const logout=async()=>{
-    if(!confirm("ログアウトしますか？\n別のパスワードで入り直せます（閲覧用⇄管理者）"))return;
+    if(!confirm("ログアウトしますか？\n別のパスワードで入り直せます（閲覧のみ⇄管理者）"))return;
     try{await fbAuth.signOut()}catch(e){}
     location.reload();
   };
@@ -1217,8 +1271,8 @@ function renderRequests(){
       <div style="flex:1;min-width:200px"><b>${esc(r.name||"名無し")}</b>
         <span style="color:var(--muted);font-size:11px">${r.createdAt?new Date(r.createdAt).toLocaleString("ja-JP",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"}):""}</span>
         <div style="white-space:pre-wrap">${esc(r.text||"")}</div></div>
-      <button class="btn noprint" data-reqdone="${r.id}" style="padding:2px 8px;font-size:11px">${r.status==="done"?"再開":"対応済み"}</button>
-      <button class="del noprint" data-reqdel="${r.id}">✕</button>
+      ${canMasters?`<button class="btn noprint" data-reqdone="${r.id}" style="padding:2px 8px;font-size:11px">${r.status==="done"?"再開":"対応済み"}</button>
+      <button class="del noprint" data-reqdel="${r.id}">✕</button>`:""}
     </div>`).join(""):'<p class="help">要望はまだありません。</p>';
   host.querySelectorAll("[data-reqdone]").forEach(el=>el.onclick=async()=>{
     const r=requestsCache.find(x=>x.id===el.dataset.reqdone); if(!r)return;
@@ -2096,6 +2150,18 @@ function applyStack(root){
   });
   const start=()=>obs.observe(document.body,{childList:true,subtree:true});
   if(document.body) start(); else document.addEventListener("DOMContentLoaded",start);
+}
+/* 追加した行に目を向ける。表は日付順に並ぶので、追加した行がいちばん下に
+   来るとはかぎらない（日付が空の行は先頭に来る）。位置で探していたため、
+   「＋追加」を押すと既存の行に飛んでしまい、それが新しい行に見えていた */
+function focusNewRow(tableId,id,field){
+  const tr=document.querySelector(`#${tableId} tr[data-id="${id}"]`);
+  if(!tr) return;
+  tr.classList.add("justadded");
+  setTimeout(()=>tr.classList.remove("justadded"),2500);
+  try{tr.scrollIntoView({block:"center",behavior:"smooth"})}catch(e){}
+  const el=tr.querySelector(`[data-f="${field}"]`);
+  if(el){try{el.focus({preventScroll:true})}catch(e){el.focus()}}
 }
 function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" style="background:${s.color}">${esc(s.short)}</span>`}
 
@@ -3350,10 +3416,10 @@ document.getElementById("dToday").onclick=()=>goDate(todayStr());
 {const v=document.getElementById("appVer"); if(v)v.textContent=APP_VERSION;
  const mk=document.querySelector("header .mark"); if(mk)mk.title="画面の版 "+APP_VERSION;}
 document.getElementById("addKid").onclick=()=>{
-  state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
+  const id=uid();
+  state.children.push({id,name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
   stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
-  const rows=document.querySelectorAll('#kidsTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
+  focusNewRow("kidsTable",id,"name");
 };
 document.getElementById("stageCommit").onclick=commitStage;
 document.getElementById("stageCancel").onclick=cancelStage;
@@ -3367,10 +3433,10 @@ document.getElementById("histReload").onclick=()=>renderHistory(true);
 document.getElementById("whoBtn").onclick=()=>askWho(true);
 document.getElementById("addPn").onclick=()=>{
   // 日付・こどもは空欄で追加（既存の連絡と見分けがつかなくなるのを防ぐ）
-  state.parentNotes.push({id:uid(),date:"",childId:"",kind:"time",time:"",memo:""});
+  const id=uid();
+  state.parentNotes.push({id,date:"",childId:"",kind:"time",time:"",memo:""});
   stage();renderParentNotes();
-  const rows=document.querySelectorAll('#pnTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="date"]')?.focus();
+  focusNewRow("pnTable",id,"date");
 };
 /* ---- メンバー予定表の操作 ---- */
 function shiftNav(delta){
@@ -3433,30 +3499,30 @@ document.getElementById("shAdd").onclick=()=>{
 };
 document.getElementById("addDc").onclick=()=>{
   state.dayChanges??=[];
-  state.dayChanges.push({id:uid(),childId:"",from:"",days:[],memo:""});
+  const id=uid();
+  state.dayChanges.push({id,childId:"",from:"",days:[],memo:""});
   stage("参加曜日の変更","変更の行を追加");renderKids();
-  const rows=document.querySelectorAll('#dcTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="from"]')?.focus();
+  focusNewRow("dcTable",id,"from");
 };
 document.getElementById("addTerm").onclick=()=>{
   state.terms??=[];
-  state.terms.push({id:uid(),from:"",to:"",kind:"break",label:"",open:BREAK_OPEN,close:BREAK_CLOSE});
+  const id=uid();
+  state.terms.push({id,from:"",to:"",kind:"break",label:"",open:BREAK_OPEN,close:BREAK_CLOSE});
   stage("長期休暇・休所","期間の行を追加");renderTerms();
-  const rows=document.querySelectorAll('#termTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="from"]')?.focus();
+  focusNewRow("termTable",id,"from");
 };
 document.getElementById("addSp").onclick=()=>{
   // 日付・学校は空欄で追加（どれを直せばよいか分からなくなるのを防ぐ）
-  state.specialTimes.push({id:uid(),date:"",school:"",mode:"grade",grades:[],childIds:[],time:"",memo:""});
+  const id=uid();
+  state.specialTimes.push({id,date:"",school:"",mode:"grade",grades:[],childIds:[],time:"",memo:""});
   stage("特別下校時刻","変更の行を追加");renderSpecials();
-  const rows=document.querySelectorAll('#spTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="date"]')?.focus();
+  focusNewRow("spTable",id,"date");
 };
 document.getElementById("addStaff").onclick=()=>{
-  state.staff.push({id:uid(),name:"",days:[],role:"drive",vehicle:"own",cap:3,memo:"",awayTimes:[]});
+  const id=uid();
+  state.staff.push({id,name:"",days:[],role:"drive",vehicle:"own",cap:3,memo:"",awayTimes:[]});
   stage("メンバーマスタ","メンバーの行を追加");renderStaff();renderPlan();
-  const rows=document.querySelectorAll('#staffTable tr[data-id]');
-  rows[rows.length-1]?.querySelector('input[data-f="name"]')?.focus();
+  focusNewRow("staffTable",id,"name");
 };
 /* ---- Slack/LINE投稿用テキスト ---- */
 function buildSlackText(){
