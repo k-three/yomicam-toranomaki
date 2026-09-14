@@ -149,16 +149,32 @@ table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;paddi
    曜日×学年のような行列の表（.matrix）は形が崩れるので横スクロールのまま。 */
 .scrollhint{display:none;font-size:11.5px;color:var(--muted);margin:0 0 4px}
 @media (max-width:700px){
+  /* td に flex を使わない（Safari では表のセルで効かないことがあり、入力欄が
+     つぶれて空欄に見える）。見出しを上、値を下に積むだけの単純な作りにする */
+  table.grid.stack{display:block;width:100%;border:0}
   table.grid.stack thead{display:none}
-  table.grid.stack,table.grid.stack tbody,table.grid.stack tr,table.grid.stack td{display:block;width:auto}
-  table.grid.stack tr{border:1px solid var(--line);border-radius:12px;margin:0 0 10px;padding:6px 10px 8px;background:var(--surface)}
-  table.grid.stack td{border:none;border-bottom:1px dashed var(--line);padding:5px 0;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
-  table.grid.stack td:last-child{border-bottom:none}
-  table.grid.stack td::before{content:attr(data-label);flex:0 0 7em;font-size:11.5px;font-weight:700;color:var(--muted);padding-top:3px}
-  table.grid.stack td:not([data-label]){justify-content:flex-end}
-  table.grid.stack td:not([data-label])::before{content:"";flex:0}
-  table.grid.stack td>input[type=text],table.grid.stack td>input[type=date],table.grid.stack td>select,table.grid.stack td>textarea{flex:1 1 8em;min-width:0;max-width:100%}
-  table.grid.stack td>.daycheck{flex:1 1 100%}
+  table.grid.stack tbody{display:block;width:100%}
+  table.grid.stack tr{display:block;width:100%;border:1px solid var(--line);border-radius:12px;
+    margin:0 0 10px;padding:4px 10px 8px;background:var(--surface)}
+  table.grid.stack td{display:block;width:100%;border:0;border-bottom:1px dashed var(--line);padding:6px 0;font-size:14px}
+  table.grid.stack tr td:last-child{border-bottom:0}
+  table.grid.stack td::before{content:attr(data-label);display:block;font-size:11px;font-weight:700;
+    color:var(--muted);margin:0 0 3px;line-height:1.4}
+  table.grid.stack td:not([data-label])::before{display:none}
+  /* 入力欄には style="width:9em" のような直接指定が入っているものがあり、
+     それが残るとスマホでは狭すぎて中身が読めない。ここだけ !important で上書きする */
+  table.grid.stack td input[type=text],
+  table.grid.stack td input[type=date],
+  table.grid.stack td input[type=time],
+  table.grid.stack td input[type=number],
+  table.grid.stack td select,
+  table.grid.stack td textarea{display:block!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;font-size:16px;padding:6px 8px}
+  table.grid.stack td input[type=checkbox],table.grid.stack td input[type=radio]{display:inline-block!important;width:auto!important;transform:scale(1.2);margin:2px 0}
+  /* 参加曜日のピルは、チェックボックス自体を隠して色で表す作り。上の指定で出てきてしまうので戻す */
+  table.grid.stack td .daycheck input[type=checkbox]{display:none!important}
+  table.grid.stack td .daycheck{display:inline-flex;flex-wrap:wrap;gap:6px}
+  table.grid.stack td .daycheck label{width:34px;height:34px}
   .scrollhint{display:block}
 }
 .daycheck{display:inline-flex;gap:4px}
@@ -630,6 +646,15 @@ body.staging{padding-bottom:110px}
   </div>
 
   <div class="card">
+    <h2>画面の版</h2>
+    <p class="help">いま開いている画面の版は <b id="appVer">—</b> です。<br>
+    スマホで表示がおかしいときは、まずこの数字が最新かどうかを運行管理担当に確認してください。古いままなら、ブラウザに前の画面が残っています。
+    <b>iPhoneのSafari：アドレスバーの「ぁA」→「Webサイトの設定」ではなく、ページを下に引っぱって更新→直らなければタブを閉じて開き直す。</b>
+    それでも直らないときは、設定 → Safari → 履歴とWebサイトデータを消去。<br>
+    Androidのchrome：メニュー →「再読み込み」を長押し、または履歴からキャッシュを削除。</p>
+  </div>
+
+  <div class="card">
     <h2>気をつけること</h2>
     <ul style="margin:0;padding-left:1.2em;line-height:1.9">
       <li><b>「決定して反映」を押し忘れない。</b>押すまでは自分の画面にしか反映されていません。ページを閉じようとすると確認が出ます。</li>
@@ -697,6 +722,9 @@ const DOWS=["日","月","火","水","木","金","土"];
 const GRADES=[1,2,3,4,5,6];
 let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開所時間に合わせて広げる）
 const PXM=2; // px per minute
+/* 画面の版。スマホで古い版が残っていないか確かめるための目印。
+   中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
+const APP_VERSION="2026-09-14e";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -3308,6 +3336,8 @@ function goDate(ds){
 document.getElementById("dPrev").onclick=()=>stepDate(-1);
 document.getElementById("dNext").onclick=()=>stepDate(1);
 document.getElementById("dToday").onclick=()=>goDate(todayStr());
+{const v=document.getElementById("appVer"); if(v)v.textContent=APP_VERSION;
+ const mk=document.querySelector("header .mark"); if(mk)mk.title="画面の版 "+APP_VERSION;}
 document.getElementById("addKid").onclick=()=>{
   state.children.push({id:uid(),name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
   stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
