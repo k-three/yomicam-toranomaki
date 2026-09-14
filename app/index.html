@@ -4,6 +4,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
 :root{
+  /* これを宣言しないと、ダークモードでも select や日付欄が白い見た目のまま描かれ、
+     文字色だけが明るくなって「白地に白文字」で読めなくなる */
+  color-scheme:light;
   --bg:#F6F4ED; --surface:#FFFFFF; --surface2:#EFEDE3; --ink:#22302E; --muted:#68766F;
   --line:#DFDBCC; --accent:#0E7C7B; --accent-soft:#DDEEEA; --accent-ink:#FFFFFF;
   --drive:#2C6FAF; --drive-soft:#DCE8F5; --drive-ink:#1B4B7C;
@@ -14,6 +17,7 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
+    color-scheme:dark;
     --bg:#101D1B; --surface:#182926; --surface2:#13221F; --ink:#E6EFEA; --muted:#93A49C;
     --line:#2B3F3A; --accent:#3AA79F; --accent-soft:#1C3B37; --accent-ink:#08201D;
     --drive:#5E9BD6; --drive-soft:#1E3247; --drive-ink:#BCD7F0;
@@ -24,6 +28,7 @@
   }
 }
 :root[data-theme="dark"]{
+  color-scheme:dark;
   --bg:#101D1B; --surface:#182926; --surface2:#13221F; --ink:#E6EFEA; --muted:#93A49C;
   --line:#2B3F3A; --accent:#3AA79F; --accent-soft:#1C3B37; --accent-ink:#08201D;
   --drive:#5E9BD6; --drive-soft:#1E3247; --drive-ink:#BCD7F0;
@@ -143,6 +148,12 @@ table.grid th,table.grid td{border:1px solid var(--line);padding:5px 8px;text-al
 table.grid th{background:var(--surface2);font-family:"Zen Maru Gothic";font-size:12.5px}
 table.grid input[type=time],table.grid input[type=number]{width:6.2em;border:1px solid var(--line);border-radius:6px;padding:2px 4px;background:var(--surface)}
 table.grid input[type=text]{border:1px solid var(--line);border-radius:6px;padding:2px 6px;background:var(--surface)}
+/* select と日付・時刻欄には色の指定が無く、ブラウザ既定の白い見た目のまま描かれていた。
+   文字色だけがテーマに追随するため、ダークモードでは白地に白文字になって読めなかった */
+select,input[type=date],input[type=time],input[type=month],input[type=number],input[type=text],textarea{
+  color:var(--ink);background:var(--surface);
+}
+table.grid select{border:1px solid var(--line);border-radius:6px;padding:2px 4px}
 .tblwrap{overflow-x:auto}
 /* ===== スマホ：横に長い表は「1件＝1カード」に積み替える =====
    見出し行は隠し、各セルの前に見出しをラベルとして出す（data-label）。
@@ -724,7 +735,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-14e";
+const APP_VERSION="2026-09-15a";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
