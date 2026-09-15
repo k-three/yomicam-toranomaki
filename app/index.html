@@ -227,6 +227,11 @@ button.del[data-ovclr]:hover{border-color:var(--alert)}
   .tl-scroll{overflow:visible}
 }
 /* マスタ閲覧のみモード（当日調整モードの閲覧メンバー） */
+.pwform{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:10px 0}
+.pwform label{display:flex;flex-direction:column;gap:3px;font-size:12px;font-weight:700;color:var(--muted)}
+.pwform input,.pwform select{font-size:14px;padding:6px 8px;min-width:200px}
+@media (max-width:700px){.pwform{flex-direction:column;align-items:stretch}
+  .pwform input,.pwform select,.pwform button{width:100%}}
 .mroNote{display:none;color:var(--warn);font-size:12.5px;font-weight:700;margin:0 0 8px}
 body.mro .mroNote{display:block}
 /* 閲覧のみのパスワードで入ったとき。見るのは全部見えるが、入力欄には触れない */
@@ -622,6 +627,26 @@ body.staging{padding-bottom:110px}
     <p class="help">どちらのパスワードで何ができるかは、画面の作りだけでなく<b>サーバー側（Firestoreのセキュリティルール）でも止めています</b>ので、閲覧のみのパスワードを知っている人がデータを書き換えることはできません。</p>
   </div>
 
+  <div class="card" id="pwCard" hidden>
+    <h2>パスワードを変える</h2>
+    <p class="help">管理者で入っているときだけ使えます。どちらのパスワードも、ここから変えられます。
+    メールは使いません（アカウントのメールアドレスは受信できない形式のものです）。</p>
+    <div class="pwform">
+      <label>変えるパスワード
+        <select id="pwTarget">
+          <option value="admin">管理者（すべて編集できる）</option>
+          <option value="viewer">閲覧のみ（見るだけ）</option>
+        </select></label>
+      <label>いまのパスワード<input type="password" id="pwOld" autocomplete="off" placeholder="変える側のいまのパスワード"></label>
+      <label>新しいパスワード<input type="password" id="pwNew1" autocomplete="off" placeholder="6文字以上"></label>
+      <label>新しいパスワード（確認）<input type="password" id="pwNew2" autocomplete="off" placeholder="もう一度"></label>
+      <div><button class="btn primary" id="pwGo">変更する</button></div>
+    </div>
+    <p class="help" id="pwMsg" hidden></p>
+    <p class="help">変更しても、すでに開いている人のログインは切れません。新しく入り直す人から新しいパスワードになります。
+    閲覧のみのパスワードを変えたときは、メンバーへの周知をお忘れなく。</p>
+  </div>
+
   <div class="card">
     <h2>1日の使い方</h2>
     <div class="steps">
@@ -768,7 +793,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-15c";
+const APP_VERSION="2026-09-15d";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1115,6 +1140,51 @@ function applyFbUser(user){
   applyRoleUI();
   const chip=document.getElementById("syncChip");
   if(chip){chip.style.cursor="pointer";chip.title+="／クリックでログイン切替";chip.onclick=logout;}
+}
+/* パスワードの変更。変える側のアカウントに「別のつなぎ口」で入り直して書き換えるので、
+   いま開いている画面のログインはそのまま保たれる。メールは使わない */
+async function changePassword(which,oldPw,newPw){
+  const mail=which==="admin"?FB_ADMIN_EMAIL:FB_VIEWER_EMAIL;
+  const name="pwchange";
+  let app2=(firebase.apps||[]).find(a=>a.name===name);
+  if(!app2) app2=firebase.initializeApp(FB_CONFIG,name);
+  try{
+    const a2=app2.auth();
+    try{await a2.setPersistence(firebase.auth.Auth.Persistence.NONE)}catch(e){}
+    const c=await a2.signInWithEmailAndPassword(mail,oldPw);
+    await c.user.updatePassword(newPw);
+    try{await a2.signOut()}catch(e){}
+  }finally{ try{await app2.delete()}catch(e){} }
+}
+function setupPwForm(){
+  const card=document.getElementById("pwCard"); if(!card)return;
+  card.hidden=!(fbAuth&&canMasters);
+  if(card.hidden)return;
+  const btn=document.getElementById("pwGo"), msg=document.getElementById("pwMsg");
+  const say=(t,bad)=>{msg.hidden=false;msg.textContent=t;msg.style.color=bad?"var(--alert)":"var(--accent)"};
+  btn.onclick=async()=>{
+    const which=document.getElementById("pwTarget").value;
+    const oldPw=document.getElementById("pwOld").value;
+    const n1=document.getElementById("pwNew1").value, n2=document.getElementById("pwNew2").value;
+    if(!oldPw) return say("いまのパスワードを入れてください",true);
+    if(n1.length<6) return say("新しいパスワードは6文字以上にしてください",true);
+    if(n1!==n2) return say("新しいパスワードが2つの欄で違っています",true);
+    if(n1===oldPw) return say("いまのパスワードと同じです",true);
+    const label=which==="admin"?"管理者":"閲覧のみ";
+    if(!confirm(`${label}のパスワードを変更します。よろしいですか？\n\n変更後は、新しく入り直す人から新しいパスワードになります。`))return;
+    btn.disabled=true; say("変更しています…");
+    try{
+      await changePassword(which,oldPw,n1);
+      say(`${label}のパスワードを変更しました。メンバーへの周知をお忘れなく。`);
+      ["pwOld","pwNew1","pwNew2"].forEach(id=>document.getElementById(id).value="");
+    }catch(e){
+      const c=e&&e.code||"";
+      say(/wrong-password|invalid-credential|invalid-login/.test(c)?"いまのパスワードが違います":
+          /weak-password/.test(c)?"新しいパスワードが短すぎます（6文字以上）":
+          /too-many-requests/.test(c)?"試行が多すぎます。しばらく待ってからやり直してください":
+          "変更できませんでした（"+(c||e.message||"原因不明")+"）",true);
+    }finally{btn.disabled=false}
+  };
 }
 function showLogin(){
   const box=document.getElementById("login"); if(!box)return;
@@ -2105,6 +2175,7 @@ function applyRoleUI(){
   ["slackBtn","snapBtn"].forEach(id=>{
     const b=document.getElementById(id); if(b)b.hidden=mastersLocked();
   });
+  try{setupPwForm()}catch(e){}
 }
 function lockMasterTables(){
   if(!mastersLocked()) return;
