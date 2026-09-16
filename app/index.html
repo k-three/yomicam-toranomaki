@@ -554,7 +554,7 @@ body.staging{padding-bottom:110px}
       <div class="step">お迎え仕事を時刻の早い順に並べる</div>
       <div class="step">各仕事について「すでに外に出ている車が回れるか」を先に検討（毎回拠点へ戻らず、古堅→自然学校のような2校巡回が自動で生まれる）。ただし<b>待機を含めて次校の下校に間に合う場合のみ</b>連結し、<b>こどもの乗車＋待ち時間（自校出発→会場到着）が80分を超える連結はしない</b>。さらに<b>40分を超える乗車は超過分だけ減点</b>し、いったん拠点へ戻って別便を出せるならそちらを優先する（こどもを早く降ろすため）。第一交通は巡回させない（1回1校）。回れる車が複数なら待ち時間が最小の車を選ぶ</div>
       <div class="step">巡回候補と新規便候補をスコアで比較して割り当てる。<b>自然学校は基本ハイエースが対応</b>し、ハイエースで難しい場合のみ他の車で対応。メンバーのこどもが参加する日はそのこどもの学校をそのメンバー優先（余裕がなければこの限りではない）。少人数は自家用車を先に使いハイエースの枠を温存</div>
-      <div class="step">自動算出の結果は<b>「送迎の調整」で手動調整できる</b>（送迎便カードの上）。固定には<b>学校単位</b>（その学校のすべての便が同じメンバー）と<b>こども単位</b>（そのこどもだけメンバーを固定。学校単位より優先）があり、こども単位を使うと同じ学校でも第1便と第3便で別のメンバーにできる。残りは自動のまま全体を再計算し、固定した担当で時間が成立しない場合は未割当として警告</div>
+      <div class="step">自動算出の結果は<b>「送迎の調整」の「🔧 手動の便」で手で組み直せる</b>（送迎便カードの上）。担当・巡回順・<b>乗せるこども</b>を指定すると、その便は指定どおりに組まれる。手動の便に入れたこどもは自動割当から外れ、自動で足されることもない。残りのこどもだけを自動で組み直す。時間の無理（到着が遅い・定員超過・長い乗車など）は警告で出すが、<b>指定した形は崩さない</b></div>
       <div class="step">同じ学校であとから下校する子がいて、<b>車がまだその学校にいる</b>なら、そのまま待って一緒に乗せる。ただし先に下校した子を待たせすぎないよう、いちばん早い下校から<b>40分</b>を超えるなら別の便にする（待たせる場合は要注意事項に何分待つかを出す）</div>
       <div class="step">1回で乗せられないこどもが出たら、<b>その学校を先に決め直して組み直し</b>、乗せられない人数がいちばん少なくなる組み方を採用する（時刻の早い順に決めるだけだと、先の便が車を使い切ってしまうことがあるため）</div>
       <div class="step">計画は表示中の日だけでなく、<b>今日から先の平日をまとめて試算</b>し、乗せる車がないこどもがいる日を虎の巻の上部にまとめて出す（先の日の見落としを防ぐ）</div>
@@ -651,8 +651,10 @@ body.staging{padding-bottom:110px}
     <p class="help"><b>例：</b>メンバーAが 拠点→学校①（aさん・bさん）→学校②（cさん）、第一交通が 拠点→学校③（dさん）。
     手動の便を2つ作り、1つ目の担当をA・学校①にa,b・学校②にc、2つ目の担当を第一交通・学校③にd、と入れれば、そのとおりに組まれます。</p>
     <p class="help"><b>同じ学校に2回行く日</b>（1便目はメンバー、2便目は第一交通など）は、手動の便を<b>2つ</b>作って、それぞれにこどもを入れてください。
-    「担当の固定（学校単位）」ではできません。<b>学校単位の固定は、その学校のすべての便を同じ人にしてしまう</b>ためです
-    （第一交通は1回1校で拠点に戻る運用なので、そこに固定すると2便目のこどもが乗れなくなることがあります）。</p>
+    以前あった「担当の固定（学校単位・こども単位）」は、手動の便に一本化してやめました。
+    <b>学校単位の固定は、その学校のすべての便を同じ人にしてしまう</b>ためです
+    （第一交通は1回1校で拠点に戻る運用なので、そこに固定すると2便目のこどもが乗れなくなることがありました）。
+    以前に固定を入れた日を開くと「📌 以前の『担当の固定』がこの日に残っています」と出ます。手動の便で組み直すか、その場のボタンで解除してください。</p>
     <p class="help">手動の便に入れたこどもは自動割当から外れます。自動で勝手に足されることもありません。
     残りのこどもだけが自動で組まれます。</p>
   </div>
@@ -682,7 +684,7 @@ body.staging{padding-bottom:110px}
     <div class="steps">
       <div class="step"><b>朝：今日を開く</b>　ヘッダーの「今日」を押すと今日の虎の巻に飛びます。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
       <div class="step"><b>連絡が入ったら：当日調整に入れる</b>　欠席・スポット参加・下校時刻の変更（保護者からの連絡）、メンバーの休み・勤務時間の変更、来訪予定、会場の変更、連絡メモ。入れると送迎便とタイムラインがその場で組み直されます。</div>
-      <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にあります。第一交通を使う／担当の固定（学校単位・こども単位）／手動の便。</div>
+      <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にあります。第一交通を使う／🔧 手動の便（担当・巡回順・乗せるこどもを指定）。</div>
       <div class="step"><b>最後に「✅ 決定して反映」</b>　<b>これを押すまで、変更はほかのメンバーに共有されません。</b>画面下に「未確定の変更が N件 あります」と出ます。間違えたときは「↩ 取り消し」で確定前の状態に戻せます。</div>
       <div class="step"><b>要注意事項を確認する</b>　ページ下部です。<b style="color:var(--alert)">要対応</b>（赤）は、そのままにすると運行が成り立たない・こどもが待つことになるものです。必ず消してから終わってください。「注意」「参考」は承知の上で進めて構いません。</div>
       <div class="step"><b>共有する</b>　「📣 投稿文」でSlack・LINE用のテキストをコピーできます。閲覧用ページは<b>毎営業日12時に自動で更新</b>されるので、手作業は不要です。</div>
@@ -704,8 +706,7 @@ body.staging{padding-bottom:110px}
       <tr><td><b>車が足りない（赤い「車両不足」）</b></td><td>まず「送迎の調整」→「🚕 第一交通を使う」をON。それでも足りなければ運転できるメンバーを1名臨時出勤に。<b>上の赤いお知らせに、日付ごとにどちらが必要か出ています。</b></td></tr>
       <tr><td><b>第一交通を頼んだ／頼み忘れていないか見たい</b></td><td><b>「🚕 第一交通」タブ</b>に、使う予定の日が期限つきで一覧で出ます。ここで依頼済みのチェックを入れられます（虎の巻の「送迎の調整」からでも同じです）。依頼は<b>2営業日前まで</b>。未依頼のままだと要注意事項に出続け、<b>期限を過ぎると赤（要対応）</b>になります。</td></tr>
       <tr><td><b>依頼したあとに下校時刻や人数が変わった</b></td><td>依頼済みにした時点の便の内容が記録されているので、変わった日は第一交通タブに<b>「⚠ 依頼から変更あり」</b>と出ます（依頼したときの内容も並べて表示）。第一交通へ変更を伝えたら、チェックをいったん外して入れ直すと今の内容で記録し直せます。</td></tr>
-      <tr><td><b>この便はこの人に担当してほしい</b></td><td>「送迎の調整」→ 担当の固定。学校単位はその学校の全部の便が同じ人になります。<b>便ごとに分けたいときは「こども単位」</b>で指定してください（違う人に固定した子は必ず別の便になります）。</td></tr>
-      <tr><td><b>自動の計算と違う組み方にしたい</b></td><td>「送迎の調整」→「手動の便」で担当と巡回順を指定。時間的に無理があるときは警告が出ます（下校時刻に間に合わない場合は赤い「到着が遅い」）。</td></tr>
+      <tr><td><b>この便はこの人に担当してほしい／自動の計算と違う組み方にしたい</b></td><td>「送迎の調整」→<b>「🔧 手動の便」</b>で、担当・巡回順・<b>乗せるこども</b>まで指定します。同じ学校を1便目と2便目で分けたいときは、手動の便を2つ作ってそれぞれにこどもを入れてください。時間的に無理があるときは警告が出ますが、<b>指定した形はそのまま残ります</b>（下校時刻に間に合わない場合は赤い「到着が遅い」）。</td></tr>
       <tr><td><b>見学・来客がある</b></td><td>「当日調整」→「来訪予定」に時間・用件・対応するメンバーを登録。対応中はそのメンバーが見守りから外れる前提で計算されます。</td></tr>
       <tr><td><b>新しいこどもが来月から利用開始</b></td><td>こどもタブで登録し、<b>利用開始日</b>を入れておく。その日から自動で虎の巻に出ます。当日に何かする必要はありません。</td></tr>
       <tr><td><b>参加曜日が来月から変わる</b></td><td>こどもタブの「参加曜日の変更（開始日つき）」に、開始日と変更後の曜日を登録。当日に直す必要はありません。</td></tr>
@@ -823,7 +824,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-15e";
+const APP_VERSION="2026-09-16a";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1655,15 +1656,10 @@ function planDay(ds,over){
     res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
   const selfKids=res.breakMode?[]:res.attendees.filter(a=>a.selfTransport);
   if(selfKids.length) warnings.push({lv:"info",tag:"保護者送迎",text:`送迎不要（保護者が送迎）：${selfKids.map(kanaOf).join("・")}。到着時刻は保護者と個別に確認`});
-  // 送迎の対象になるこども（担当固定の選択肢にも使う）
+  // 以前の「担当の固定」がまだ残っている日のために、送迎対象のこども一覧は残す
   const transported=Object.values(bySchool).flat();
-  const schOrderP=new Map(state.schools.map((sc,i)=>[sc.id,i]));
-  res.pinKids=[...transported].sort((a,b)=>
-    (schOrderP.get(a.school)??99)-(schOrderP.get(b.school)??99)||toMin(a.time)-toMin(b.time)||
-    String(kanaOf(a)).localeCompare(String(kanaOf(b)),"ja"))
-    .map(a=>({id:a.id,name:kanaOf(a),school:a.school,time:toMin(a.time)}));
 
-  // --- 運転手（担当固定＝手動調整を考慮） ---
+  // --- 運転手（以前の担当固定がこの日に残っていれば尊重する） ---
   const pins=day.pins||{};              // {学校: メンバー}
   const kidPins=day.kidPins||{};        // {こども: メンバー}（学校単位より優先）
   const pinnedIds=new Set([...Object.values(pins),...Object.values(kidPins)].filter(Boolean));
@@ -1707,7 +1703,7 @@ function planDay(ds,over){
     if(drivers.some(s=>s.id===sid)) activePins[sc]=sid;
     else{
       const nm=state.staff.find(s=>s.id===sid)?.name||sid;
-      warnings.push({lv:"alert",tag:"担当固定",text:`${schoolOf(sc).short}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。この学校は自動割当に戻して計算しています`});
+      warnings.push({lv:"alert",tag:"担当固定",text:`${schoolOf(sc).short}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。この学校は自動割当に戻して計算しています（担当の固定はやめました。「送迎の調整」で解除できます）`});
     }
   }
   // こども単位の固定。その日の送迎対象でないこども（欠席・保護者送迎など）の指定は無視する
@@ -1719,7 +1715,7 @@ function planDay(ds,over){
     if(drivers.some(s=>s.id===sid)) activeKidPins[cid]=sid;
     else{
       const nm=state.staff.find(s=>s.id===sid)?.name||sid;
-      warnings.push({lv:"alert",tag:"担当固定",text:`${kanaOf(kid)}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。このこどもは自動割当に戻して計算しています`});
+      warnings.push({lv:"alert",tag:"担当固定",text:`${kanaOf(kid)}を${nm}に固定していますが、当日の運転手にいません（出勤・勤務曜日を確認）。このこどもは自動割当に戻して計算しています（担当の固定はやめました。「送迎の調整」で解除できます）`});
     }
   }
   {
@@ -1728,7 +1724,7 @@ function planDay(ds,over){
       ...Object.entries(activeKidPins).map(([cid,sid])=>`${kanaOf(transported.find(a=>a.id===cid))}＝${state.staff.find(s=>s.id===sid)?.name}`),
     ];
     if(list.length)
-      warnings.push({lv:"info",tag:"手動調整",text:`担当を固定中：${list.join("、")}（自動に戻すには送迎便の「送迎の調整」で「自動」を選択）`});
+      warnings.push({lv:"warn",tag:"手動調整",text:`以前の「担当の固定」がこの日に残っています：${list.join("、")}。担当の固定はやめて「🔧 手動の便」に一本化しました。送迎便の「送迎の調整」を開いて、手動の便で組み直すか「この日の固定を解除する」を押してください`});
   }
 
   // --- 便のもと（job）を作る ---
@@ -1980,7 +1976,7 @@ function planDay(ds,over){
   if(unassigned.length){
     for(const u of unassigned){
       const names=u.kids.map(kanaOf).join("・");
-      const pinNote=u.pin?`担当を${state.staff.find(s=>s.id===u.pin)?.name}に固定していますが、時間の制約で成立しません。固定を「自動」に戻すか他の便を調整してください`:"第一交通をONにする／在館メンバーが送迎に出る／時刻調整を検討してください";
+      const pinNote=u.pin?`担当を${state.staff.find(s=>s.id===u.pin)?.name}に固定していますが、時間の制約で成立しません。「送迎の調整」で「この日の固定を解除する」を押すか、手動の便で組み直してください`:"第一交通をONにする／在館メンバーが送迎に出る／時刻調整を検討してください";
       warnings.push({lv:"alert",tag:"車両不足",text:`${schoolOf(u.job.school).short} ${fmt(u.job.time)}下校の ${names} を乗せる車がありません。${pinNote}`});
     }
   }
@@ -2648,15 +2644,6 @@ function renderRuns(plan){
   const selSty=`style="padding:2px 6px;border-radius:8px;border:1px solid var(--line);background:var(--surface)"`;
   const drvOptsFor=sel=>state.staff.filter(s=>s.cap>0)
     .map(s=>`<option value="${s.id}" ${sel===s.id?"selected":""}>${esc(s.name)}</option>`).join("");
-  const kidPinRow=(plan.pinKids||[]).length?`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)">
-    <b style="font-size:12.5px">🧒 こども単位：</b>
-    ${plan.pinKids.map(k=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(k.school).short)} ${esc(k.name)}<small style="font-weight:500;color:var(--muted)"> ${fmt(k.time)}</small>
-      <select data-kidpin="${k.id}" ${selSty}>
-        <option value="">自動</option>
-        ${drvOptsFor(plan.day.kidPins?.[k.id])}
-      </select></label>`).join("")}
-    <span style="font-size:11.5px;color:var(--muted);flex-basis:100%">違うメンバーに固定したこどもは<b>必ず別の便</b>になります（同じ学校でも分けられます）。こども単位は学校単位より優先。<b>下の送迎便がその場で組み直されます</b>ので、結果を見ながら調整してください</span>
-  </div>`:"";
   const taxiBar=`<div class="noprint" style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
     <label class="toggle" style="font-size:12.5px;font-weight:700"><input type="checkbox" id="taxiOn" ${plan.day.taxiOn?"checked":""}> 🚕 第一交通を使う</label>
     ${plan.day.taxiOn?`<label class="toggle" style="font-size:12.5px;font-weight:700;color:${plan.day.taxiOrdered?"var(--accent)":"var(--alert)"}">
@@ -2664,20 +2651,21 @@ function renderRuns(plan){
       <span style="font-size:11.5px;color:var(--muted)">${plan.day.taxiOrdered&&plan.day.taxiOrderAt?`依頼日：${plan.day.taxiOrderAt.slice(5).replace("-","/")}　`:""}依頼期限：${plan.taxiDue||"—"}（2営業日前）${plan.taxiOverdue&&!plan.day.taxiOrdered?"　<b style=\"color:var(--alert)\">期限を過ぎています</b>":""}</span>`
     :`<span style="font-size:11.5px;color:var(--muted)">車が足りない日にONにすると、1校→拠点の便として計算に入ります。依頼は2営業日前まで</span>`}
   </div>`;
-  const pinBar=(plan.schoolsToday||[]).length?`<div class="noprint" style="margin:0 0 10px;background:var(--surface2);border-radius:10px;padding:7px 12px">
-    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-      <b style="font-size:12.5px">📌 担当の固定：</b><span style="font-size:11.5px;color:var(--muted)">変更は「✅ 決定して反映」を押すまで共有されません</span>
-      <span style="font-size:12.5px;font-weight:700;flex-basis:100%">🏫 学校単位：</span>
-      ${plan.schoolsToday.map(sc=>`<label style="font-size:12.5px;font-weight:700">${esc(schoolOf(sc).short)}
-        <select data-pin="${sc}" ${selSty}>
-          <option value="">自動</option>
-          ${drvOptsFor(plan.day.pins?.[sc])}
-        </select></label>`).join("")}
-      <span style="font-size:11.5px;color:var(--muted);flex-basis:100%"><b>その学校のすべての便が同じメンバーになります。</b>
-      1便目と2便目で担当を分けたいときは、ここではなく下の「こども単位」か「🔧 手動の便」で指定してください
-      （第一交通は1回1校で拠点に戻る運用のため、学校ごと固定すると2便目のこどもが乗れなくなります）</span>
-    </div>
-    ${kidPinRow}
+  /* 担当の固定（学校単位・こども単位）は「🔧 手動の便」に一本化して画面から外した。
+     以前に固定を入れた日がまだ残っていると、画面に出ないまま計算に効いてしまうので、
+     そういう日にだけ「解除」を出す（計算する側は固定を今までどおり尊重する） */
+  const oldPins=[
+    ...Object.entries(plan.day.pins||{}).filter(([,v])=>v)
+      .map(([sc,sid])=>`${schoolOf(sc)?.short||sc}（学校）＝${state.staff.find(x=>x.id===sid)?.name||"？"}`),
+    ...Object.entries(plan.day.kidPins||{}).filter(([,v])=>v)
+      .map(([cid,sid])=>`${(()=>{const c=state.children.find(x=>x.id===cid);return c?kanaOf(c):cid})()}＝${state.staff.find(x=>x.id===sid)?.name||"？"}`),
+  ];
+  const pinBar=oldPins.length?`<div class="noprint" style="margin:0 0 10px;background:var(--warn-soft);border-radius:10px;padding:7px 12px">
+    <b style="font-size:12.5px">📌 以前の「担当の固定」がこの日に残っています</b>
+    <div style="font-size:12.5px;margin:4px 0">${esc(oldPins.join("、"))}</div>
+    <span style="font-size:11.5px;color:var(--muted)">担当の固定はやめて「🔧 手動の便」に一本化しました。
+    この指定はいまも計算に効いています。手動の便で組み直すか、下のボタンで解除してください。</span>
+    <div style="margin-top:6px"><button class="btn" id="clearPins" style="padding:3px 10px;font-size:12.5px">この日の固定を解除する</button></div>
   </div>`:"";
   /* 手動の便。学校だけでなく「どのこどもを乗せるか」まで指定できる。
      こどもを選ばなければ、その学校のこどもがまとめて乗る（従来どおり） */
@@ -2715,10 +2703,9 @@ function renderRuns(plan){
     手動の便に入れたこどもは自動割当の対象から外れ、自動でこの便に足されることもありません。</span>
   </div>`;
   const adjOpen=!!ui.runAdjOpen;
-  const pinN=[...Object.values(plan.day.pins||{}),...Object.values(plan.day.kidPins||{})].filter(Boolean).length;
   const crN=(plan.day.customRuns||[]).length;
   const adjSum=[plan.day.taxiOn?(plan.day.taxiOrdered?"第一交通✅依頼済み":"第一交通⚠未依頼"):"",
-    pinN?`固定${pinN}`:"",crN?`手動便${crN}`:""].filter(Boolean).join("・");
+    oldPins.length?`⚠以前の固定${oldPins.length}`:"",crN?`手動便${crN}`:""].filter(Boolean).join("・");
   const adjBar=`<div class="noprint" style="margin:0 0 10px">
     <button class="btn" id="adjToggle" style="font-size:12.5px;padding:4px 12px">${adjOpen?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}</button>
     <div id="adjBody" ${adjOpen?"":"hidden"} style="margin-top:8px">${taxiBar}${pinBar}${crBar}</div>
@@ -2745,20 +2732,12 @@ function renderRuns(plan){
       body.hidden=!ui.runAdjOpen;
       at.textContent=`${ui.runAdjOpen?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}`;
     };
-    host.querySelectorAll("[data-pin]").forEach(el=>el.onchange=()=>{
+    const cp=host.querySelector("#clearPins");
+    if(cp)cp.onclick=()=>{
       const day=getDay(currentDate);
-      if(el.value) day.pins[el.dataset.pin]=el.value; else delete day.pins[el.dataset.pin];
-      stage("送迎の調整",`${schoolOf(el.dataset.pin).short}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
-      renderPlan();
-    });
-    host.querySelectorAll("[data-kidpin]").forEach(el=>el.onchange=()=>{
-      const day=getDay(currentDate);
-      day.kidPins??={};
-      if(el.value) day.kidPins[el.dataset.kidpin]=el.value; else delete day.kidPins[el.dataset.kidpin];
-      const kid=state.children.find(c=>c.id===el.dataset.kidpin);
-      stage("送迎の調整",`${kid?kanaOf(kid):el.dataset.kidpin}の担当を${el.value?state.staff.find(s=>s.id===el.value)?.name:"自動"}に設定`);
-      renderPlan();
-    });
+      day.pins={};day.kidPins={};
+      stage("送迎の調整","この日の担当の固定を解除");renderPlan();
+    };
     const addCr=host.querySelector("#addCr");
     if(addCr)addCr.onclick=()=>{getDay(currentDate).customRuns.push({id:uid(),driver:"",schools:[]});
       stage("送迎の調整","手動の便を追加");renderPlan()};
