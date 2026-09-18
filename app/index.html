@@ -827,7 +827,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-18c";
+const APP_VERSION="2026-09-18d";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -3015,7 +3015,8 @@ function renderKids(){
         const sty=`width:3.2em${need?";border-color:var(--alert)":""}`;
         const w0=want[0];
         const label=w0?`${(w0.classes||[]).filter(e=>e&&normClass(e.klass)).map(e=>`${e.grade}年${normClass(e.klass)}組`).join("・")}${w0.classMode==="except"?"以外":"のみ"}`:"";
-        return `<input type="text" value="${esc(c.klass||"")}" data-f="klass" style="${sty}" placeholder="1"
+        /* placeholder は置かない。空欄に薄い文字が出ると、入力済みか未記入か見分けがつかない */
+        return `<input type="text" value="${esc(c.klass||"")}" data-f="klass" style="${sty}"
           title="学級。「◯年◯組のみ／以外」という特別下校時刻があるときだけ必要です">`+
           (need?`<div class="dcnote next" style="color:var(--alert)">⚠ 組を入れてください（${esc(w0.date)} ${esc(label)}の特別下校時刻あり）</div>`
                :want.length?`<div class="dcnote">${esc(w0.date)} ${esc(label)}の指定あり</div>`:"");
