@@ -710,6 +710,8 @@ body.staging{padding-bottom:110px}
       <tr><td><b>見学・来客がある</b></td><td>「当日調整」→「来訪予定」に時間・用件・対応するメンバーを登録。対応中はそのメンバーが見守りから外れる前提で計算されます。</td></tr>
       <tr><td><b>新しいこどもが来月から利用開始</b></td><td>こどもタブで登録し、<b>利用開始日</b>を入れておく。その日から自動で虎の巻に出ます。当日に何かする必要はありません。</td></tr>
       <tr><td><b>参加曜日が来月から変わる</b></td><td>こどもタブの「参加曜日の変更（開始日つき）」に、開始日と変更後の曜日を登録。当日に直す必要はありません。</td></tr>
+      <tr><td><b>「1年1組だけ下校時刻が違う」という通知が来た</b></td><td>下校時刻タブの「特別下校時刻」で、学校・学年を選び<b>「組」欄に 1 と入れます</b>（空欄なら学年全員）。こどもタブの<b>「組」</b>が一致する子だけに効きます。<b>いま該当するこどもがいなくても登録しておいてください</b>——あとからその学級のこどもが入ってきたときに自動で効きます。画面には「対象：◯◯」と、いま誰に効くかが出ます。</td></tr>
+      <tr><td><b>組が分からない／入れ忘れが怖い</b></td><td>組はふだん空欄でかまいません。<b>組を指定した特別下校時刻がある学年だけ</b>、こどもタブのその子の行に<b>「⚠ 組を入れてください」</b>と赤く出ます。その日の要注意事項にも出るので、入れ忘れたまま気づかずに過ぎることはありません。</td></tr>
       <tr><td><b>長期休暇・年末年始</b></td><td>下校時刻タブの「長期休暇・休所日」に期間を登録。長期休暇は開所時間が変わり送迎便がなくなります（登所・降所とも保護者送迎）。休所は開所しません。</td></tr>
       <tr><td><b>実際にかかった移動時間が分かった</b></td><td>移動時間タブで更新し「実測」にチェック。<b>ここが正確になるほど計画の精度が上がります</b>（初期値はすべて暫定の20分です）。</td></tr>
       <tr><td><b>改善してほしいことがある</b></td><td>「📮 要望」タブから送れます。閲覧用ページからも送れます。</td></tr>
@@ -824,7 +826,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-16a";
+const APP_VERSION="2026-09-18a";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -839,6 +841,13 @@ const waitDefault=()=>{const v=Number(state.settings?.board);return Number.isFin
 const waitOf=sc=>{const v=Number((state.schools||[]).find(x=>x.id===sc)?.wait);
   return Number.isFinite(v)&&v>=5&&v<=60?v:waitDefault()};
 const kanaOf=c=>c.kana||c.name;
+/* 学級（組）。「1年1組だけ下校時刻が違う」という通知に対応するため、
+   こどもにも特別下校時刻にも持たせる。入力ゆれ（全角・「組」の有無）を吸収して比べる */
+const normClass=v=>{
+  let x=String(v==null?"":v).trim();
+  try{x=x.normalize("NFKC")}catch(e){}
+  return x.replace(/組$/,"").trim();
+};
 const toMin=s=>{if(!s)return null;const[a,b]=s.split(":").map(Number);return a*60+b};
 const fmt=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1509,10 +1518,12 @@ function planDay(ds,over){
 
   // --- 参加児童（時刻の優先順：保護者連絡の個別時刻＞特別下校時刻＞通常マスタ） ---
   const specials=(state.specialTimes||[]).filter(x=>x.date===ds&&x.time);
-  // 対象は「学年で指定」か「こどもを選んで指定」。1年2組だけ違うといった通知は後者で登録する
+  // 対象は「学年（＋組）で指定」か「こどもを選んで指定」。
+  // 組を入れた通知は、その組のこどもだけに効く（あとから入ってきたこどもにも自動で効く）
   const specialOf=c=>{const h=specials.filter(x=>(x.childIds||[]).length
     ? x.childIds.includes(c.id)
-    : (x.school===c.school&&(x.grades||[]).includes(c.grade)));
+    : (x.school===c.school&&(x.grades||[]).includes(c.grade)
+       &&(!normClass(x.klass)||normClass(x.klass)===normClass(c.klass))));
     return h.length?h[h.length-1]:null};
   const appliedSp=new Map();
   const dayNotes=notesOn(ds);
@@ -1537,6 +1548,16 @@ function planDay(ds,over){
       overwritten.push({c,own,to:ov||sp.time,by:ov?"保護者連絡":"特別下校時刻"});
     res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp,ownTime:!ov&&!sp&&!!own,timeSrc:src});
     if(!t&&!c.selfTransport&&!res.breakMode) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
+  }
+  // 組を指定した通知があるのに、その学年に組が未入力のこどもがいると取りこぼす。
+  // 新しく入ってきたこどもが該当学級だった場合の漏れは、ここで気づけるようにする
+  {
+    const byClass=specials.filter(x=>!(x.childIds||[]).length&&normClass(x.klass));
+    for(const x of byClass){
+      const miss=res.attendees.filter(a=>a.school===x.school&&(x.grades||[]).includes(a.grade)&&!normClass(a.klass));
+      if(miss.length) warnings.push({lv:"alert",tag:"特別時刻",
+        text:`${schoolOf(x.school).short}${(x.grades||[]).join("・")}年${normClass(x.klass)}組の特別下校時刻（${x.time}）がありますが、${miss.map(kanaOf).join("・")} は組が未入力のため対象外で計算しています。こどもタブで組を入れて、対象かどうかはっきりさせてください`});
+    }
   }
   for(const o of overwritten)
     warnings.push({lv:"warn",tag:"時刻の上書き",
@@ -2926,12 +2947,25 @@ function dayChecks(days,cb){
 function renderKids(){
   const t=document.getElementById("kidsTable");
   const today0=todayStr();
-  t.innerHTML=`<thead><tr><th>名前</th><th>よびな（虎の巻表示）</th><th>学校</th><th>学年</th><th>利用開始日</th><th>参加曜日</th><th>📷撮影不可</th><th>🚫送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
+  /* 組（学級）。ふだんは空欄でよい。ただし「◯年◯組だけ」という特別下校時刻が
+     登録されている学年のこどもは、空欄だと対象から外れてしまうので、その行に印を出す */
+  const clsWanted=c=>(state.specialTimes||[]).filter(x=>
+    x.time&&(x.date||"")>=today0&&!(x.childIds||[]).length&&normClass(x.klass)
+    &&x.school===c.school&&(x.grades||[]).includes(c.grade));
+  t.innerHTML=`<thead><tr><th>名前</th><th>よびな（虎の巻表示）</th><th>学校</th><th>学年</th><th>組</th><th>利用開始日</th><th>参加曜日</th><th>📷撮影不可</th><th>🚫送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
     state.children.map(c=>`<tr data-id="${c.id}">
       <td><input type="text" value="${esc(c.name)}" data-f="name" style="width:9em"></td>
       <td><input type="text" value="${esc(c.kana||"")}" data-f="kana" style="width:6em" placeholder="ひらがな"></td>
       <td><select data-f="school">${state.schools.map(s=>`<option value="${s.id}" ${s.id===c.school?"selected":""}>${esc(s.short)}</option>`).join("")}</select></td>
       <td><select data-f="grade">${GRADES.map(g=>`<option ${g===c.grade?"selected":""}>${g}</option>`).join("")}</select></td>
+      <td>${(()=>{
+        const want=clsWanted(c), need=want.length&&!normClass(c.klass);
+        const sty=`width:3.2em${need?";border-color:var(--alert)":""}`;
+        return `<input type="text" value="${esc(c.klass||"")}" data-f="klass" style="${sty}" placeholder="1"
+          title="学級。「◯年◯組だけ」という特別下校時刻があるときだけ必要です">`+
+          (need?`<div class="dcnote next" style="color:var(--alert)">⚠ 組を入れてください（${esc(want[0].date)} ${esc(normClass(want[0].klass))}組の特別下校時刻あり）</div>`
+               :want.length?`<div class="dcnote">${esc(want[0].date)} ${esc(normClass(want[0].klass))}組の指定あり</div>`:"");
+      })()}</td>
       <td><input type="date" value="${esc(c.startFrom||"")}" data-f="startFrom" title="この日から虎の巻に出ます。空欄なら最初から">${
         c.startFrom&&c.startFrom>today0?`<div class="dcnote next">📅 ${esc(c.startFrom)}から利用開始</div>`:""}</td>
       <td>${(()=>{
@@ -2950,12 +2984,12 @@ function renderKids(){
       <td><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const c=state.children.find(x=>x.id===tr.dataset.id);
-    const F={name:"名前",kana:"よびな",school:"学校",grade:"学年",memo:"メモ",startFrom:"利用開始日"};
+    const F={name:"名前",kana:"よびな",school:"学校",grade:"学年",klass:"組",memo:"メモ",startFrom:"利用開始日"};
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       c[el.dataset.f]=el.dataset.f==="grade"?Number(el.value):el.value;
       stage("こどもマスタ",`${c.kana||c.name}：${F[el.dataset.f]||el.dataset.f}を「${el.value||"（空）"}」に変更`);
-      // 利用開始日・学校・学年は他の表示（注記や下校時刻）に効くので描き直す
-      if(["startFrom","school","grade"].includes(el.dataset.f))renderKids();
+      // 利用開始日・学校・学年・組は他の表示（注記や下校時刻）に効くので描き直す
+      if(["startFrom","school","grade","klass"].includes(el.dataset.f))renderKids();
       renderPlan();
     });
     tr.querySelectorAll("[data-d]").forEach(el=>el.onchange=()=>{
@@ -3210,10 +3244,25 @@ function renderSpecials(){
           ? `${(x.childIds||[]).map(id=>`<span class="chip" style="margin:1px;font-size:11px">${esc(childName(id))} <button class="del" data-kidrm="${id}">✕</button></span>`).join("")
              }<select data-kidadd style="font-size:12px;margin-top:2px${(x.childIds||[]).length?"":";border-color:var(--warn)"}"><option value="">こどもを追加…</option>${
                cand.map(c=>`<option value="${c.id}">${esc(c.name)}（${esc(schoolOf(c.school).short)}${c.grade}年）</option>`).join("")}</select>`
-          : `<span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span>`}
+          : `<span class="daycheck">${GRADES.map(g=>`<label><input type="checkbox" data-g="${g}" ${(x.grades||[]).includes(g)?"checked":""}><span>${g}</span></label>`).join("")}</span>
+             <div style="margin-top:3px;font-size:12px">組 <input type="text" value="${esc(x.klass||"")}" data-f="klass" style="width:3.2em" placeholder="全部"
+               title="「1年1組だけ」のような通知のときに入れます。空欄ならその学年の全員が対象">
+               <span style="color:var(--muted);font-size:11px">空欄＝学年全員</span></div>`}
+        ${(()=>{
+          /* いま誰に効くのかをその場で出す。該当なしでも登録しておけば、
+             あとから入ってきたこどもに自動で効く */
+          if(byKid||!x.school||!(x.grades||[]).length) return "";
+          const k=normClass(x.klass);
+          const hit=state.children.filter(c=>c.school===x.school&&(x.grades||[]).includes(c.grade)
+            &&(!k||normClass(c.klass)===k));
+          const blank=k?state.children.filter(c=>c.school===x.school&&(x.grades||[]).includes(c.grade)&&!normClass(c.klass)):[];
+          return `<div class="dcnote${blank.length?" next":""}" style="${blank.length?"color:var(--alert)":""}">
+            対象：${hit.length?hit.map(c=>esc(kanaOf(c))).join("・"):"いま該当するこどもはいません（登録しておけば、あとから入るこどもに自動で効きます）"}
+            ${blank.length?`<br>⚠ ${blank.map(c=>esc(kanaOf(c))).join("・")} は組が未入力のため対象外です（こどもタブで組を入れてください）`:""}</div>`;
+        })()}
       </td>
       <td><input type="time" value="${esc(x.time||"")}" data-f="time" ${x.time?"":'style="border-color:var(--warn)"'}></td>
-      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障／1年2組のみ"></td>
+      <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障"></td>
       <td><button class="del" data-del>✕</button></td></tr>`}).join("")
     ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
@@ -3224,7 +3273,7 @@ function renderSpecials(){
     const mode=tr.querySelector("[data-mode]");
     if(mode)mode.onchange=()=>{
       x.mode=mode.value;
-      if(x.mode==="grade")x.childIds=[]; else x.grades=[];
+      if(x.mode==="grade")x.childIds=[]; else {x.grades=[];x.klass=""}
       stage("特別下校時刻",`${x.date||"（日付なし）"}：対象の指定方法を「${mode.value==="kids"?"こどもを選んで指定":"学年で指定"}」に変更`,x.date);
       renderSpecials();renderPlan();
     };
@@ -3583,7 +3632,7 @@ document.getElementById("dToday").onclick=()=>goDate(todayStr());
  const mk=document.querySelector("header .mark"); if(mk)mk.title="画面の版 "+APP_VERSION;}
 document.getElementById("addKid").onclick=()=>{
   const id=uid();
-  state.children.push({id,name:"",kana:"",school:state.schools[0].id,grade:1,days:[],noPhoto:false,memo:""});
+  state.children.push({id,name:"",kana:"",school:state.schools[0].id,grade:1,klass:"",days:[],noPhoto:false,memo:""});
   stage("こどもマスタ","こどもの行を追加");renderKids();renderPlan();
   focusNewRow("kidsTable",id,"name");
 };
@@ -3680,7 +3729,7 @@ document.getElementById("addTerm").onclick=()=>{
 document.getElementById("addSp").onclick=()=>{
   // 日付・学校は空欄で追加（どれを直せばよいか分からなくなるのを防ぐ）
   const id=uid();
-  state.specialTimes.push({id,date:"",school:"",mode:"grade",grades:[],childIds:[],time:"",memo:""});
+  state.specialTimes.push({id,date:"",school:"",mode:"grade",grades:[],klass:"",childIds:[],time:"",memo:""});
   stage("特別下校時刻","変更の行を追加");renderSpecials();
   focusNewRow("spTable",id,"date");
 };
