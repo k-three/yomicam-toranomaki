@@ -713,6 +713,7 @@ body.staging{padding-bottom:110px}
       <tr><td><b>「3年2組だけ通常どおり、ほかは全学年13:40」のような通知が来た</b></td><td>下校時刻タブの「特別下校時刻」で、まず<b>対象の学年</b>にチェック（この例なら1〜6年）。<b>「学級」を「指定した学級以外」</b>にして、<b>学年 3・組 2</b> を「＋」で足します。除く学級が複数あるときは、いくつでも足せます。<br>逆に「3年2組<b>のみ</b>14:45」なら、対象の学年に3年、学級を「<b>指定した学級のみ</b>」にして 3年2組 を足します。<b>この2件を両方登録すれば、3年2組は14:45・それ以外は13:40と、1回で正しく振り分かります。</b></td></tr>
       <tr><td><b>組が分からない／入れ忘れが怖い</b></td><td>組はふだん空欄でかまいません。必要になるのは<b>学級を指定した特別下校時刻がある、その学年のこどもだけ</b>です（上の例なら3年生だけ。1年生や6年生は組が空欄でも正しく振り分かります）。<br>必要なのに空欄だと、こどもタブのその子の行に<b>「⚠ 組を入れてください」</b>と赤く出ます。計算は<b>対象外（通常の時刻）</b>として進めますが、その日の要注意事項に<b>赤いアラート</b>で「◯◯ は組が未入力のため通常の時刻で計算しています。もし対象なら◯時下校です。通常の時刻で迎えに行くと学校で待たせてしまいます」と出します。組を入れれば消えます。</td></tr>
       <tr><td><b>同じこどもに特別下校時刻が2件あたってしまった</b></td><td>時刻が食い違っていると<b>赤いアラート</b>で「◯◯ に特別下校時刻が2件あたっていて、時刻が食い違っています」と出し、<b>どちらで計算したか</b>も書きます。学級の指定（のみ／以外）で重ならないように直してください。</td></tr>
+      <tr><td><b>祝日</b></td><td><b>登録は要りません。</b>祝日は自動で休所になります（元日・成人の日・建国記念の日・天皇誕生日・春分の日・昭和の日・憲法記念日・みどりの日・こどもの日・海の日・山の日・敬老の日・秋分の日・スポーツの日・文化の日・勤労感謝の日と、<b>振替休日・国民の休日</b>）。虎の巻を開くと「休所日です（秋分の日・祝日）」と出ます。第一交通の<b>「2営業日前」も祝日を飛ばして</b>数えます。<br><b>祝日に開所するとき</b>は、「長期休暇・休所日」に区分<b>「祝日でも開所」</b>でその日を登録してください。逆に祝日以外の臨時休所は、これまでどおり区分「休所」で登録します。</td></tr>
       <tr><td><b>長期休暇・年末年始</b></td><td>下校時刻タブの「長期休暇・休所日」に期間を登録。長期休暇は開所時間が変わり送迎便がなくなります（登所・降所とも保護者送迎）。休所は開所しません。</td></tr>
       <tr><td><b>実際にかかった移動時間が分かった</b></td><td>移動時間タブで更新し「実測」にチェック。<b>ここが正確になるほど計画の精度が上がります</b>（初期値はすべて暫定の20分です）。</td></tr>
       <tr><td><b>改善してほしいことがある</b></td><td>「📮 要望」タブから送れます。閲覧用ページからも送れます。</td></tr>
@@ -827,7 +828,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-18d";
+const APP_VERSION="2026-09-20a";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1489,10 +1490,61 @@ function daysOf(c,ds){
 const futureChanges=cid=>(state.dayChanges||[]).filter(x=>x.childId===cid&&x.from&&x.from>todayStr())
   .sort((a,b)=>a.from.localeCompare(b.from));
 
-/* 長期休暇（学校の長期休業）・休所日の判定。休所が最優先。 */
+/* ===== 日本の祝日 =====
+   ネットにつながっていなくても使えるように、計算で求める（1949年〜2099年）。
+   春分・秋分は近似式で、この期間は実際の暦と一致する。
+   2020・2021年の五輪にともなう移動には対応していない（この虎の巻は2025年以降で使う）。 */
+const HOL_FIXED={ "1-1":"元日","2-11":"建国記念の日","2-23":"天皇誕生日","4-29":"昭和の日",
+  "5-3":"憲法記念日","5-4":"みどりの日","5-5":"こどもの日","8-11":"山の日",
+  "11-3":"文化の日","11-23":"勤労感謝の日" };
+const HOL_MONDAY={ "1":[2,"成人の日"], "7":[3,"海の日"], "9":[3,"敬老の日"], "10":[2,"スポーツの日"] };
+const nthMonday=(y,m,n)=>{
+  const fw=new Date(Date.UTC(y,m-1,1)).getUTCDay();      // その月の1日の曜日
+  return 1+((1-fw+7)%7)+(n-1)*7;
+};
+const equinox=(y,spring)=>Math.floor((spring?20.8431:23.2488)+0.242194*(y-1980)-Math.floor((y-1980)/4));
+/* その日そのものが祝日か（振替休日・国民の休日は含めない） */
+function baseHoliday(y,m,d){
+  const f=HOL_FIXED[`${m}-${d}`]; if(f) return f;
+  const mon=HOL_MONDAY[String(m)];
+  if(mon&&d===nthMonday(y,m,mon[0])) return mon[1];
+  if(m===3&&d===equinox(y,true)) return "春分の日";
+  if(m===9&&d===equinox(y,false)) return "秋分の日";
+  return null;
+}
+/* 振替休日・国民の休日まで含めた祝日名。なければ null */
+function jpHoliday(ds){
+  const dt=new Date(ds+"T12:00:00Z"); if(isNaN(dt)) return null;
+  const at=k=>{const x=new Date(dt);x.setUTCDate(x.getUTCDate()+k);
+    return {y:x.getUTCFullYear(),m:x.getUTCMonth()+1,d:x.getUTCDate(),w:x.getUTCDay()}};
+  const t=at(0);
+  const self=baseHoliday(t.y,t.m,t.d);
+  if(self) return self;
+  // 振替休日：日曜が祝日なら、そのあと祝日でない最初の日が休みになる
+  for(let k=1;k<=7;k++){
+    const p=at(-k);
+    if(!baseHoliday(p.y,p.m,p.d)) break;
+    if(p.w===0) return "振替休日";
+  }
+  // 国民の休日：前後どちらも祝日にはさまれた平日
+  if(t.w!==0&&t.w!==6){
+    const a=at(-1), b=at(1);
+    if(baseHoliday(a.y,a.m,a.d)&&baseHoliday(b.y,b.m,b.d)) return "国民の休日";
+  }
+  return null;
+}
+
+/* 長期休暇（学校の長期休業）・休所日の判定。
+   優先順は 登録した休所 ＞ 登録した「祝日でも開所」＞ 祝日 ＞ 登録した長期休暇。
+   祝日は登録しなくても自動で休所として扱う（登録し忘れて開所日に見えるのを防ぐ）。 */
 function termOn(ds){
   const hit=(state.terms||[]).filter(t=>t.from&&t.to&&ds>=t.from&&ds<=t.to);
-  return hit.find(t=>t.kind==="closed")||hit.find(t=>t.kind==="break")||null;
+  const closed=hit.find(t=>t.kind==="closed"); if(closed) return closed;
+  const openOv=hit.find(t=>t.kind==="open");
+  const hol=jpHoliday(ds);
+  if(openOv) return hit.find(t=>t.kind==="break")||null;   // 祝日でも開所する日
+  if(hol) return {id:"hol-"+ds,kind:"closed",label:hol,from:ds,to:ds,holiday:true};
+  return hit.find(t=>t.kind==="break")||null;
 }
 const BREAK_OPEN="09:00", BREAK_CLOSE="19:00";
 
@@ -2115,7 +2167,13 @@ function planDay(ds,over){
   // 情報締切（2営業日前）
   const today=new Date();today.setHours(0,0,0,0);
   let freeze=new Date(d);freeze.setHours(0,0,0,0);
-  let bd=0;while(bd<2){freeze.setDate(freeze.getDate()-1);const w=freeze.getDay();if(w!==0&&w!==6)bd++}
+  // 祝日は第一交通も休みなので、営業日に数えない
+  let bd=0,guard=0;
+  while(bd<2&&guard++<30){
+    freeze.setDate(freeze.getDate()-1);
+    const w=freeze.getDay();
+    if(w!==0&&w!==6&&!jpHoliday(dstr(freeze)))bd++;
+  }
   const freezeTxt=`${freeze.getMonth()+1}/${freeze.getDate()}`;
   res.taxiDue=freezeTxt; res.taxiOverdue=today>freeze;
   if(today>freeze) warnings.push({lv:"info",tag:"締切済",text:`この日の情報締切（2営業日前＝${freezeTxt}）は過ぎています。以降の変更は電話連絡・赤字扱いで運用してください`});
@@ -2478,7 +2536,8 @@ function renderPlanInner(){
   const sum=document.getElementById("summaryCard");
   if(plan.weekend||plan.closed){
     const why=plan.closed
-      ? `<b>休所日</b>です（${esc(plan.term?.label||"休所")}）。この日は開所しません。`
+      ? `<b>休所日</b>です（${esc(plan.term?.label||"休所")}${plan.term?.holiday?"・祝日":""}）。この日は開所しません。${
+          plan.term?.holiday?'<br><span style="font-size:12px">祝日は自動で休所にしています。この日に開所するときは、下校時刻タブの「長期休暇・休所日」に区分「祝日でも開所」で登録してください。</span>':""}`
       : "土日はお休みです。平日を選んでください。";
     sum.innerHTML=`<h2>${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）</h2><p class="help">${why}</p>`;
     ["dayEditCard","runsCard","warnCard"].forEach(id=>document.getElementById(id).innerHTML="");
@@ -3237,7 +3296,7 @@ function renderMeet(){
 function renderTerms(){
   const t=document.getElementById("termTable"); if(!t)return;
   state.terms??=[];
-  const kinds={break:"長期休暇（開所）",closed:"休所（開所しない）"};
+  const kinds={break:"長期休暇（開所）",closed:"休所（開所しない）",open:"祝日でも開所"};
   const list=[...state.terms].sort((a,b)=>(a.from||"").localeCompare(b.from||""));
   t.innerHTML=`<thead><tr><th>開始</th><th>終了</th><th>区分</th><th>名称</th><th>開所〜終了</th><th>対象の平日</th><th></th></tr></thead><tbody>${
     list.map(x=>{
@@ -3249,6 +3308,7 @@ function renderTerms(){
       <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===x.kind?"selected":""}>${v}</option>`).join("")}</select></td>
       <td><input type="text" value="${esc(x.label||"")}" data-f="label" style="width:9em" placeholder="例：冬休み"></td>
       <td>${x.kind==="closed"?'<span class="ro na">–</span>'
+        :x.kind==="open"?'<span class="ro na">通常どおり</span>'
         :`<input type="time" value="${esc(x.open||BREAK_OPEN)}" data-f="open"> 〜 <input type="time" value="${esc(x.close||BREAK_CLOSE)}" data-f="close">`}</td>
       <td style="font-size:12px;color:var(--muted)">${days.length?esc(days.map(d=>`${mdOf(d)}(${DOWS[dowOf(d)]})`).join("・")):"（なし）"}</td>
       <td><button class="del" data-del>✕</button></td></tr>`}).join("")
@@ -3257,7 +3317,7 @@ function renderTerms(){
     const x=state.terms.find(v=>v.id===tr.dataset.id); if(!x)return;
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       x[el.dataset.f]=el.value;
-      stage("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from||"?"}〜${x.to||"?"}／${x.kind==="closed"?"休所":"長期休暇"}）を編集`);
+      stage("長期休暇・休所",`${x.label||"（名称なし）"}（${x.from||"?"}〜${x.to||"?"}／${kinds[x.kind]||"長期休暇"}）を編集`);
       renderTerms(); renderPlan(); renderShift();
     });
     tr.querySelector("[data-del]").onclick=()=>{
@@ -3276,7 +3336,9 @@ function termDays(x){
   let guard=0;
   while(d<=end&&guard++<400){
     const ds=dstr(d), w=d.getDay();
-    if(w!==0&&w!==6&&termOn(ds)===x) out.push(ds);
+    // 「祝日でも開所」は、その期間のうち祝日にあたる平日が対象
+    const on=x.kind==="open" ? !!jpHoliday(ds) : termOn(ds)===x;
+    if(w!==0&&w!==6&&on) out.push(ds);
     d.setDate(d.getDate()+1);
   }
   return out;
@@ -3837,7 +3899,7 @@ function buildSlackText(){
   const plan=planDay(ds);
   if(plan.weekend)return "（土日はお休みです）";
   const d=new Date(ds+"T12:00:00");
-  if(plan.closed)return `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）は休所日です（${plan.term?.label||"休所"}）。`;
+  if(plan.closed)return `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）は休所日です（${plan.term?.label||"休所"}${plan.term?.holiday?"・祝日":""}）。`;
   const head=plan.breakMode
     ? `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）${plan.term?.label||"長期休暇"}・開所${fmt(plan.open)}〜${fmt(plan.close)}（こども${plan.attendees.length}名／送迎なし・保護者送迎）`
     : `${d.getMonth()+1}/${d.getDate()}（${DOWS[d.getDay()]}）運行計画（こども${plan.attendees.length}名）`;
