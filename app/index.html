@@ -180,6 +180,9 @@ table.grid select{border:1px solid var(--line);border-radius:6px;padding:2px 4px
 /* ===== スマホ：横に長い表は「1件＝1カード」に積み替える =====
    見出し行は隠し、各セルの前に見出しをラベルとして出す（data-label）。
    曜日×学年のような行列の表（.matrix）は形が崩れるので横スクロールのまま。 */
+/* 下校時刻がちがうこどもが同じ立ち寄りにいる便。見落とすと早い子を待たせる */
+.stop.mixt{background:var(--warn-soft);box-shadow:inset 0 0 0 1px var(--warn)}
+.stop.mixt b{font-variant-numeric:tabular-nums;margin-left:2px}
 .scrollhint{display:none;font-size:11.5px;color:var(--muted);margin:0 0 4px}
 /* 行列の表は横に長い（メンバー予定は1か月ぶんで画面の3倍以上）。
    横に送っても「誰の行か」「どの学校か」を見失わないよう、左端の見出し列を貼り付ける */
@@ -748,6 +751,7 @@ body.staging{padding-bottom:110px}
       <tr><td><b>車が足りない（赤い「車両不足」）</b></td><td>まず「送迎の調整」→「🚕 第一交通を使う」をON。それでも足りなければ運転できるメンバーを1名臨時出勤に。<b>上の赤いお知らせに、日付ごとにどちらが必要か出ています。</b></td></tr>
       <tr><td><b>第一交通を頼んだ／頼み忘れていないか見たい</b></td><td><b>「🚕 第一交通」タブ</b>に、使う予定の日が期限つきで一覧で出ます。ここで依頼済みのチェックを入れられます（虎の巻の「送迎の調整」からでも同じです）。依頼は<b>2営業日前まで</b>。未依頼のままだと要注意事項に出続け、<b>期限を過ぎると赤（要対応）</b>になります。</td></tr>
       <tr><td><b>依頼したあとに下校時刻や人数が変わった</b></td><td>依頼済みにした時点の便の内容が記録されているので、変わった日は第一交通タブに<b>「⚠ 依頼から変更あり」</b>と出ます（依頼したときの内容も並べて表示）。第一交通へ変更を伝えたら、チェックをいったん外して入れ直すと今の内容で記録し直せます。</td></tr>
+      <tr><td><b>同じ学校でも、こどもによって下校時刻がちがう</b></td><td>便のカードには<b>こどもごとの下校時刻</b>が出ます（例：「古堅（まいら<b>14:40</b>・なおたか<b>15:30</b>）下校がちがいます・最大50分待ち」）。手動の便で学年のちがう子をまとめたときに起きます。<br>早く下校する子は学校で待つことになるので、<b>赤いアラート</b>で「◯◯の下校は14:40ですが、この便の到着は15:25です。約45分、学校で待つことになります」と出します。待たせたくないときは<b>手動の便を2つに分けて</b>ください。</td></tr>
       <tr><td><b>待機時間を短くしたのに毎日アラートが出る</b></td><td>出なくなりました。<b>下校時刻タブで待機を15分などに設定したこと自体は、もう知らせません</b>（承知のうえの設定なので毎日出ると邪魔になるため）。<br>代わりに、<b>実際にその学校にいられる時間が設定した待機より短くなった便</b>だけを知らせます。手動の便で到着が遅いときに出ます（例：「B小にいられるのが5分で、設定した待機20分より短くなっています」）。自動の計算では必ず設定どおり確保するので出ません。</td></tr>
       <tr><td><b>在館のメンバーに緊急で送迎に出てもらう</b></td><td>「送迎の調整」→「🔧 手動の便」の担当に、<b>在館の役割のメンバーも出てきます</b>（名前のうしろに「（在館）」と付きます）。自動の計算では今までどおり送迎の役割の人だけを使うので、ふだんの計画は変わりません。<br>車両・定員を入れていない人は<b>自家用車（3名）</b>として計算し、その旨を警告で出します。違う場合は「メンバー・車両」タブで車両と定員を入れてください。送迎に出ている間は拠点の見守りから外して数えます。</td></tr>
       <tr><td><b>この便はこの人に担当してほしい／自動の計算と違う組み方にしたい</b></td><td>「送迎の調整」→<b>「🔧 手動の便」</b>で、担当・巡回順・<b>乗せるこども</b>まで指定します。同じ学校を1便目と2便目で分けたいときは、手動の便を2つ作ってそれぞれにこどもを入れてください。時間的に無理があるときは警告が出ますが、<b>指定した形はそのまま残ります</b>（下校時刻に間に合わない場合は赤い「到着が遅い」）。</td></tr>
@@ -872,7 +876,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-09-30b";
+const APP_VERSION="2026-10-01a";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1969,7 +1973,8 @@ function planDay(ds,over){
       st.end=Math.max(st.time+waitOf(st.school),arrive+5);
       for(const k of st.kids){
         const w=arrive-toMin(k.time);
-        if(w>waitOf(st.school))planWarn.push({lv:"warn",tag:"手動便",text:`手動の便（${drv.name}）：${kanaOf(k)}は${schoolOf(st.school).short}で約${w}分待ち（待機${waitOf(st.school)}分を超過）。承知の上で運用してください`});
+        if(w>waitOf(st.school))planWarn.push({lv:"alert",tag:"手動便",
+          text:`手動の便（${drv.name}）：${kanaOf(k)}の下校は${k.time}ですが、この便の${schoolOf(st.school).short}到着は${fmt(arrive)}です。約${w}分、学校で待つことになります。別の便に分けるか、待てることを本人・学校に確認してください`});
       }
       if(hi&&arrive<SET.hiaceFrom)planWarn.push({lv:"warn",tag:"手動便",text:`ハイエースは14:00まで使用不可ですが、手動の便の${schoolOf(st.school).short}到着が${fmt(arrive)}です`});
       prev=st.school;cursor=st.end;
@@ -2480,7 +2485,12 @@ function schoolTag(sc){const s=schoolOf(sc);return `<span class="schooltag" styl
    taxiPlanCount は名前を入れる前の書き方。すでに「依頼済み」にした日の控えが
    古い書き方で残っているので、変更の有無を見るときだけ、そちらとも照らし合わせる */
 const taxiPlanText=pl=>(pl.runs||[]).filter(r=>r.taxi)
-  .map(r=>r.stops.map(st=>`${schoolOf(st.school).short}${fmt(st.time)}下校 ${st.kids.map(kanaOf).join("・")}`).join("＋"))
+  .map(r=>r.stops.map(st=>{
+    const tset=new Set(st.kids.map(k=>k.time).filter(Boolean));
+    return tset.size>1
+      ? `${schoolOf(st.school).short} ${st.kids.map(k=>`${kanaOf(k)}${k.time}下校`).join("・")}`
+      : `${schoolOf(st.school).short}${fmt(st.time)}下校 ${st.kids.map(kanaOf).join("・")}`;
+  }).join("＋"))
   .join("／");
 const taxiPlanCount=pl=>(pl.runs||[]).filter(r=>r.taxi)
   .map(r=>r.stops.map(st=>`${schoolOf(st.school).short}${fmt(st.time)}下校 ${st.kids.length}名`).join("＋"))
@@ -2976,8 +2986,19 @@ function renderRuns(plan){
       stops.push(`<span class="arrow">${st.from===st.school?"･･":"→"}</span>`);
       const stay=st.from===st.school;
       const late=!stay&&st.arrive>st.time?st.arrive-st.time:0;
-      stops.push(`<span class="stop"${late?' style="background:var(--alert-soft);color:var(--alert)"':""}>${stay?"↳ ":""}${esc(schoolOf(st.school).short)}（${esc(st.kids.map(kanaOf).join("・"))}）<small>${
-        late?`着${fmt(st.arrive)}＝下校に${late}分おくれ・`:stay?"そのまま待機・":""}${fmt(st.time)}下校・${fmt(st.end)}発</small></span>`);
+      /* 同じ立ち寄りでも、こどもによって下校時刻が違うことがある（手動の便で
+         学年のちがう子をまとめたときなど）。1つの時刻だけ出すと、早く下校する子の
+         時刻がその中でいちばん遅い時刻に見えてしまうので、ちがうときは名前ごとに出す */
+      const tset=new Set(st.kids.map(k=>k.time).filter(Boolean));
+      const mixed=tset.size>1;
+      const who=mixed
+        ? st.kids.map(k=>`${esc(kanaOf(k))}<b>${esc(k.time||"?")}</b>`).join("・")
+        : esc(st.kids.map(kanaOf).join("・"));
+      const earliest=Math.min(...st.kids.map(k=>toMin(k.time)).filter(Number.isFinite));
+      const maxWait=Number.isFinite(earliest)?st.end-earliest:0;
+      stops.push(`<span class="stop${mixed?" mixt":""}"${late?' style="background:var(--alert-soft);color:var(--alert)"':""}>${stay?"↳ ":""}${esc(schoolOf(st.school).short)}（${who}）<small>${
+        late?`着${fmt(st.arrive)}＝下校に${late}分おくれ・`:stay?"そのまま待機・":""}${
+        mixed?`下校がちがいます・最大${maxWait}分待ち・`:`${fmt(st.time)}下校・`}${fmt(st.end)}発</small></span>`);
     }
     stops.push('<span class="arrow">→</span>');
     stops.push(`<span class="stop home">${esc(venueAt(r.backAt))}<small>${fmt(r.backAt)}着</small></span>`);
