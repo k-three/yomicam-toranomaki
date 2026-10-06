@@ -75,6 +75,8 @@ header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 
 .datebox .daystep{padding:3px 9px;font-size:12px;box-shadow:none}
 .dowchip{font-weight:900;font-family:"Zen Maru Gothic";background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:99px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
+/* 緊急ボタン。いつも見える場所に、赤の輪郭で */
+.btn.sosbtn{color:#B3261E;border:1.5px solid #B3261E;font-weight:900}
 .btn:hover{border-color:var(--accent)}
 .btn:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -375,6 +377,9 @@ body.staging{padding-bottom:110px}
     <div><h1>よみキャン運営虎の巻</h1></div>
   </div>
   <div class="spacer"></div>
+  <!-- 緊急（所在不明・ケガ・体調不良・事故など）。押すと送迎記録と同じ緊急の画面が開く。
+       仕組みは末尾で読み込んでいる alert.js（data-yomicam-sos を押すと開く） -->
+  <button class="btn noprint sosbtn" data-yomicam-sos title="緊急：所在不明・ケガ・体調不良・事故など">🚨 緊急</button>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
   <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓 ログイン切替</button>
