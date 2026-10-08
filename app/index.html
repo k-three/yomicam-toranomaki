@@ -454,7 +454,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。</span></p>
+    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -881,7 +881,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-01b";
+const APP_VERSION="2026-10-08";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1054,6 +1054,7 @@ function migrate(){
     state._v=10;
   }
   save();
+  pnResort();   // 読み込んだ保護者連絡は日付順に並べておく
 }
 /* 保護者連絡（欠席・スポット・時刻変更）ヘルパー */
 function notesOn(ds){return (state.parentNotes||[]).filter(n=>n.date===ds)}
@@ -1126,6 +1127,7 @@ function commitStage(){
   const logs=stageLog; stageLog=[]; stageRemote=null; stageRemoteM=null;
   save();
   logs.forEach(l=>logChange(l.kind,l.text,l.ds));
+  pnResort();   // 保護者連絡を日付順に並べ替えるのは、決定したこのときだけ
   renderStageBar();
   rerenderAll();
 }
@@ -1138,6 +1140,7 @@ function cancelStage(){
   try{localStorage.setItem("toranomaki-v1",JSON.stringify(state))}catch(e){}
   if(remM)adoptPart(remM,MASTER_KEYS);
   if(rem)adoptPart(rem,DAY_KEYS);
+  pnResort();
   renderStageBar();
   rerenderAll();
 }
@@ -3246,11 +3249,25 @@ function renderDayChanges(){
   });
   lockMasterTables();
 }
+/* 保護者連絡の表示順。
+   記入のたびに日付順へ並べ替えると、書いている途中の行が画面のどこかへ飛んでしまい、
+   「追加できなかった」と思ってもう一度「連絡を追加」を押してしまう。
+   そこで並べ替えは pnResort() を呼ぶときだけ（＝「✅ 決定して反映」や「↩ 取り消し」、
+   共有データの読み込み時）にして、記入中は行を動かさない。
+   追加したばかりの行は、この並びに入っていないので表の下に増えていく。 */
+let pnOrder=[];
+function pnResort(){
+  pnOrder=[...(state.parentNotes||[])]
+    .sort((a,b)=>(a.date||"").localeCompare(b.date||"")||String(a.childId||"").localeCompare(String(b.childId||"")))
+    .map(n=>n.id);
+}
 function renderParentNotes(){
   const t=document.getElementById("pnTable");
   state.parentNotes??=[];
   const kinds={absent:"欠席",spot:"スポット参加",time:"下校時刻変更"};
-  const list=[...state.parentNotes].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||String(a.childId||"").localeCompare(String(b.childId||"")));
+  const pos=new Map(pnOrder.map((id,i)=>[id,i]));
+  const at=n=>pos.has(n.id)?pos.get(n.id):1e9;   // 並びに入っていない行＝追加したばかり
+  const list=[...state.parentNotes].sort((a,b)=>at(a)-at(b));   // 同じ値なら追加した順のまま
   const today=todayStr();
   t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th>メモ</th><th></th></tr></thead><tbody>${
     list.map(n=>{const half=!n.date||!n.childId;
@@ -3880,7 +3897,12 @@ document.getElementById("histClear").onclick=()=>{document.getElementById("histD
 document.getElementById("histReload").onclick=()=>renderHistory(true);
 document.getElementById("whoBtn").onclick=()=>askWho(true);
 document.getElementById("addPn").onclick=()=>{
-  // 日付・こどもは空欄で追加（既存の連絡と見分けがつかなくなるのを防ぐ）
+  /* 日付・こどもは空欄で追加（既存の連絡と見分けがつかなくなるのを防ぐ）。
+     未記入の行が残っているときは行を増やさず、その行に戻る。
+     記入途中の行を見失って「追加できなかった」と思い、もう一度押したときに
+     空欄の行が積み上がってしまうのを防ぐため */
+  const blank=(state.parentNotes||[]).find(n=>!n.date&&!n.childId);
+  if(blank){ renderParentNotes(); focusNewRow("pnTable",blank.id,"date"); return }
   const id=uid();
   state.parentNotes.push({id,date:"",childId:"",kind:"time",time:"",memo:""});
   stage();renderParentNotes();
