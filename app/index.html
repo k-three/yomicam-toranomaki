@@ -178,6 +178,8 @@ nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 18px;border-bottom:2px
 .att:last-child{border-bottom:none}
 .att .nm{font-weight:700;min-width:8em}
 .att input[type=time]{border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:var(--surface);font-variant-numeric:tabular-nums}
+.att .memolbl{color:var(--muted);font-size:12px}
+.att .notememo{border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:var(--surface);width:14em;max-width:46vw;font-size:13px}
 .schooltag{font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;color:#fff}
 .toggle{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:700}
 /* tables */
@@ -218,6 +220,7 @@ tr.pnhalf>td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
 .pncell.miss input,.pncell.miss select{border:2px solid var(--warn)}
 .missmark,.blankmark{display:block;font-size:10.5px;margin-top:2px;line-height:1.25}
 .missmark{color:var(--warn);font-weight:900}
+.dupmark{display:block;font-size:10.5px;font-weight:900;color:var(--alert);margin-top:2px;line-height:1.25}
 .blankmark{color:var(--muted);font-weight:700}
 .pnnone{color:var(--muted);font-weight:700}
 tr.justadded>td{background:var(--accent-soft);transition:background 1.2s ease-out}
@@ -481,7 +484,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
+    <p class="help">先の日付の連絡もここで一元管理できます。<b>「虎の巻」タブの当日調整と同じデータです</b>（どちらで変えても同期。当日調整で入れた欠席・スポット参加・個別時刻も日付順の位置にここへ出ます。備考はどちらからでも書けます）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -908,7 +911,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-08c";
+const APP_VERSION="2026-10-08d";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1091,7 +1094,7 @@ const childName=cid=>{if(!cid)return "（こども未選択）";const c=(state.c
 function setNote(ds,cid,kind,fields){
   let n=getNote(ds,cid,kind);
   const isNew=!n;
-  if(!n){n={id:uid(),date:ds,childId:cid,kind,memo:""};state.parentNotes.push(n)}
+  if(!n){n={id:uid(),date:ds,childId:cid,kind,memo:""};state.parentNotes.push(n);pnPlace(n)}
   Object.assign(n,fields||{});
   stage("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}を${isNew?"登録":"更新"}${n.time?`（${n.time}）`:""}${n.memo?`「${n.memo}」`:""}`,ds);
 }
@@ -2707,6 +2710,15 @@ function renderPlanInner(){
   try{renderLegend()}catch(e){console.error(e)}
 }
 
+/* 当日調整で入れた欠席・スポット参加・個別時刻は、こどもタブの「保護者連絡」と
+   同じデータ（state.parentNotes）。どこから来た連絡かを後から追えるように、
+   ここでも備考を書けるようにする（コドモンの日付・電話など） */
+function noteMemo(ds,cid,kind,label){
+  const n=getNote(ds,cid,kind); if(!n)return "";
+  return `<span class="memolbl">${label}</span><input type="text" class="notememo"
+    data-memo="${cid}" data-mkind="${kind}" value="${esc(n.memo||"")}"
+    placeholder="例：コドモン 10/7 母より" title="この連絡の根拠（どこを見れば確認できるか）。こどもタブの保護者連絡と同じ欄です">`;
+}
 function renderDayEdit(plan){
   const day=plan.day;const ds=currentDate;const dow=plan.dow;
   const fixed=state.children.filter(c=>fixedOn(c,ds,dow));
@@ -2726,6 +2738,7 @@ function renderDayEdit(plan){
       <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${c.id}" value="${ov}">
       ${ov?`<button class="del" data-ovclr="${c.id}" title="個別時刻を取り消して通常の下校時刻に戻す">取消</button>`:""}
       ${absent?'<span class="chip alert">欠席</span>':""}${ov?'<span class="chip warn">保護者連絡で変更</span>':""}
+      ${noteMemo(ds,c.id,"absent","欠席の備考")}${noteMemo(ds,c.id,"time","時刻変更の備考")}
     </div>`);
   }
   for(const cid of spotIds){const c=state.children.find(x=>x.id===cid);if(!c||listed.has(cid))continue;
@@ -2733,7 +2746,8 @@ function renderDayEdit(plan){
     rows.push(`<div class="att"><span class="chip kids">スポット</span><span class="nm">${esc(c.name)}</span>${schoolTag(c.school)}<span style="color:var(--muted);font-size:12px">${c.grade}年</span>
       <span style="color:var(--muted);font-size:12px">個別時刻</span><input type="time" data-ov="${cid}" value="${ov}">
       ${ov?`<button class="del" data-ovclr="${cid}" title="個別時刻を取り消す">取消</button>`:""}
-      <button class="del" data-unspot="${cid}" title="スポット参加を取り消す">✕</button></div>`);
+      <button class="del" data-unspot="${cid}" title="スポット参加を取り消す">✕</button>
+      ${noteMemo(ds,cid,"spot","参加連絡の備考")}</div>`);
   }
   const dayStaff=state.staff.filter(s=>s.role!=="taxi"&&(s.days.includes(dow)||(day.staffExtra||[]).includes(s.id)));
   const staffRows=dayStaff.map(s=>{
@@ -2755,7 +2769,7 @@ function renderDayEdit(plan){
   document.getElementById("dayEditCard").innerHTML=`
     <h2 id="dayEditToggle" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;margin-bottom:${collapsed?"0":"10px"}">
       <span style="color:var(--accent)">${collapsed?"▸":"▾"}</span>当日調整
-      <span style="font-size:12px;color:var(--muted);font-weight:500">（スクリレ・保護者連絡をここに反映 → 虎の巻が自動更新）</span>
+      <span style="font-size:12px;color:var(--muted);font-weight:500">（スクリレ・保護者連絡をここに反映 → 虎の巻が自動更新。欠席・スポット参加・個別時刻は「👧 こども」タブの保護者連絡と同じデータです）</span>
     </h2>
     <div id="dayEditBody" ${collapsed?"hidden":""}>
     ${plan.breakMode?`<p class="help" style="margin-top:0;color:var(--warn);font-weight:700">${esc(plan.term?.label||"長期休暇")}：開所 ${fmt(plan.open)}〜${fmt(plan.close)}・送迎なし（保護者送迎）。下校時刻の欄はこの日は使いません。</p>`:""}
@@ -2824,6 +2838,13 @@ function renderDayEdit(plan){
   });
   document.querySelectorAll("[data-ovclr]").forEach(el=>el.onclick=()=>{
     removeNote(currentDate,el.dataset.ovclr,"time"); renderPlan();
+  });
+  document.querySelectorAll("[data-memo]").forEach(el=>el.onchange=()=>{
+    const cid=el.dataset.memo,kind=el.dataset.mkind;
+    const n=getNote(currentDate,cid,kind); if(!n)return;
+    n.memo=el.value;
+    stage("保護者連絡",`${childName(cid)}：${KIND_LABEL[kind]||kind}の備考を「${el.value||"（空）"}」に`,currentDate);
+    renderPlan();
   });
   document.querySelectorAll("[data-unspot]").forEach(el=>el.onclick=()=>{
     removeNote(currentDate,el.dataset.unspot,"spot"); renderPlan();
@@ -3311,10 +3332,18 @@ function renderDayChanges(){
    共有データの読み込み時）にして、記入中は行を動かさない。
    追加したばかりの行は、この並びに入っていないので表の下に増えていく。 */
 let pnOrder=[];
+const pnKey=x=>(x.date||"")+"\u0000"+String(x.childId||"");
 function pnResort(){
-  pnOrder=[...(state.parentNotes||[])]
-    .sort((a,b)=>(a.date||"").localeCompare(b.date||"")||String(a.childId||"").localeCompare(String(b.childId||"")))
-    .map(n=>n.id);
+  pnOrder=[...(state.parentNotes||[])].sort((a,b)=>pnKey(a).localeCompare(pnKey(b))).map(n=>n.id);
+}
+/* 当日調整（虎の巻タブ）から増えた連絡は、表の末尾ではなく日付順の位置に入れる。
+   手で「連絡を追加」した行とちがって、どこに入るか迷うことがないため */
+function pnPlace(n){
+  if(pnOrder.includes(n.id))return;
+  const by=new Map((state.parentNotes||[]).map(x=>[x.id,x]));
+  const k=pnKey(n);
+  let i=0; while(i<pnOrder.length){const o=by.get(pnOrder[i]); if(o&&pnKey(o).localeCompare(k)>0)break; i++}
+  pnOrder.splice(i,0,n.id);
 }
 function renderParentNotes(){
   const t=document.getElementById("pnTable");
@@ -3329,6 +3358,10 @@ function renderParentNotes(){
      という取りちがえが起きたので、空のときは文字でそう書く */
   const MISS='<span class="missmark">未入力</span>';
   const BLANK='<span class="blankmark">空欄（指定なし）</span>';
+  /* 同じ日・同じこども・同じ種別が2行あると、どちらが効いているのか分からない。
+     当日調整と手入力の両方から登録したときに起きるので、気づけるように印を出す */
+  const dkey=n=>`${n.date}|${n.childId}|${n.kind}`;
+  const dup={}; state.parentNotes.forEach(n=>{if(n.date&&n.childId)dup[dkey(n)]=(dup[dkey(n)]||0)+1});
   t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th>メモ</th><th></th></tr></thead><tbody>${
     list.map(n=>{
       const half=!n.date||!n.childId;
@@ -3336,7 +3369,8 @@ function renderParentNotes(){
       return `<tr data-id="${n.id}" class="${half?"pnhalf":""}" style="${!half&&n.date<today?"opacity:.55":""}">
       <td class="pncell${n.date?"":" miss"}"><input type="date" value="${esc(n.date||"")}" data-f="date">${n.date?"":MISS}</td>
       <td class="pncell${n.childId?"":" miss"}"><select data-f="childId"><option value="">こどもを選択…</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>${n.childId?"":MISS}</td>
-      <td class="pncell"><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td class="pncell"><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select>${
+        n.date&&n.childId&&dup[dkey(n)]>1?'<span class="dupmark">重複</span>':""}</td>
       <td class="pncell${!n.time&&needTime?" miss":""}">${n.kind==="absent"
         ? '<span class="pnnone">—</span>'
         : `<input type="time" value="${esc(n.time||"")}" data-f="time">${n.time?"":(needTime?MISS:BLANK)}`}</td>
