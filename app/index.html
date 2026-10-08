@@ -209,6 +209,17 @@ table.grid.matrix td:first-child{
 }
 table.grid.matrix thead th:first-child{z-index:3;background:var(--surface2)}
 /* 追加したばかりの行。どれを足したのかすぐ分かるように、少しのあいだ色を変える */
+/* 保護者連絡：未入力の欄をはっきり出す。
+   空の日付・時刻の欄に、ブラウザがうすい文字で見本（iPhone・iPadでは今日の日付や
+   時刻）を出すため、入力済みと見分けがつかなかった */
+tr.pnhalf>td{background:var(--warn-soft)}
+tr.pnhalf>td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
+.pncell{white-space:nowrap}
+.pncell.miss input,.pncell.miss select{border:2px solid var(--warn)}
+.missmark,.blankmark{display:block;font-size:10.5px;margin-top:2px;line-height:1.25}
+.missmark{color:var(--warn);font-weight:900}
+.blankmark{color:var(--muted);font-weight:700}
+.pnnone{color:var(--muted);font-weight:700}
 tr.justadded>td{background:var(--accent-soft);transition:background 1.2s ease-out}
 tr.justadded>td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
 @media (max-width:700px){
@@ -470,7 +481,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b>日付・こどもが未入力の行は色つきで表示され、計画には反映されません。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
+    <p class="help">先の日付の連絡もここで一元管理できます。「虎の巻」タブの当日調整と同じデータです（どちらで変えても同期）。時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -897,7 +908,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-08b";
+const APP_VERSION="2026-10-08c";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1137,8 +1148,34 @@ function renderStageBar(){
     stageLog.slice(-5).map(l=>`<span class="stagechip">${esc(l.kind)}：${esc(l.text)}</span>`).join("");
   document.getElementById("stageWarn").hidden=!(stageRemote||stageRemoteM);
 }
+/* 日付かこどもが未入力の保護者連絡は、決定しても「どの日のだれ」か決まらないので
+   計画に反映されない。黙って保存すると「登録したのに反映されない」になるため、
+   決定の前に止めて、その行まで案内する */
+function pnIncomplete(){
+  const bad=(state.parentNotes||[]).filter(n=>!n.date||!n.childId);
+  if(!bad.length)return false;
+  alert(`保護者連絡に、日付かこどもが未入力の行が ${bad.length}件 あります。\n`+
+    `そのままでは「どの日のだれの連絡か」が決まらないため、決定しても計画には反映されません。\n\n`+
+    `「👧 こども」タブの保護者連絡で、色のついた行（「未入力」と出ている欄）を入力するか、`+
+    `右の ✕ で行を消してから、もう一度「✅ 決定して反映」を押してください。\n\n`+
+    `※ iPhone・iPadでは、空の日付欄・時刻欄に今日の日付や時刻がうすい文字で出ます。`+
+    `入っているように見えても未入力のことがあります。`);
+  try{
+    showTab("kids");
+    const tr=document.querySelector(`#pnTable tr[data-id="${bad[0].id}"]`);
+    if(tr){
+      tr.scrollIntoView({block:"center",behavior:"smooth"});
+      tr.classList.add("justadded");
+      setTimeout(()=>tr.classList.remove("justadded"),2500);
+      const el=tr.querySelector(bad[0].date?'[data-f="childId"]':'[data-f="date"]');
+      if(el)el.focus({preventScroll:true});
+    }
+  }catch(e){}
+  return true;
+}
 function commitStage(){
   if(!staged)return;
+  if(pnIncomplete())return;
   staged=false;
   const logs=stageLog; stageLog=[]; stageRemote=null; stageRemoteM=null;
   save();
@@ -3287,14 +3324,23 @@ function renderParentNotes(){
   const at=n=>pos.has(n.id)?pos.get(n.id):1e9;   // 並びに入っていない行＝追加したばかり
   const list=[...state.parentNotes].sort((a,b)=>at(a)-at(b));   // 同じ値なら追加した順のまま
   const today=todayStr();
+  /* 空の日付欄・時刻欄は、ブラウザが「見本」をうすい文字で出すことがある
+     （iPhone・iPadでは今日の日付や時刻が出る）。入っているように見えて実は未入力、
+     という取りちがえが起きたので、空のときは文字でそう書く */
+  const MISS='<span class="missmark">未入力</span>';
+  const BLANK='<span class="blankmark">空欄（指定なし）</span>';
   t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th>メモ</th><th></th></tr></thead><tbody>${
-    list.map(n=>{const half=!n.date||!n.childId;
-      return `<tr data-id="${n.id}" style="${half?"background:var(--warn-soft)":(n.date<today?"opacity:.55":"")}">
-      <td><input type="date" value="${esc(n.date||"")}" data-f="date" ${n.date?"":'style="border-color:var(--warn)"'}></td>
-      <td><select data-f="childId" ${n.childId?"":'style="border-color:var(--warn)"'}><option value="">こどもを選択…</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select></td>
-      <td><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select></td>
-      <td><input type="time" value="${esc(n.time||"")}" data-f="time" ${n.kind==="absent"?"disabled":""}></td>
-      <td><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
+    list.map(n=>{
+      const half=!n.date||!n.childId;
+      const needTime=n.kind==="time";   // 下校時刻変更は時刻がないと意味がない
+      return `<tr data-id="${n.id}" class="${half?"pnhalf":""}" style="${!half&&n.date<today?"opacity:.55":""}">
+      <td class="pncell${n.date?"":" miss"}"><input type="date" value="${esc(n.date||"")}" data-f="date">${n.date?"":MISS}</td>
+      <td class="pncell${n.childId?"":" miss"}"><select data-f="childId"><option value="">こどもを選択…</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>${n.childId?"":MISS}</td>
+      <td class="pncell"><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select></td>
+      <td class="pncell${!n.time&&needTime?" miss":""}">${n.kind==="absent"
+        ? '<span class="pnnone">—</span>'
+        : `<input type="time" value="${esc(n.time||"")}" data-f="time">${n.time?"":(needTime?MISS:BLANK)}`}</td>
+      <td class="pncell"><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
       <td><button class="del" data-del>✕</button></td></tr>`}).join("")
     ||'<tr><td colspan="6" style="color:var(--muted)">連絡なし</td></tr>'}</tbody>`;
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
