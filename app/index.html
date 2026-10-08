@@ -44,36 +44,50 @@ h2{font-size:17px;margin:0 0 10px}
 h3{font-size:15px;margin:18px 0 8px}
 button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:1180px;margin:0 auto;padding:0 16px 60px}
-header.app{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 0 10px}
+/* 最上段。日付もここに入れて一行にまとめ、スクロールしても上に残す。
+   いまどの日を見ているか見失わないようにするため */
+header.app{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;
+  gap:6px 10px;padding:8px 16px;margin:0 -16px;background:var(--bg);border-bottom:1px solid var(--line)}
 .brand{display:flex;align-items:center;gap:10px}
-.brand .mark{width:38px;height:38px;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:20px}
-.brand h1{font-size:19px;margin:0;font-weight:900}
+.brand .mark{width:34px;height:34px;border-radius:11px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:19px}
+.brand h1{font-size:17px;margin:0;font-weight:900}
 .brand small{display:block;color:var(--muted);font-size:11px;font-weight:500;letter-spacing:.08em}
 .spacer{flex:1}
-/* 日付の帯。スクロールしても上に残るので、いまどの日を見ているか見失わない */
-.datebar{position:sticky;top:0;z-index:30;background:var(--bg);padding:6px 0;margin:0 -16px;
-  padding-left:16px;padding-right:16px;border-bottom:1px solid var(--line)}
-.datebox{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 10px;box-shadow:var(--shadow)}
-/* 日付はカレンダーから選ぶ。押せると分かるように枠を付ける */
-.dpick{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:10px;
-  padding:3px 8px;background:var(--bg);cursor:pointer;flex:1;min-width:0}
+.datebox{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 7px;box-shadow:var(--shadow)}
+/* 日付はカレンダーから選ぶ。押せると分かるように枠を付ける。
+   幅は中身ぶんだけ（横いっぱいに伸ばすと1行ぶんの場所をむだに使う） */
+.dpick{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;
+  padding:2px 6px;background:var(--bg);cursor:pointer}
 .dpick input{border:none;background:none;font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:15px;cursor:pointer;flex:1;min-width:0;color:var(--ink)}
+  font-size:15px;cursor:pointer;color:var(--ink)}
 .dpick:focus-within{outline:2px solid var(--accent)}
+/* 最上段を1行に収めるため、画面がせまくなるほど文字を省く。
+   日付と「🚨 緊急」はいつでも文字のまま残す */
+@media (min-width:1160px){   /* 長い名前で2行にならないように、名前だけ幅を区切る */
+  #whoBtn .btnlabel{display:inline-block;max-width:7em;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;vertical-align:bottom}
+}
+@media (max-width:1159px){   /* ボタンは絵文字だけに（名前・ログイン切替・印刷・保存状態） */
+  .btnlabel{display:none}
+  #syncChip .chiptxt{display:none}
+}
+@media (max-width:900px){    /* 題名を省いて🚐だけに */
+  .brand h1{display:none}
+  .datebox{gap:4px;padding:3px 5px}
+}
 @media (max-width:700px){
-  .datebar{padding-top:4px;padding-bottom:4px}
-  .datebox{gap:4px;padding:4px 6px}
-  /* 日付そのものを優先し、ボタンの文字は矢印だけにする */
-  .dlabel{display:none}
-  .datebox .daystep{padding:6px 8px;font-size:13px;flex:none}
-  .dpick{padding:2px 6px}
+  header.app{gap:5px 6px;padding-top:6px;padding-bottom:6px}
+  .brand{display:none}   /* 🚐の飾りより日付の幅を優先する */
+  .datebox{gap:3px;padding:3px 4px}
+  .datebox .daystep{padding:5px 7px;font-size:13px}
+  .dpick{padding:2px 4px}
   .dpick input{font-size:16px}   /* iOSで勝手に拡大しない大きさ */
   /* タブが4段になって画面を食うので詰める */
   nav.tabs{gap:2px;margin:6px 0 12px}
   .tab{padding:7px 8px;font-size:13px}
 }
-.datebox .daystep{padding:3px 9px;font-size:12px;box-shadow:none}
-.dowchip{font-weight:900;font-family:"Zen Maru Gothic";background:var(--accent-soft);color:var(--accent);padding:2px 10px;border-radius:99px}
+.datebox .daystep{padding:3px 8px;font-size:12px;box-shadow:none}
+.dowchip{font-weight:900;font-family:"Zen Maru Gothic";background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:99px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 14px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
 /* 緊急ボタン。いつも見える場所に、赤の輪郭で */
 .btn.sosbtn{color:#B3261E;border:1.5px solid #B3261E;font-weight:900}
@@ -260,6 +274,10 @@ button.del[data-ovclr]:hover{border-color:var(--alert)}
 .prov{color:var(--warn);font-weight:700}
 @media print{
   body{background:#fff}
+  /* 紙では帯を固定しない（ページごとに出てしまう）。日付と曜日だけ残す */
+  header.app{position:static;border-bottom:none;padding:10px 0;margin:0}
+  .datebox{border:none;box-shadow:none;padding:0;background:none}
+  .dpick{border:none;padding:0;background:none}
   header.app .btn, nav.tabs, .noprint, #detail{display:none !important}
   .card{box-shadow:none;break-inside:avoid}
   .tl-scroll{overflow:visible}
@@ -371,10 +389,19 @@ body.staging{padding-bottom:110px}
 </div></div>
 
 <div class="wrap">
+<!-- 最上段。日付もこの中に入れて一行にまとめ、帯ごとスクロールしても上に残す
+     （日付だけで1行使うと画面がもったいないため） -->
 <header class="app">
   <div class="brand">
     <div class="mark">🚐</div>
     <div><h1>よみキャン運営虎の巻</h1></div>
+  </div>
+  <div class="datebox">
+    <button class="btn daystep" id="dPrev" title="前の平日へ">◀</button>
+    <label class="dpick" title="カレンダーから日付を選ぶ"><input type="date" id="dateInput"></label>
+    <span class="dowchip" id="dowChip">–</span>
+    <button class="btn daystep" id="dNext" title="次の平日へ">▶</button>
+    <button class="btn daystep" id="dToday" title="今日の虎の巻を表示">今日</button>
   </div>
   <div class="spacer"></div>
   <!-- 緊急（所在不明・ケガ・体調不良・事故など）。押すと送迎記録と同じ緊急の画面が開く。
@@ -382,20 +409,9 @@ body.staging{padding-bottom:110px}
   <button class="btn noprint sosbtn" data-yomicam-sos title="緊急：所在不明・ケガ・体調不良・事故など">🚨 緊急</button>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
-  <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓 ログイン切替</button>
-  <button class="btn" id="printBtn">🖨 印刷</button>
+  <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓<span class="btnlabel"> ログイン切替</span></button>
+  <button class="btn" id="printBtn" title="この画面を印刷します">🖨</button>
 </header>
-
-<!-- 日付はいつでも見えるように、スクロールしても上に残す -->
-<div class="datebar">
-  <div class="datebox">
-    <button class="btn daystep" id="dPrev" title="前の平日へ">◀<span class="dlabel"> 前日</span></button>
-    <label class="dpick" title="カレンダーから日付を選ぶ"><input type="date" id="dateInput"></label>
-    <button class="btn daystep" id="dNext" title="次の平日へ"><span class="dlabel">翌日 </span>▶</button>
-    <button class="btn daystep" id="dToday" title="今日の虎の巻を表示">今日</button>
-    <span class="dowchip" id="dowChip">–</span>
-  </div>
-</div>
 
 <nav class="tabs" id="tabs">
   <button class="tab on" data-tab="plan">📋 虎の巻</button>
@@ -732,12 +748,12 @@ body.staging{padding-bottom:110px}
   <div class="card">
     <h2>1日の使い方</h2>
     <div class="steps">
-      <div class="step"><b>朝：今日を開く</b>　ヘッダーの「今日」を押すと今日の虎の巻に飛びます。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
+      <div class="step"><b>朝：今日を開く</b>　画面のいちばん上に日付の帯があります（スクロールしても残ります）。「今日」を押すと今日の虎の巻に飛びます。日付を押すとカレンダーから選べます。スマホなど画面がせまいときは、右側のボタン（👤 名前・🔓 ログイン切替・🖨 印刷）は<b>絵文字だけ</b>になります。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
       <div class="step"><b>連絡が入ったら：当日調整に入れる</b>　欠席・スポット参加・下校時刻の変更（保護者からの連絡）、メンバーの休み・勤務時間の変更、来訪予定、会場の変更、連絡メモ。入れると送迎便とタイムラインがその場で組み直されます。</div>
       <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にあります。第一交通を使う／🔧 手動の便（担当・巡回順・乗せるこどもを指定）。</div>
       <div class="step"><b>最後に「✅ 決定して反映」</b>　<b>これを押すまで、変更はほかのメンバーに共有されません。</b>画面下に「未確定の変更が N件 あります」と出ます。間違えたときは「↩ 取り消し」で確定前の状態に戻せます。</div>
       <div class="step"><b>要注意事項を確認する</b>　ページ下部です。<b style="color:var(--alert)">要対応</b>（赤）は、そのままにすると運行が成り立たない・こどもが待つことになるものです。必ず消してから終わってください。「注意」「参考」は承知の上で進めて構いません。</div>
-      <div class="step"><b>共有する</b>　「📣 投稿文」でSlack・LINE用のテキストをコピーできます。閲覧用ページは<b>毎営業日12時に自動で更新</b>されるので、手作業は不要です。</div>
+      <div class="step"><b>共有する</b>　メンバーはこのアプリを直接開きます（閲覧のみのパスワード）。<b>別に配っていた閲覧用ページは廃止しました。</b></div>
     </div>
   </div>
 
@@ -769,7 +785,7 @@ body.staging{padding-bottom:110px}
       <tr><td><b>祝日</b></td><td><b>登録は要りません。</b>祝日は自動で休所になります（元日・成人の日・建国記念の日・天皇誕生日・春分の日・昭和の日・憲法記念日・みどりの日・こどもの日・海の日・山の日・敬老の日・秋分の日・スポーツの日・文化の日・勤労感謝の日と、<b>振替休日・国民の休日</b>）。虎の巻を開くと「休所日です（秋分の日・祝日）」と出ます。第一交通の<b>「2営業日前」も祝日を飛ばして</b>数えます。<br><b>祝日に開所するとき</b>は、「長期休暇・休所日」に区分<b>「祝日でも開所」</b>でその日を登録してください。逆に祝日以外の臨時休所は、これまでどおり区分「休所」で登録します。</td></tr>
       <tr><td><b>長期休暇・年末年始</b></td><td>下校時刻タブの「長期休暇・休所日」に期間を登録。長期休暇は開所時間が変わり送迎便がなくなります（登所・降所とも保護者送迎）。休所は開所しません。</td></tr>
       <tr><td><b>実際にかかった移動時間が分かった</b></td><td>移動時間タブで更新し「実測」にチェック。<b>ここが正確になるほど計画の精度が上がります</b>（初期値はすべて暫定の20分です）。</td></tr>
-      <tr><td><b>改善してほしいことがある</b></td><td>「📮 要望」タブから送れます。閲覧用ページからも送れます。</td></tr>
+      <tr><td><b>改善してほしいことがある</b></td><td>「📮 要望」タブから送れます。閲覧のみのパスワードでも送れます。</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -816,7 +832,7 @@ body.staging{padding-bottom:110px}
     <ul style="margin:0;padding-left:1.2em;line-height:1.9">
       <li><b>「決定して反映」を押し忘れない。</b>押すまでは自分の画面にしか反映されていません。ページを閉じようとすると確認が出ます。</li>
       <li><b>赤い要注意事項を残したまま終わらない。</b>特に「車両不足」「到着が遅い」「見守り0名」は、こどもが待つ・ひとりになる可能性があるものです。</li>
-      <li><b>こどもの名前は外に出さない。</b>閲覧用ページはパスワードで保護されています。画面のスクリーンショットをSNS等に載せないでください。</li>
+      <li><b>こどもの名前は外に出さない。</b>このアプリはパスワードで保護されています。画面のスクリーンショットをSNS等に載せないでください。</li>
       <li><b>📷撮影不可のこども</b>は画面上部と一覧に表示されます。写真・動画の写り込みに注意してください。</li>
       <li><b>計算はあくまで計画です。</b>当日の判断は現場が優先です。無理のある計画になっていたら、時刻や担当を見直してください。</li>
     </ul>
@@ -827,7 +843,7 @@ body.staging{padding-bottom:110px}
 <section id="tab-req" hidden>
   <div class="card">
     <h2>改善要望・連絡</h2>
-    <p class="help">アプリやマスタデータの修正が必要なときは、要望フォームから送ってください（閲覧メンバーも送れます）。閲覧用ページの「📮 要望を送る」と同じフォームなので、要望はすべて1か所に集まります。データやコードの変更は管理者が対応します。</p>
+    <p class="help">アプリやマスタデータの修正が必要なときは、要望フォームから送ってください（閲覧メンバーも送れます）。要望はすべて1か所に集まります。データやコードの変更は管理者が対応します。</p>
     <div id="reqFormBox" style="margin-bottom:16px"></div>
     <h3>これまでの要望（アプリから送られた分）</h3>
     <div id="reqList"></div>
@@ -881,7 +897,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-08";
+const APP_VERSION="2026-10-08b";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1158,11 +1174,13 @@ let requestsCache=[];
 function pick(keys){const o={};keys.forEach(k=>{if(state[k]!==undefined)o[k]=state[k]});return o}
 function setSync(mode){
   const el=document.getElementById("syncChip"); if(!el)return;
-  if(mode==="shared"){el.textContent="☁ 共有データ（管理者）";el.className="chip acc";el.title="すべてのデータを編集できます（メンバー全員に共有）"}
-  else if(mode==="days"){el.textContent="📝 当日調整モード";el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
-  else if(mode==="readonly"){el.textContent="👀 閲覧モード";el.className="chip warn";el.title="閲覧のみのパスワードです。すべて見られますが、変更は保存されません。連絡は「📮 要望」タブからどうぞ"}
-  else if(mode==="error"){el.textContent="⚠ 同期エラー";el.className="chip alert";el.title="共有データと同期できません。再読み込みしてください"}
-  else{el.textContent="💾 この端末のみ";el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
+  /* 絵文字と文字を分けておく。スマホでは1行に収めるため文字のほうを隠す（.chiptxt） */
+  const put=(ico,txt)=>{el.innerHTML=`${ico}<span class="chiptxt"> ${txt}</span>`};
+  if(mode==="shared"){put("☁","共有データ（管理者）");el.className="chip acc";el.title="すべてのデータを編集できます（メンバー全員に共有）"}
+  else if(mode==="days"){put("📝","当日調整モード");el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
+  else if(mode==="readonly"){put("👀","閲覧モード");el.className="chip warn";el.title="閲覧のみのパスワードです。すべて見られますが、変更は保存されません。連絡は「📮 要望」タブからどうぞ"}
+  else if(mode==="error"){put("⚠","同期エラー");el.className="chip alert";el.title="共有データと同期できません。再読み込みしてください"}
+  else{put("💾","この端末のみ");el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
   document.body.classList.toggle("mro",!!dbNS&&!canMasters);
   document.body.classList.toggle("ro",!!dbNS&&!canDays);
   const rn=document.getElementById("roNote"); if(rn)rn.hidden=!(!!dbNS&&!canDays);
@@ -1388,7 +1406,7 @@ function setWho(name){
   ui.userName=(name||"").trim();
   try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
   const b=document.getElementById("whoBtn");
-  if(b)b.textContent="👤 "+(whoAmI()||"名前未設定");
+  if(b)b.innerHTML=`👤<span class="btnlabel"> ${esc(whoAmI()||"名前未設定")}</span>`;
 }
 function askWho(force){
   if(!force&&whoAmI())return;
