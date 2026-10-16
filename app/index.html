@@ -428,7 +428,7 @@ body.staging{padding-bottom:110px}
   <button class="btn noprint sosbtn" data-yomicam-sos title="緊急：所在不明・ケガ・体調不良・事故など">🚨 緊急</button>
   <span class="chip" id="syncChip" title="データ保存の状態">…</span>
   <button class="btn noprint" id="whoBtn" hidden title="変更履歴に記録される名前。クリックで変更">👤 …</button>
-  <button class="btn noprint" id="logoutBtn" hidden title="別のパスワードでログインし直します">🔓<span class="btnlabel"> ログイン切替</span></button>
+  <button class="btn noprint" id="logoutBtn" hidden title="🔓 ログイン切替：別のパスワードでログインし直します">🔓</button>
   <button class="btn" id="printBtn" title="この画面を印刷します">🖨</button>
 </header>
 
@@ -916,7 +916,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-16";
+const APP_VERSION="2026-10-16b";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1244,11 +1244,11 @@ function setSync(mode){
   const el=document.getElementById("syncChip"); if(!el)return;
   /* 絵文字と文字を分けておく。スマホでは1行に収めるため文字のほうを隠す（.chiptxt） */
   const put=(ico,txt)=>{el.innerHTML=`${ico}<span class="chiptxt"> ${txt}</span>`};
-  if(mode==="shared"){put("☁","共有データ（管理者）");el.className="chip acc";el.title="すべてのデータを編集できます（メンバー全員に共有）"}
-  else if(mode==="days"){put("📝","当日調整モード");el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
-  else if(mode==="readonly"){put("👀","閲覧モード");el.className="chip warn";el.title="閲覧のみのパスワードです。すべて見られますが、変更は保存されません。連絡は「📮 要望」タブからどうぞ"}
+  if(mode==="shared"){put("☁","管理者");el.className="chip acc";el.title="共有データ（管理者）：すべてのデータを編集できます（メンバー全員に共有）"}
+  else if(mode==="days"){put("📝","当日調整");el.className="chip base";el.title="当日調整・送迎の調整・保護者連絡は編集できます。マスタ（こども・下校時刻・メンバー・移動時間）は閲覧のみ（変更が必要なときは📮要望へ）"}
+  else if(mode==="readonly"){put("👀","閲覧のみ");el.className="chip warn";el.title="閲覧のみのパスワードです。すべて見られますが、変更は保存されません。連絡は「📮 要望」タブからどうぞ"}
   else if(mode==="error"){put("⚠","同期エラー");el.className="chip alert";el.title="共有データと同期できません。再読み込みしてください"}
-  else{put("💾","この端末のみ");el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
+  else{put("💾","端末のみ");el.className="chip";el.title="共有データに接続していません。編集はこのブラウザにのみ保存されます"}
   document.body.classList.toggle("mro",!!dbNS&&!canMasters);
   document.body.classList.toggle("ro",!!dbNS&&!canDays);
   const rn=document.getElementById("roNote"); if(rn)rn.hidden=!(!!dbNS&&!canDays);
@@ -1764,7 +1764,8 @@ function planDay(ds,over){
     const tn=noteFor(c.id,"time"), nmN=noteFor(c.id,"normal");
     const ov=tn?.time||spotN?.time||nmN?.time||"";
     // その日だけ「保護者が送るので送迎不要」。こども人数には入れたまま、送迎からだけ外す
-    const noRideDay=dayNotes.some(n=>n.childId===c.id&&n.kind!=="absent"&&n.noRide);
+    const nrNote=dayNotes.find(n=>n.childId===c.id&&n.kind!=="absent"&&n.noRide);
+    const noRideDay=!!nrNote;
     const noRide=!!c.selfTransport||noRideDay;
     const sp=ov?null:specialOf(c);
     const own=(c.times||{})[dow]||"";               // このこども固有の下校時刻（曜日別）
@@ -1775,7 +1776,7 @@ function planDay(ds,over){
     if(own&&(ov||sp)&&(ov||sp.time)!==own)
       overwritten.push({c,own,to:ov||sp.time,by:ov?"保護者連絡":"特別下校時刻"});
     res.attendees.push({...c,time:t,spot:spot&&!fixed,override:!!ov,special:!!sp,ownTime:!ov&&!sp&&!!own,timeSrc:src,
-      selfTransport:noRide,noRideDay});
+      selfTransport:noRide,noRideDay,noRideMemo:nrNote?.memo||""});
     if(!t&&!noRide&&!res.breakMode) warnings.push({lv:"alert",tag:"時刻未設定",text:`${c.name}（${schoolOf(c.school).short}${c.grade}年）の下校時刻が未設定。学校マスタか当日調整で入力してください`});
   }
   // 組を指定した通知があるのに、その学年に組が未入力のこどもがいると取りこぼす。
@@ -1925,6 +1926,7 @@ function planDay(ds,over){
   if(!res.breakMode)
     res.attendees.filter(a=>a.time&&!a.selfTransport&&!coveredIds.has(a.id)).forEach(a=>{(bySchool[a.school]??=[]).push(a)});
   const selfKids=res.breakMode?[]:res.attendees.filter(a=>a.selfTransport);
+  res.selfKids=selfKids;   // 送迎便のところにも出す（便に出てこない理由が分かるように）
   if(selfKids.length) warnings.push({lv:"info",tag:"保護者送迎",
     text:`送迎不要（保護者が送迎）：${selfKids.map(k=>`${kanaOf(k)}${k.noRideDay?"（この日だけ）":"（いつも）"}`).join("・")}。到着時刻は保護者と個別に確認`});
   // 以前の「担当の固定」がまだ残っている日のために、送迎対象のこども一覧は残す
@@ -2954,6 +2956,16 @@ function renderRuns(plan){
     host.innerHTML=`<h2>送迎便</h2><p class="help">${esc(plan.term?.label||"長期休暇")}のため学校がなく、<b>送迎便はありません</b>。登所・降所とも保護者送迎です（開所 ${fmt(plan.open)}〜${fmt(plan.close)}）。</p>`;
     return;
   }
+  /* 送迎便に出てこないこどもがいると「なぜ載っていないのか」で混乱する。
+     お迎えに行かない子は、ここに理由といっしょに出す */
+  const selfKids=plan.selfKids||[];
+  const selfCard=selfKids.length?`<div class="run" style="border-left-color:var(--accent)">
+    <h3>🚗 お迎えに行かないこども（保護者が送迎）</h3>
+    <div class="stops">${selfKids.map(k=>`<span class="stop" style="background:var(--accent-soft);color:var(--accent)">${
+      esc(kanaOf(k))}<small>${k.noRideDay?"この日だけ":"いつも（こどもマスタ）"}${
+      k.noRideMemo?`・${esc(k.noRideMemo)}`:""}</small></span>`).join("")}</div>
+    <p class="help" style="margin:6px 0 0">この${selfKids.length}名は<b>送迎便に入りません</b>（お迎えに行きません）。来所はするので、こども人数には入っています。到着時刻は保護者と個別に確認してください。</p>
+  </div>`:"";
   const unCards=(plan.unassigned||[]).map(u=>`<div class="run" style="border-left-color:var(--alert)">
     <h3>❗ 未割当：${esc(schoolOf(u.job.school).short)}（${esc(u.kids.map(kanaOf).join("・"))}）</h3>
     <div class="stops"><span class="stop" style="background:var(--alert-soft);color:var(--alert)">${esc(schoolOf(u.job.school).short)}<small>${fmt(u.job.time)}下校</small></span></div>
@@ -3107,8 +3119,9 @@ function renderRuns(plan){
       stage("送迎の調整","手動の便を削除");renderPlan();
     });
   }
-  if(!plan.runs.length&&!unCards){host.innerHTML=`<h2>送迎便</h2>${adjBar}<p class="help">この日は送迎便がありません（参加児童なし、または下校時刻未設定）。</p>`;bindPins();return}
-  if(!plan.runs.length){host.innerHTML=`<h2>送迎便</h2>${adjBar}<div class="runs">${unCards}</div>`;bindPins();return}
+  if(!plan.runs.length&&!unCards){host.innerHTML=`<h2>送迎便</h2>${adjBar}<p class="help">この日は送迎便がありません（参加児童なし、または下校時刻未設定）。</p>${
+    selfCard?`<div class="runs">${selfCard}</div>`:""}`;bindPins();return}
+  if(!plan.runs.length){host.innerHTML=`<h2>送迎便</h2>${adjBar}<div class="runs">${unCards}${selfCard}</div>`;bindPins();return}
   const V=plan.venue;
   const venueAt=m=>(V.early&&V.switchMin&&m<V.switchMin)?V.early:V.main;
   host.innerHTML=`<h2>送迎便（${plan.runs.length}便）<span style="font-size:12px;color:var(--muted);font-weight:500">　各校で下校＋待機（既定${waitDefault()}分）を含む</span></h2>${adjBar}<div class="runs">${plan.runs.map(r=>{
@@ -3141,7 +3154,7 @@ function renderRuns(plan){
       <div class="stops">${stops.join("")}</div>
       <div class="cap">${cap}<span>こども ${r.onboard}/${r.cap}名</span></div>
     </div>`;
-  }).join("")}${unCards}</div>`;
+  }).join("")}${unCards}${selfCard}</div>`;
   bindPins();
 }
 
