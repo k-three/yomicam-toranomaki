@@ -226,6 +226,7 @@ tr.pnhalf>td:first-child{box-shadow:inset 3px 0 0 var(--warn)}
 .blankmark{color:var(--muted);font-weight:700}
 .pnnone{color:var(--muted);font-weight:700}
 .nrbox{display:inline-flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer}
+.nrfix{display:inline-flex;flex-direction:column;align-items:center;gap:1px;color:var(--accent);font-weight:900;cursor:help}
 .nrmark{font-size:10px;font-weight:900;color:var(--accent);line-height:1.1;white-space:nowrap}
 tr.justadded>td{background:var(--accent-soft);transition:background 1.2s ease-out}
 tr.justadded>td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
@@ -488,7 +489,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。<b>「虎の巻」タブの当日調整と同じデータです</b>（どちらで変えても同期。当日調整で入れた欠席・スポット参加・個別時刻も日付順の位置にここへ出ます。備考はどちらからでも書けます）。<br><b>「送迎不要」</b>は、その日だけ保護者が送り迎えするときにチェックします（こども人数には入ったまま、お迎えだけ行きません）。スポット参加・下校時刻変更と<b>重ねて</b>指定できます。送迎不要だけの連絡は種別を「通常どおり参加」にしてください。いつも保護者送迎の子は、こどもマスタの「送迎不要」を使います。<br>時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
+    <p class="help">先の日付の連絡もここで一元管理できます。<b>「虎の巻」タブの当日調整と同じデータです</b>（どちらで変えても同期。当日調整で入れた欠席・スポット参加・個別時刻も日付順の位置にここへ出ます。備考はどちらからでも書けます）。<br><b>「送迎不要」</b>は、その日だけ保護者が送り迎えするときにチェックします（こども人数には入ったまま、お迎えだけ行きません）。スポット参加・下校時刻変更と<b>重ねて</b>指定できます。送迎不要だけの連絡は種別を<b>「送迎不要のみ」</b>にしてください（チェックは自動で入り、外せません。取り消すときは種別を変えるか ✕ で行を消します）。いつも保護者送迎の子は、こどもマスタの「送迎不要」を使います。<br>時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -915,7 +916,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-15";
+const APP_VERSION="2026-10-16";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1087,16 +1088,24 @@ function migrate(){
     });
     state._v=10;
   }
+  if(state._v<11){
+    /* 種別「通常どおり参加」を「送迎不要のみ」に改名した。
+       以前のこの種別の行は、送迎不要のチェックを入れ忘れていると
+       お迎えに行ってしまう（実際に1件あった）ので、チェックを入れた扱いにする。
+       時刻は持たせない（時刻を変えるときは種別「下校時刻変更」を使う） */
+    (state.parentNotes||[]).forEach(n=>{ if(n.kind==="normal"){ n.noRide=true; n.time=""; } });
+    state._v=11;
+  }
   save();
   pnResort();   // 読み込んだ保護者連絡は日付順に並べておく
 }
 /* 保護者連絡（欠席・スポット・時刻変更）ヘルパー */
 function notesOn(ds){return (state.parentNotes||[]).filter(n=>n.date===ds)}
 function getNote(ds,cid,kind){return (state.parentNotes||[]).find(n=>n.date===ds&&n.childId===cid&&n.kind===kind)}
-const KIND_LABEL={absent:"欠席",spot:"スポット参加",time:"下校時刻の変更",normal:"通常どおり参加"};
+const KIND_LABEL={absent:"欠席",spot:"スポット参加",time:"下校時刻の変更",normal:"送迎不要のみ"};
 /* 「送迎不要（保護者が送る）」は種別ではなく、連絡につける印。
    スポット参加だけど送迎不要、下校時刻変更だけど送迎不要、という連絡があるため。
-   送迎不要だけの連絡は、種別「通常どおり参加」の行に付ける */
+   送迎不要だけの連絡は、種別「送迎不要のみ」の行に付ける */
 function setNoRide(ds,cid,on){
   const ns=(state.parentNotes||[]).filter(n=>n.date===ds&&n.childId===cid&&n.kind!=="absent");
   if(on&&!ns.length){
@@ -3388,7 +3397,7 @@ function pnPlace(n){
 function renderParentNotes(){
   const t=document.getElementById("pnTable");
   state.parentNotes??=[];
-  const kinds={absent:"欠席",spot:"スポット参加",time:"下校時刻変更",normal:"通常どおり参加"};
+  const kinds={absent:"欠席",spot:"スポット参加",time:"下校時刻変更",normal:"送迎不要のみ"};
   const pos=new Map(pnOrder.map((id,i)=>[id,i]));
   const at=n=>pos.has(n.id)?pos.get(n.id):1e9;   // 並びに入っていない行＝追加したばかり
   const list=[...state.parentNotes].sort((a,b)=>at(a)-at(b));   // 同じ値なら追加した順のまま
@@ -3411,11 +3420,13 @@ function renderParentNotes(){
       <td class="pncell${n.childId?"":" miss"}"><select data-f="childId"><option value="">こどもを選択…</option>${state.children.map(c=>`<option value="${c.id}" ${c.id===n.childId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>${n.childId?"":MISS}</td>
       <td class="pncell"><select data-f="kind">${Object.entries(kinds).map(([k,v])=>`<option value="${k}" ${k===n.kind?"selected":""}>${v}</option>`).join("")}</select>${
         n.date&&n.childId&&dup[dkey(n)]>1?'<span class="dupmark">重複</span>':""}</td>
-      <td class="pncell${!n.time&&needTime?" miss":""}">${n.kind==="absent"
+      <td class="pncell${!n.time&&needTime?" miss":""}">${n.kind==="absent"||n.kind==="normal"
         ? '<span class="pnnone">—</span>'
         : `<input type="time" value="${esc(n.time||"")}" data-f="time">${n.time?"":(needTime?MISS:BLANK)}`}</td>
-      <td class="pncell" style="text-align:center">${n.kind==="absent"
-        ? '<span class="pnnone">—</span>'
+      <td class="pncell" style="text-align:center">${
+        n.kind==="absent" ? '<span class="pnnone">—</span>'
+        : n.kind==="normal"
+        ? '<span class="nrfix" title="この種別は送迎不要です。取り消すときは種別を変えるか、右の ✕ で行を消してください">✓<span class="nrmark">送らない</span></span>'
         : `<label class="nrbox" title="保護者が送るので、この日はお迎えに行かない"><input type="checkbox" data-nr ${n.noRide?"checked":""}>${
             n.noRide?'<span class="nrmark">送らない</span>':""}</label>`}</td>
       <td class="pncell"><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
@@ -3426,6 +3437,8 @@ function renderParentNotes(){
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
       n[el.dataset.f]=el.value;
       if(el.dataset.f==="kind"&&n.kind==="absent")n.time="";
+      // 「送迎不要のみ」は名前のとおり。チェックを自動で入れ、時刻は持たせない
+      if(el.dataset.f==="kind"&&n.kind==="normal"){n.noRide=true;n.time=""}
       stage("保護者連絡",`${childName(n.childId)}：${KIND_LABEL[n.kind]||n.kind}（${n.date}${n.time?" "+n.time:""}）を編集`,n.date);
       renderParentNotes();renderPlan();
     });
