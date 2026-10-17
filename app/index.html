@@ -443,6 +443,7 @@ body.staging{padding-bottom:110px}
   <button class="tab" data-tab="algo">🧭 アルゴリズム</button>
   <button class="tab" data-tab="man">📖 マニュアル</button>
   <button class="tab" data-tab="req" id="reqTab">📮 要望</button>
+  <button class="tab" data-tab="csv" id="csvTab" hidden>📊 書き出し</button>
   <button class="tab" data-tab="hist" id="histTab" hidden>🕘 変更履歴</button>
 </nav>
 
@@ -681,6 +682,41 @@ body.staging{padding-bottom:110px}
 </section>
 
 <!-- ============ 変更履歴 ============ -->
+<section id="tab-csv" hidden>
+  <div class="card">
+    <h2>データの書き出し（CSV）</h2>
+    <p class="help">レポート・集計のために、中身をそのままCSVで書き出します。Excel・スプレッドシートでそのまま開けます（文字化けしない形式）。
+    <br><b style="color:var(--alert)">こどもの名前が入ります。</b>置き場所と共有先にご注意ください。</p>
+    <div class="pwform" style="align-items:flex-end">
+      <label>期間の開始<input type="date" id="csvFrom"></label>
+      <label>期間の終了<input type="date" id="csvTo"></label>
+      <div><button class="btn" id="csvThisFY" style="padding:6px 12px;font-size:12.5px">今年度</button></div>
+      <div><button class="btn" id="csvLast12" style="padding:6px 12px;font-size:12.5px">直近12か月</button></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <button class="btn primary" id="csvKids">👧 こども一覧</button>
+      <button class="btn primary" id="csvDaily">📅 日別の集計</button>
+      <button class="btn primary" id="csvAtt">📋 日別×こども</button>
+      <button class="btn primary" id="csvNotes">📮 保護者連絡</button>
+      <button class="btn" id="csvStaff">🧑‍🤝‍🧑 メンバー一覧</button>
+    </div>
+    <p class="help" id="csvMsg" hidden></p>
+    <h3>それぞれの中身</h3>
+    <div class="tblwrap"><table class="grid"><thead><tr><th>ファイル</th><th>1行の単位</th><th>主な列</th></tr></thead><tbody>
+      <tr><td><b>こども一覧</b></td><td>こども1人</td><td>学校・学年・組・参加曜日・週あたり日数・利用開始日・参加曜日の変更履歴・下校時刻（曜日別）・送迎不要（常時）・撮影不可・メモ</td></tr>
+      <tr><td><b>日別の集計</b></td><td>1日</td><td>曜日・開所／休所・区分（通常／長期休暇／休所）・会場・こども人数・うちスポット・欠席連絡・送迎不要・送迎した人数・便数・第一交通・未割当・出勤メンバー数</td></tr>
+      <tr><td><b>日別×こども</b></td><td>その日に来た1人</td><td>日付・こども・学校・学年・通常／スポット・下校時刻とその出どころ・送迎の有無・来所時刻・便・担当</td></tr>
+      <tr><td><b>保護者連絡</b></td><td>連絡1件</td><td>日付・こども・種別（欠席／スポット／下校時刻変更／送迎不要のみ）・下校時刻・送迎不要・来所時刻・メモ</td></tr>
+      <tr><td><b>メンバー一覧</b></td><td>メンバー1人</td><td>役割・勤務曜日・車両・定員・不在にする時間帯・メモ</td></tr>
+    </tbody></table></div>
+    <p class="help"><b>数え方について。</b>「日別の集計」と「日別×こども」は、<b>いま登録されているマスタと連絡をもとに計算し直した結果</b>です。実際の出欠を記録したものではありません。
+    欠席やスポット参加の連絡が入っている日はそのとおりになりますが、<b>連絡を入れ忘れた日は参加扱いのまま</b>です。
+    こどもの学校・学年は<b>いまの値</b>を使うため、過去の日付でも進級前の学年には戻りません。参加曜日は「参加曜日の変更」を反映します。
+    <br><b>利用開始日が未入力のこどもは、期間のはじめから参加していた扱いになります。</b>過去にさかのぼって集計するときは、こどもマスタの利用開始日を埋めてからにしてください（いま <span id="csvNoStart">—</span>）。
+    土日と休所日は「開所」の列で分けています。集計するときは開所日だけを対象にしてください。</p>
+  </div>
+</section>
+
 <section id="tab-hist" hidden>
   <div class="card">
     <h2>変更履歴</h2>
@@ -917,7 +953,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-16c";
+const APP_VERSION="2026-10-17";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -1336,6 +1372,8 @@ function applyFbUser(user){
   if(who){who.hidden=false;setWho(whoAmI());setTimeout(()=>askWho(false),400);}
   const ht=document.getElementById("histTab");
   if(ht)ht.hidden=!canMasters; // 変更履歴の確認は管理者ページのみ
+  const ct=document.getElementById("csvTab");
+  if(ct)ct.hidden=!canMasters; // 書き出しも管理者のみ（名前が入るため）
   applyRoleUI();
   const chip=document.getElementById("syncChip");
   if(chip){chip.style.cursor="pointer";chip.title+="／クリックでログイン切替";chip.onclick=logout;}
@@ -1415,6 +1453,7 @@ async function initShared(){
     try{await dbNS.doc("shared/probe").set({t:Date.now()});canDays=true}catch(e){canDays=false}
     const w=document.getElementById("whoBtn"); if(w){w.hidden=false;setWho(whoAmI())}
     const h=document.getElementById("histTab"); if(h)h.hidden=!canMasters;
+    const c2=document.getElementById("csvTab"); if(c2)c2.hidden=!canMasters;
     applyRoleUI();
   }else{
     let r;
@@ -4061,8 +4100,17 @@ function renderTaxi(){
 function showTab(name){
   curTab=name;
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===name));
-  ["plan","kids","times","staff","travel","taxi","algo","man","req","hist"].forEach(t=>
+  ["plan","kids","times","staff","travel","taxi","algo","man","req","csv","hist"].forEach(t=>
     document.getElementById("tab-"+t).hidden=(t!==name));
+  if(name==="csv"){
+    const el=document.getElementById("csvNoStart");
+    if(el){
+      const miss=(state.children||[]).filter(c=>!c.startFrom);
+      el.innerHTML=miss.length
+        ?`<b style="color:var(--warn)">${miss.length}名が未入力：${esc(miss.map(c=>c.kana||c.name).join("・"))}</b>`
+        :"全員入力ずみ";
+    }
+  }
   if(name==="req")renderRequests();
   if(name==="hist")renderHistory();
   if(name==="kids")renderKids();
@@ -4119,6 +4167,160 @@ document.getElementById("addPn").onclick=()=>{
   stage();renderParentNotes();
   focusNewRow("pnTable",id,"date");
 };
+/* ========== CSVの書き出し（レポート・集計用のローデータ）==========
+   数え方は「いまのマスタと連絡で計算し直した結果」。実際の出欠の記録ではない。
+   まとめて試算するので dayRO を立て、state.days に空の日を作らないようにする。 */
+function csvCell(v){
+  const t=v==null?"":String(v);
+  return /[",\n\r]/.test(t)?`"${t.replace(/"/g,'""')}"`:t;
+}
+function csvText(rows){
+  // Excelで文字化けしないようにBOMを付け、改行はCRLFにする
+  return "﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n")+"\r\n";
+}
+function csvSave(name,rows){
+  const blob=new Blob([csvText(rows)],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},0);
+  const m=document.getElementById("csvMsg");
+  if(m){m.hidden=false;m.innerHTML=`<b>${esc(name)}</b> を書き出しました（見出しを除いて ${rows.length-1} 行）。`}
+}
+const csvRange=()=>{
+  const f=document.getElementById("csvFrom").value, t=document.getElementById("csvTo").value;
+  if(!f||!t||f>t){alert("期間の開始と終了を正しく入れてください（開始 ≦ 終了）");return null}
+  return [f,t];
+};
+const csvDates=(f,t)=>{
+  const out=[], d=new Date(f+"T12:00:00"), end=new Date(t+"T12:00:00");
+  let guard=0;
+  while(d<=end&&guard++<4000){out.push(dstr(d));d.setDate(d.getDate()+1)}
+  return out;
+};
+const csvStamp=()=>todayStr().replace(/-/g,"");
+const csvDow=ds=>DOWS[new Date(ds+"T12:00:00").getDay()];
+const daysTxt=a=>(a||[]).slice().sort().map(d=>DOWS[d]).join("");
+
+function csvKidsRows(){
+  const today=todayStr();
+  const rows=[["こどもID","名前","よびな","学校","学年","組","参加曜日（現在）","週あたり日数",
+    "利用開始日","参加曜日の変更履歴","送迎不要（常時）","撮影不可",
+    "下校時刻_月","下校時刻_火","下校時刻_水","下校時刻_木","下校時刻_金","メモ"]];
+  for(const c of state.children){
+    const nowDays=daysOf(c,today);
+    const chg=(state.dayChanges||[]).filter(x=>x.childId===c.id&&x.from)
+      .sort((a,b)=>a.from.localeCompare(b.from))
+      .map(x=>`${x.from}〜${daysTxt(x.days)||"なし"}${x.memo?`（${x.memo}）`:""}`).join(" / ");
+    rows.push([c.id,c.name,c.kana||"",schoolOf(c.school).name,c.grade,c.klass||"",
+      daysTxt(nowDays),nowDays.length,c.startFrom||"",chg,
+      c.selfTransport?"はい":"いいえ",c.noPhoto?"はい":"いいえ",
+      ...[1,2,3,4,5].map(d=>(c.times||{})[d]||""),c.memo||""]);
+  }
+  return rows;
+}
+function csvStaffRows(){
+  const role={drive:"送迎",base:"在館",taxi:"臨時（第一交通）"};
+  const veh={hiace:"ハイエース",own:"自家用車",none:"なし"};
+  const rows=[["メンバーID","名前","役割","勤務曜日","車両","定員","不在にする時間帯","メモ"]];
+  for(const s2 of state.staff)
+    rows.push([s2.id,s2.name,role[s2.role]||s2.role,daysTxt(s2.days),
+      veh[s2.vehicle]||s2.vehicle||"",s2.cap||0,
+      (s2.awayTimes||[]).map(a=>`${a.from||""}-${a.to||""}${a.label?`(${a.label})`:""}`).join(" / "),
+      s2.memo||""]);
+  return rows;
+}
+function csvNotesRows(f,t){
+  const kind={absent:"欠席",spot:"スポット参加",time:"下校時刻変更",normal:"送迎不要のみ"};
+  const rows=[["日付","曜日","こどもID","名前","種別","下校時刻","送迎不要","来所時刻","メモ"]];
+  (state.parentNotes||[]).filter(n=>n.date&&n.date>=f&&n.date<=t)
+    .sort((a,b)=>a.date.localeCompare(b.date)||String(a.childId).localeCompare(String(b.childId)))
+    .forEach(n=>{
+      const c=state.children.find(x=>x.id===n.childId);
+      rows.push([n.date,csvDow(n.date),n.childId||"",c?c.name:"（不明）",kind[n.kind]||n.kind,
+        n.time||"",n.kind!=="absent"&&n.noRide?"はい":"いいえ",n.arrive||"",n.memo||""]);
+    });
+  return rows;
+}
+/* 期間内の各日を試算する。土日・休所も行として出し、「開所」の列で分けられるようにする */
+function csvEachDay(f,t,cb){
+  const prev=dayRO; dayRO=true;
+  try{ for(const ds of csvDates(f,t)) cb(ds,planDay(ds)); }finally{ dayRO=prev }
+}
+function csvDailyRows(f,t){
+  const rows=[["日付","曜日","開所","区分","期間名","会場","こども人数","うちスポット","欠席連絡",
+    "送迎不要","送迎した人数","便数","第一交通","未割当人数","出勤メンバー数","うち送迎できる人数",
+    "開所時刻","閉所時刻"]];
+  csvEachDay(f,t,(ds,pl)=>{
+    const weekend=pl.weekend, closed=!!pl.closed;
+    const open=weekend?"土日":closed?"休所":"開所";
+    const kubun=weekend?"土日":closed?(pl.term?.label||"休所"):pl.breakMode?"長期休暇":"通常";
+    const abs=(state.parentNotes||[]).filter(n=>n.date===ds&&n.kind==="absent").length;
+    if(weekend||closed){
+      rows.push([ds,csvDow(ds),open,kubun,pl.term?.label||"","",
+        0,0,abs,0,0,0,"",0,0,0,"",""]);
+      return;
+    }
+    const att=pl.attendees||[];
+    const self=(pl.selfKids||[]).length;
+    const rode=(pl.runs||[]).reduce((a,r)=>a+r.stops.reduce((b,st)=>b+st.kids.length,0),0);
+    const un=(pl.unassigned||[]).reduce((a,u)=>a+u.kids.length,0);
+    const crew=pl.staffOnDuty||[];
+    rows.push([ds,csvDow(ds),open,kubun,pl.term?.label||"",
+      pl.venue?(pl.venue.early?`${pl.venue.early}→${pl.venue.main}`:pl.venue.main):"",
+      att.length, att.filter(a=>a.spot).length, abs, self, rode,
+      (pl.runs||[]).length, pl.day?.taxiOn?(pl.day.taxiOrdered?"依頼済み":"ON・未依頼"):"",
+      un, crew.length, crew.filter(x=>x.role==="drive").length,
+      fmt(pl.open), fmt(pl.close)]);
+  });
+  return rows;
+}
+function csvAttRows(f,t){
+  const rows=[["日付","曜日","こどもID","名前","よびな","学校","学年","組","区分",
+    "下校時刻","時刻の出どころ","送迎","来所時刻","便","担当","備考（連絡）"]];
+  csvEachDay(f,t,(ds,pl)=>{
+    if(pl.weekend||pl.closed)return;
+    const where=new Map();
+    (pl.runs||[]).forEach(r=>r.stops.forEach(st=>st.kids.forEach(k=>where.set(k.id,{no:r.no,drv:r.driver.name}))));
+    const un=new Set((pl.unassigned||[]).flatMap(u=>u.kids.map(k=>k.id)));
+    for(const a of pl.attendees||[]){
+      const w=where.get(a.id);
+      rows.push([ds,csvDow(ds),a.id,a.name,a.kana||"",schoolOf(a.school).name,a.grade,a.klass||"",
+        a.spot?"スポット":"通常", a.time||"", a.timeSrc||"",
+        a.selfTransport?"送迎不要（保護者）":w?"送迎あり":un.has(a.id)?"未割当":"（便なし）",
+        a.arriveAt||"", w?`第${w.no}便`:"", w?w.drv:"", a.noRideMemo||""]);
+    }
+  });
+  return rows;
+}
+/* ---- 書き出しの操作 ---- */
+(function(){
+  const fy=()=>{const d=new Date();const y=d.getMonth()+1>=4?d.getFullYear():d.getFullYear()-1;return `${y}-04-01`};
+  const setRange=(f,t)=>{document.getElementById("csvFrom").value=f;document.getElementById("csvTo").value=t};
+  const F=document.getElementById("csvFrom"), T=document.getElementById("csvTo");
+  if(F&&T){
+    setRange(fy(),todayStr());
+    document.getElementById("csvThisFY").onclick=()=>setRange(fy(),todayStr());
+    document.getElementById("csvLast12").onclick=()=>{
+      const d=new Date(); d.setFullYear(d.getFullYear()-1); d.setDate(d.getDate()+1);
+      setRange(dstr(d),todayStr());
+    };
+    const go=(id,name,fn,needRange)=>{
+      const b=document.getElementById(id); if(!b)return;
+      b.onclick=()=>{
+        const r=needRange?csvRange():["",""]; if(!r)return;
+        try{ csvSave(`虎の巻_${name}_${csvStamp()}.csv`, fn(r[0],r[1])) }
+        catch(e){ console.error(e); alert("書き出せませんでした：\n"+(e&&e.message||e)) }
+      };
+    };
+    go("csvKids","こども一覧",csvKidsRows,false);
+    go("csvStaff","メンバー一覧",csvStaffRows,false);
+    go("csvNotes","保護者連絡",csvNotesRows,true);
+    go("csvDaily","日別の集計",csvDailyRows,true);
+    go("csvAtt","日別×こども",csvAttRows,true);
+  }
+})();
+
 /* ---- メンバー予定表の操作 ---- */
 function shiftNav(delta){
   ui.shiftMonth=(delta===null)?0:(ui.shiftMonth||0)+delta;
