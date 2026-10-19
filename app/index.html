@@ -614,7 +614,7 @@ body.staging{padding-bottom:110px}
       <tr><th>学校到着</th><td>下校の5分前を目標に到着</td></tr>
       <tr><th>乗車＋待ち時間</th><td>こども1人あたり<b>80分以内</b>（自校出発→会場到着）</td></tr>
       <tr><th>下校時刻の優先順位</th><td>①保護者連絡の個別時刻（都度の連絡）＞ ②特別下校時刻（学校からの通知）＞ ③こども別の下校時刻（申込時の指定・年1回程度の更新）＞ ④学校の時間割。<b>上位が入っていればそれを使い、なければ下へ順に見る</b></td></tr>
-      <tr><th>巡回</th><td>第一交通以外は1便で2校巡回OK（毎回拠点へ戻らなくてよい）。<b>第一交通は1回1校→拠点のみ</b>。ただし<b>先に乗ったこどもの乗車時間が40分を超えるぶんは巡回の評価を下げ</b>、一度拠点へ戻って別便にできるならそちらを選ぶ</td></tr>
+      <tr><th>巡回</th><td>第一交通以外は1便で2校巡回OK（毎回拠点へ戻らなくてよい）。<b>第一交通は1回1校→拠点のみ</b>。ただし<b>先に乗ったこどもの乗車時間が40分を超えるぶんは巡回の評価を下げ</b>、一度拠点へ戻って別便にできるならそちらを選ぶ（便の組み方は40分を目安に、要注意事項に出すのは60分を超えたときだけ）</td></tr>
       <tr><th>直行</th><td>13:00集合からでは間に合わない便は拠点を経由せず学校へ直行（運行前チェックは出発地で実施・虎の巻に表示）</td></tr>
       <tr><th>車両</th><td>ハイエース：こども6名・<b>14:00まで自然学校にあり使用不可</b>／自家用車・タクシー：3名</td></tr>
       <tr><th>行先担当</th><td><b>自然学校は基本ハイエースが対応</b>、難しければこの限りでない。メンバーのこどもが参加する日はその学校をそのメンバー優先（同じく余裕なければこの限りでない）</td></tr>
@@ -862,7 +862,7 @@ body.staging{padding-bottom:110px}
     <p class="help">計画を自動でチェックした結果です。<b>上から順に重要度が高い</b>並びになっています。</p>
     <ul class="wlist">
       <li class="alert"><span class="tag">要対応</span><span>そのままでは運行が成り立たない／こどもが待つことになるもの。<b>車両不足・到着が遅い・見守り0名・人員不足・来訪の対応者未設定</b>など。必ず解消してから終わってください。</span></li>
-      <li><span class="tag">注意</span><span>成り立つが、承知しておいてほしいもの。<b>長い乗車・長い待機（20分以上）・余裕なし</b>など。現場に一言伝えるかどうかの判断材料です。</span></li>
+      <li><span class="tag">注意</span><span>成り立つが、承知しておいてほしいもの。<b>長い乗車（60分超）・長い待機（20分以上）</b>など。現場に一言伝えるかどうかの判断材料です。</span></li>
       <li class="info"><span class="tag">参考</span><span>記録・共有のための情報。<b>臨時出勤・勤務変更・保護者連絡・締切済</b>など。対応は不要です。</span></li>
     </ul>
   </div>
@@ -953,8 +953,8 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-19";
-const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, minStaff:3, stayMax:40, waitWarn:20};
+const APP_VERSION="2026-10-19b";
+const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, rideWarn:60, minStaff:3, stayMax:40, waitWarn:20};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
 // waitWarn=20: こどもが学校で待つ時間がこれ以上になったら「注意」を出す。
@@ -962,6 +962,8 @@ const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom
 // stayMax=40: 同じ学校であとから下校する子も乗せるとき、先に下校した子を待たせてよい上限。
 //             これを超えるなら別の便にする（車が学校に長く居座って先の子が待ち続けるのを防ぐ）
 // maxRide=80: こどもの乗車＋待ち時間（学校出発→会場到着）の上限
+// rideWarn=60: 乗車がこれ以上になったら「注意」を出す。便の組み方は rideSoft（40分）で
+//              短い乗車を選びつづけるが、知らせるのは60分を超えたときだけにする。
 // rideSoft=40: この分数を超える乗車は避けたい目安。巡回を組むと先に乗った子が長く乗るため、
 //              超える分だけ巡回のスコアを下げ、一度拠点へ戻って別便にできるならそちらを選ぶ
 /* 各学校で下校後に待つ時間。既定は SET.board（20分）で、学校ごとに短くもできる。
@@ -2329,16 +2331,17 @@ function planDay(ds,over){
       // 自動の計算では起こらないが、手動の便では起こりうるので必ず知らせる
       if(st.arrive>st.time)
         warnings.push({lv:"alert",tag:"到着が遅い",text:`${r.driver.name}便の${schoolOf(st.school).short}到着が${fmt(st.arrive)}で、下校${fmt(st.time)}に${st.arrive-st.time}分おくれます。${st.kids.map(kanaOf).join("・")}が学校でひとりで待つことになります。前の学校からの移動時間を実測して見直す／この学校を別の便に分ける／下校時刻を確認する、のいずれかで解消してください`});
-      else if(st.arrive>st.time-SET.preArrival)
-        warnings.push({lv:"warn",tag:"余裕なし",text:`${r.driver.name}便の${schoolOf(st.school).short}到着が下校${fmt(st.time)}の${st.time-st.arrive}分前。余裕が5分未満です`});
+      /* 「到着が下校の5分前を切った」という注意は出さない。
+         知らせるのは遅刻するときだけでよく、それは上の「到着が遅い（要対応）」が
+         必ず知らせるため。間に合っている便をいちいち注意しない */
     }
     const distinct=new Set(r.stops.map(s=>s.school));
     if(distinct.size>1){
       // 巡回の順路・直行・出発期限は送迎便カードとタイムラインで分かるので、要注意事項には出さない。
       // こどもの乗車が長くなるときだけ知らせる
-      const longRide=r.stops.filter(st=>r.backAt-st.end>SET.rideSoft&&r.backAt-st.end<=SET.maxRide);
+      const longRide=r.stops.filter(st=>r.backAt-st.end>SET.rideWarn&&r.backAt-st.end<=SET.maxRide);
       if(longRide.length)
-        warnings.push({lv:"warn",tag:"長い乗車",text:`${longRide.map(st=>`${st.kids.map(kanaOf).join("・")}は${r.backAt-st.end}分`).join("、")}の乗車になります（目安${SET.rideSoft}分）。移動時間タブの実測値を入れると、拠点に戻って降ろす計画に切り替わる場合があります`});
+        warnings.push({lv:"warn",tag:"長い乗車",text:`${longRide.map(st=>`${st.kids.map(kanaOf).join("・")}は${r.backAt-st.end}分`).join("、")}の乗車になります（目安${SET.rideWarn}分）。移動時間タブの実測値を入れると、拠点に戻って降ろす計画に切り替わる場合があります`});
     }
     // 同じ学校で2回ぶんの下校を受け取ることは、送迎便カードの「そのまま待機」で分かるので警告にしない
   }
