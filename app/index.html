@@ -152,6 +152,9 @@ nav.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 18px;border-bottom:2px
 .ev{position:absolute;left:3px;right:3px;border-radius:7px;padding:1px 6px;font-size:11px;line-height:1.25;overflow:hidden;cursor:pointer;border:1px solid transparent}
 .ev b{font-variant-numeric:tabular-nums;font-weight:700;margin-right:3px;font-size:10px;opacity:.8}
 .ev.sm{font-size:9.5px;line-height:1.1;padding:0 4px;border-radius:5px}
+/* 同じ時刻に始まる予定を横に並べたもの。せまいので字を詰める */
+.ev.split{padding-left:3px;padding-right:3px;font-size:10px}
+.ev.split.sm{font-size:9px}
 .ev.sm b{font-size:9px}
 .ev.t-drive{background:var(--drive);color:#fff}
 .ev.t-pick{background:var(--drive-soft);color:var(--drive-ink);border-color:var(--drive)}
@@ -953,7 +956,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-19b";
+const APP_VERSION="2026-10-21";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, rideWarn:60, minStaff:3, stayMax:40, waitWarn:20};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -3259,13 +3262,24 @@ function renderTimeline(plan){
     html+=`<div class="tlcol" style="height:${H}px">`;
     for(let m=DAY_START;m<=DAY_END;m+=30)
       html+=`<span class="hline ${m%60?"half":""}" style="top:${(m-DAY_START)*PXM}px"></span>`;
-    const evs=(plan.events[c.id]||[]).slice().sort((a,b)=>a.s-b.s);
+    /* 同じ時刻に始まる予定は、そのまま重ねて描くと先のものが完全に隠れる
+       （同じ時間帯に見学が2件あると、先に入力したほうが見えなくなっていた）。
+       そういう組だけ横に並べて、どちらも見えるようにする。
+       始まりがちがう予定は今までどおり重ねる（短い予定が長い予定の上に出る） */
+    const evs=(plan.events[c.id]||[]).slice()
+      .sort((a,b)=>a.s-b.s||(b.e-b.s)-(a.e-a.s));   // 同時刻なら長いほうを左に
+    const sameStart={};
+    evs.forEach(e=>{(sameStart[e.s]=sameStart[e.s]||[]).push(e)});
     for(const e of evs){
       const top=(Math.max(e.s,DAY_START)-DAY_START)*PXM;
       const h=Math.max((Math.min(e.e,DAY_END)-Math.max(e.s,DAY_START))*PXM,8);
       const sm=h<17?" sm":"";
       if(e.key)evIndex[e.key]=e;
-      html+=`<div class="ev ${e.type}${sm}" style="top:${top}px;height:${h-2}px" data-key="${esc(e.key||"")}"><b>${fmt(e.s)}</b>${e.edited?"✎":""}${esc(e.label)}</div>`;
+      const g=sameStart[e.s], n=g.length;
+      const side=n>1
+        ? `left:calc(3px + (100% - 6px)*${g.indexOf(e)}/${n});width:calc((100% - 6px)/${n} - 2px);right:auto;`
+        : "";
+      html+=`<div class="ev ${e.type}${sm}${n>1?" split":""}" style="${side}top:${top}px;height:${h-2}px" data-key="${esc(e.key||"")}" title="${esc(fmt(e.s)+"〜"+fmt(e.e)+" "+e.label)}"><b>${fmt(e.s)}</b>${e.edited?"✎":""}${esc(e.label)}</div>`;
     }
     html+=`</div>`;
   }
