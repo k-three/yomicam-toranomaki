@@ -303,6 +303,10 @@ button.del[data-ovclr]:hover{border-color:var(--alert)}
   .dpick{border:none;padding:0;background:none}
   header.app .btn, nav.tabs, .noprint, #detail{display:none !important}
   .card{box-shadow:none;break-inside:avoid}
+  /* こども名の一覧は画面では畳んで始まるが、紙には必ず名前を出す */
+  .kidsbox{flex:1 1 100%}
+  .kidsbox>summary::after{content:""}
+  .kidsbox>.kidsnames{display:flex !important}
   .tl-scroll{overflow:visible}
 }
 /* マスタ閲覧のみモード（当日調整モードの閲覧メンバー） */
@@ -460,8 +464,9 @@ body.staging{padding-bottom:110px}
 <section id="tab-plan">
   <div class="card noprint" id="issueBar" hidden></div>
   <div class="card" id="summaryCard"></div>
-  <div class="card noprint" id="dayEditCard"></div>
+  <!-- 送迎便を先に出す。まず見るのは「今日どう走るか」で、当日調整は必要なときに開く -->
   <div class="card" id="runsCard"></div>
+  <div class="card noprint" id="dayEditCard"></div>
   <div class="card">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
       <h2 style="margin:0">メンバー別タイムライン</h2>
@@ -808,8 +813,8 @@ body.staging{padding-bottom:110px}
     <h2>1日の使い方</h2>
     <div class="steps">
       <div class="step"><b>朝：今日を開く</b>　画面のいちばん上に日付の帯があります（スクロールしても残ります）。「今日」を押すと今日の虎の巻に飛びます。日付を押すとカレンダーから選べます。スマホなど画面がせまいときは、右側のボタン（👤 名前・🔓 ログイン切替・🖨 印刷）は<b>絵文字だけ</b>になります。上に<b>赤いお知らせ</b>が出ていたら、先の日に「送迎に乗せられないこども」がいるという意味です。日付を押すとその日を開けます。</div>
-      <div class="step"><b>連絡が入ったら：当日調整に入れる</b>　欠席・スポット参加・下校時刻の変更（保護者からの連絡）、メンバーの休み・勤務時間の変更、来訪予定、会場の変更、連絡メモ。入れると送迎便とタイムラインがその場で組み直されます。</div>
-      <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にあります。第一交通を使う／🔧 手動の便（担当・巡回順・乗せるこどもを指定）。</div>
+      <div class="step"><b>連絡が入ったら：当日調整に入れる</b>　<b>送迎便の下</b>にあります。見出し「▸ 当日調整」を押すと開きます（<b>開いたときは閉じた状態から始まります</b>。まず見るのは送迎便なので、入力欄は必要なときだけ広げてください）。欠席・スポット参加・下校時刻の変更（保護者からの連絡）、メンバーの休み・勤務時間の変更、来訪予定、会場の変更、連絡メモ。入れると送迎便とタイムラインがその場で組み直されます。</div>
+      <div class="step"><b>送迎を手で直したいとき：送迎の調整</b>　送迎便カードの上にある「▸ 送迎の調整」を押すと開きます。第一交通を使う／🔧 手動の便（担当・巡回順・乗せるこどもを指定）。</div>
       <div class="step"><b>最後に「✅ 決定して反映」</b>　<b>これを押すまで、変更はほかのメンバーに共有されません。</b>画面下に「未確定の変更が N件 あります」と出ます。間違えたときは「↩ 取り消し」で確定前の状態に戻せます。</div>
       <div class="step"><b>要注意事項を確認する</b>　ページ下部です。<b style="color:var(--alert)">要対応</b>（赤）は、そのままにすると運行が成り立たない・こどもが待つことになるものです。必ず消してから終わってください。「注意」「参考」は承知の上で進めて構いません。</div>
       <div class="step"><b>共有する</b>　メンバーはこのアプリを直接開きます（閲覧のみのパスワード）。<b>別に配っていた閲覧用ページは廃止しました。</b></div>
@@ -956,7 +961,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-10-21";
+const APP_VERSION="2026-11-04";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, rideWarn:60, minStaff:3, stayMax:40, waitWarn:20};
 // minStaff=3: 1日あたり必要なメンバー数（第一交通＝臨時送迎は数えない）
 // board=20: 各学校で下校時刻から最低20分の待機を計画に組み込む（遅れの吸収はここで行う）。学校別に変更可
@@ -2568,6 +2573,12 @@ function applyEvEdits(res,day){
 let currentDate=todayStr();
 let ui={};try{ui=JSON.parse(localStorage.getItem("toranomaki-ui")||"{}")}catch(e){}
 if(!ui||typeof ui!=="object")ui={};
+/* 虎の巻タブの開け閉め（こども名一覧・当日調整・送迎の調整）。
+   前に開いたままを覚えていると、次に開いたときに長い入力欄が先に出てきて、
+   いちばん見たい送迎便が下に押し下げられる。だから保存はせず、
+   ページを開くたびに必ず閉じた状態から始める（開いたかどうかは開いているあいだだけ覚える）。
+   必要なときに見出しを押して広げてください。 */
+const panelOpen={kids:false,dayEdit:false,runAdj:false};
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 
 /* マスタ編集の権限がないときは、見た目だけでなく入力欄自体を無効化する
@@ -2777,7 +2788,7 @@ function renderPlanInner(){
     <h2 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">${ds.replaceAll("-","/")}（${DOWS[plan.dow]}）の虎の巻
       <span class="chip acc">会場：${esc(venueTxt)}</span></h2>
     <div class="chips">
-      <details class="kidsbox" id="kidsBox"${ui.kidsOpen===false?"":" open"}>
+      <details class="kidsbox" id="kidsBox"${panelOpen.kids?" open":""}>
         <summary class="chip kids">👧 こども <span class="num">${plan.attendees.length}</span>名${spotN?`（スポット${spotN}）`:""}</summary>
         <div class="kidsnames">${kidsSorted.length?kidsSorted.map(kidChip).join(""):'<span class="help">この日の利用者はいません</span>'}</div>
       </details>
@@ -2791,8 +2802,7 @@ function renderPlanInner(){
       <span class="chip ${wN?"warn":"acc"}">⚠ 警告 <span class="num">${wN}</span>件</span>
     </div>`;
   const kb=document.getElementById("kidsBox");
-  if(kb)kb.addEventListener("toggle",()=>{ui.kidsOpen=kb.open;
-    try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}});
+  if(kb)kb.addEventListener("toggle",()=>{panelOpen.kids=kb.open});
   const safe=(fn,label)=>{try{fn(plan)}catch(err){console.error(label,err);
     const hostMap={renderDayEdit:"dayEditCard",renderRuns:"runsCard",renderWarnings:"warnCard"};
     const el=document.getElementById(hostMap[label]||"warnCard");
@@ -2881,7 +2891,7 @@ function renderDayEdit(plan){
     </div>`;
   }).join("");
   const extraCands=state.staff.filter(s=>s.role!=="taxi"&&!s.days.includes(dow)&&!(day.staffExtra||[]).includes(s.id));
-  const collapsed=ui.dayEditCollapsed!==false; // 既定は折りたたみ（主要情報を優先）
+  const collapsed=!panelOpen.dayEdit; // 開くたびに折りたたみから始める（送迎便を先に見せる）
   document.getElementById("dayEditCard").innerHTML=`
     <h2 id="dayEditToggle" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:8px;margin-bottom:${collapsed?"0":"10px"}">
       <span style="color:var(--accent)">${collapsed?"▸":"▾"}</span>当日調整
@@ -2936,8 +2946,7 @@ function renderDayEdit(plan){
     <input type="text" id="venueInput" value="${esc(day.venue||"")}" placeholder="${esc(state.venues?.[dow]?.main||"文化センター")}" style="width:min(100%,340px);border:1px solid var(--line);border-radius:8px;padding:5px 10px;background:var(--surface)">
     </div>`;
   document.getElementById("dayEditToggle").onclick=()=>{
-    ui.dayEditCollapsed=!(ui.dayEditCollapsed!==false);
-    try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+    panelOpen.dayEdit=!panelOpen.dayEdit;
     renderDayEdit(plan);
   };
   if(collapsed) return;
@@ -3119,7 +3128,7 @@ function renderRuns(plan){
     同じ学校を1便目と2便目で分けたいときは、手動の便を2つ作って、それぞれにこどもを入れてください。
     手動の便に入れたこどもは自動割当の対象から外れ、自動でこの便に足されることもありません。</span>
   </div>`;
-  const adjOpen=!!ui.runAdjOpen;
+  const adjOpen=panelOpen.runAdj;
   const crN=(plan.day.customRuns||[]).length;
   const adjSum=[plan.day.taxiOn?(plan.day.taxiOrdered?"第一交通✅依頼済み":"第一交通⚠未依頼"):"",
     oldPins.length?`⚠以前の固定${oldPins.length}`:"",crN?`手動便${crN}`:""].filter(Boolean).join("・");
@@ -3143,11 +3152,10 @@ function renderRuns(plan){
     };
     const at=host.querySelector("#adjToggle");
     if(at)at.onclick=()=>{
-      ui.runAdjOpen=!ui.runAdjOpen;
-      try{localStorage.setItem("toranomaki-ui",JSON.stringify(ui))}catch(e){}
+      panelOpen.runAdj=!panelOpen.runAdj;
       const body=host.querySelector("#adjBody");
-      body.hidden=!ui.runAdjOpen;
-      at.textContent=`${ui.runAdjOpen?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}`;
+      body.hidden=!panelOpen.runAdj;
+      at.textContent=`${panelOpen.runAdj?"▾":"▸"} 送迎の調整${adjSum?`（${adjSum}）`:""}`;
     };
     const cp=host.querySelector("#clearPins");
     if(cp)cp.onclick=()=>{
