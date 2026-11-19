@@ -381,6 +381,11 @@ body.mro #venueTable input,body.mro #travelTable input,body.mro #travelTable lab
 /* 配布ページ（閲覧専用）で入力欄を文字に置き換えたもの */
 .ro{display:inline-block;font-variant-numeric:tabular-nums}
 .ro.na{color:var(--muted)}
+/* 済んだ日の行をまとめるバー */
+.pastbar>td{background:var(--surface2);padding:3px 8px}
+.pastbtn{border:none;background:none;font:inherit;font-size:12px;font-weight:700;color:var(--muted);
+  cursor:pointer;padding:2px 4px;border-radius:6px}
+.pastbtn:hover{color:var(--accent);background:var(--accent-soft)}
 /* 変更履歴の検索 */
 .histfind{display:flex;gap:8px 12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
 .histfind label{display:flex;flex-direction:column;gap:2px;font-size:11.5px;color:var(--muted);font-weight:600}
@@ -506,7 +511,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>保護者連絡（欠席・スポット参加・下校時刻変更）</h2>
-    <p class="help">先の日付の連絡もここで一元管理できます。<b>「虎の巻」タブの当日調整と同じデータです</b>（どちらで変えても同期。当日調整で入れた欠席・スポット参加・個別時刻も日付順の位置にここへ出ます。備考はどちらからでも書けます）。<br><b>「送迎不要」</b>は、その日だけ保護者が送り迎えするときにチェックします（こども人数には入ったまま、お迎えだけ行きません）。スポット参加・下校時刻変更と<b>重ねて</b>指定できます。送迎不要だけの連絡は種別を<b>「送迎不要のみ」</b>にしてください（チェックは自動で入り、外せません。取り消すときは種別を変えるか ✕ で行を消します）。送迎不要のときは<b>「来所」</b>に<b>保護者が連れてくる時刻（利用開始）</b>を入れてください。送迎便の一覧とタイムラインに出ます。いつも保護者送迎の子は、こどもマスタの「送迎不要」を使います。<br>時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
+    <p class="help">先の日付の連絡もここで一元管理できます。<b>「虎の巻」タブの当日調整と同じデータです</b>（どちらで変えても同期。当日調整で入れた欠席・スポット参加・個別時刻も日付順の位置にここへ出ます。備考はどちらからでも書けます）。<br><b>「送迎不要」</b>は、その日だけ保護者が送り迎えするときにチェックします（こども人数には入ったまま、お迎えだけ行きません）。スポット参加・下校時刻変更と<b>重ねて</b>指定できます。送迎不要だけの連絡は種別を<b>「送迎不要のみ」</b>にしてください（チェックは自動で入り、外せません。取り消すときは種別を変えるか ✕ で行を消します）。送迎不要のときは<b>「来所」</b>に<b>保護者が連れてくる時刻（利用開始）</b>を入れてください。送迎便の一覧とタイムラインに出ます。いつも保護者送迎の子は、こどもマスタの「送迎不要」を使います。<br>時刻の優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。ここでの入力は<b>最優先</b>で、その日だけ効きます。適用日は要注意事項に表示されます。<span class="editnote"><br><b>入力しても、画面下の「✅ 決定して反映」を押すまでほかのメンバーには共有されません。</b><br>空の欄には<b>「未入力」</b>と出ます。<b>iPhone・iPadでは、空の日付欄や時刻欄にうすい文字で今日の日付・時刻が出ます。</b>入っているように見えても、「未入力」と出ていればその欄は空です。日付・こどもが未入力の行は色つきになり、計画には反映されません（その行があるあいだは「✅ 決定して反映」は止まります）。<br><b>済んだ日の連絡は畳んであります</b>（表の上の「▸ 済んだ日の行 ◯件」を押すと出ます。畳んでも記録は残っていて、計画にも効いたままです）。日付・こどもが未入力の行は、済んだ日でも畳みません。<br>「連絡を追加」で増えた行は<b>表の一番下</b>に出ます。記入中に行は動きません。<b>日付順に並べ替わるのは「✅ 決定して反映」を押したとき</b>です。</span></p>
     <div class="tblwrap"><table class="grid" id="pnTable"></table></div>
     <button class="btn" id="addPn" style="margin-top:10px">＋ 連絡を追加</button>
   </div>
@@ -546,7 +551,7 @@ body.staging{padding-bottom:110px}
   </div>
   <div class="card">
     <h2>特別下校時刻（日付指定の変更）</h2>
-    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。<b>「1年2組だけ」など学年より細かい通知は、対象を「こどもを選んで指定」に切り替えて、対象のこどもを直接選んでください</b>（組を登録しておく必要はありません。メモに「1年2組のみ」と書いておくと後から追えます）。優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。<b>学年で指定すると、こども別の下校時刻を入れている子もこの時刻に上書きされます</b>（その場合は虎の巻の要注意事項で知らせます）。上書きしたくない子がいるときは、対象を「こどもを選んで指定」にして対象から外してください。適用された日は虎の巻の要注意事項に表示されます。<br>新しい行は日付・学校・時刻とも空欄で追加されます。未入力の行は色つきで表示され、計画には反映されません。</p>
+    <p class="help">学校からの通知（行事・短縮授業・設備故障など）による<b>特定の日</b>の下校時刻変更を登録します。学年で時刻が違う日は行を分けてください（例：冷房故障で1年=12:40の行と2〜6年=13:40の行）。<b>「1年2組だけ」など学年より細かい通知は、対象を「こどもを選んで指定」に切り替えて、対象のこどもを直接選んでください</b>（組を登録しておく必要はありません。メモに「1年2組のみ」と書いておくと後から追えます）。優先順位：<b>①保護者連絡の個別時刻（都度）</b> ＞ <b>②特別下校時刻（学校からの通知）</b> ＞ <b>③こども別の下校時刻（申込時の指定）</b> ＞ <b>④学校の時間割</b>。<b>学年で指定すると、こども別の下校時刻を入れている子もこの時刻に上書きされます</b>（その場合は虎の巻の要注意事項で知らせます）。上書きしたくない子がいるときは、対象を「こどもを選んで指定」にして対象から外してください。適用された日は虎の巻の要注意事項に表示されます。<br>新しい行は日付・学校・時刻とも空欄で追加されます。未入力の行は色つきで表示され、計画には反映されません。<br><b>済んだ日の行は畳んであります</b>（表の下の「▸ 済んだ日の行 ◯件」を押すと出ます。畳んでも登録は残っています）。入力が足りない行は、済んだ日でも畳みません。</p>
     <p class="mroNote">🔒 この設定の編集は管理者のみです。変更が必要なときは「📮 要望」タブから連絡してください。</p>
     <div class="tblwrap"><table class="grid" id="spTable"></table></div>
     <button class="btn" id="addSp" style="margin-top:10px">＋ 変更を追加</button>
@@ -975,7 +980,7 @@ let DAY_START=750, DAY_END=1155; // 通常は 12:30 - 19:15（長期休暇は開
 const PXM=2; // px per minute
 /* 画面の版。スマホで古い版が残っていないか確かめるための目印。
    中身を直したら必ず上げる（マニュアルタブの最後とヘッダーの🚐に出る） */
-const APP_VERSION="2026-11-09";
+const APP_VERSION="2026-11-19";
 const SET={preArrival:5, board:20, unload:5, preCheck:20, mergeGap:10, hiaceFrom:840, maxRide:80, rideSoft:40, rideWarn:60, minStaff:3, stayMax:40, waitWarn:20};
 // hiaceFrom=840（14:00）: ハイエースはふだん14:00まで自然学校にある。
 //   ただし使える日もあるので「使えない」と決めつけず、14:00より前はなるべく
@@ -2678,7 +2683,15 @@ if(!ui||typeof ui!=="object")ui={};
    いちばん見たい送迎便が下に押し下げられる。だから保存はせず、
    ページを開くたびに必ず閉じた状態から始める（開いたかどうかは開いているあいだだけ覚える）。
    必要なときに見出しを押して広げてください。 */
-const panelOpen={kids:false,dayEdit:false,runAdj:false};
+const panelOpen={kids:false,dayEdit:false,runAdj:false,pnPast:false,spPast:false};
+/* 済んだ日の行の畳み方。保護者連絡も特別下校時刻も、日がたつほど過去の行が
+   たまって、これから効く連絡が下や上に押しやられる。過去の行は既定で畳んで
+   おき、見たいときにバーを押して開く（開き具合は開いているあいだだけ覚える）。
+   日付・こどもが未入力の行は、決定を止めている行なので過去でも畳まない */
+function pastBar(n,cols,open,key){
+  return `<tr class="pastbar"><td colspan="${cols}"><button type="button" class="pastbtn" data-past="${key}">${
+    open?"▾":"▸"} 済んだ日の行 ${n}件${open?"（押すと畳む）":"（押すと表示）"}</button></td></tr>`;
+}
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
 
 /* マスタ編集の権限がないときは、見た目だけでなく入力欄自体を無効化する
@@ -3623,8 +3636,11 @@ function renderParentNotes(){
      当日調整と手入力の両方から登録したときに起きるので、気づけるように印を出す */
   const dkey=n=>`${n.date}|${n.childId}|${n.kind}`;
   const dup={}; state.parentNotes.forEach(n=>{if(n.date&&n.childId)dup[dkey(n)]=(dup[dkey(n)]||0)+1});
-  t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th title="その日は保護者が送るので、お迎えに行かない。こども人数には入ったまま">送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
-    list.map(n=>{
+  /* 済んだ日の連絡は既定で畳む（並びは日付順なので、過去の行は表の上に固まる）。
+     日付・こどもが未入力の行は「決定して反映」を止めている行なので、過去でも必ず出す */
+  const isPast=n=>!!n.date&&n.date<today&&!!n.childId;
+  const past=list.filter(isPast), rest=list.filter(n=>!isPast(n));
+  const row=n=>{
       const half=!n.date||!n.childId;
       const needTime=n.kind==="time";   // 下校時刻変更は時刻がないと意味がない
       return `<tr data-id="${n.id}" class="${half?"pnhalf":""}" style="${!half&&n.date<today?"opacity:.55":""}">
@@ -3646,8 +3662,13 @@ function renderParentNotes(){
         : `<label class="nrbox" title="保護者が送るので、この日はお迎えに行かない"><input type="checkbox" data-nr ${n.noRide?"checked":""}>${
             n.noRide?'<span class="nrmark">送らない</span>':""}</label>`}</td>
       <td class="pncell"><input type="text" value="${esc(n.memo||"")}" data-f="memo" style="width:12em" placeholder="例：通院のため"></td>
-      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
-    ||'<tr><td colspan="7" style="color:var(--muted)">連絡なし</td></tr>'}</tbody>`;
+      <td><button class="del" data-del>✕</button></td></tr>`};
+  t.innerHTML=`<thead><tr><th>日付</th><th>こども</th><th>種別</th><th>時刻</th><th title="その日は保護者が送るので、お迎えに行かない。こども人数には入ったまま">送迎不要</th><th>メモ</th><th></th></tr></thead><tbody>${
+    (past.length?pastBar(past.length,7,panelOpen.pnPast,"pnPast")+(panelOpen.pnPast?past.map(row).join(""):""):"")
+    +(rest.map(row).join("")
+      ||(past.length?"":'<tr><td colspan="7" style="color:var(--muted)">連絡なし</td></tr>'))}</tbody>`;
+  const pb=t.querySelector("[data-past]");
+  if(pb)pb.onclick=()=>{panelOpen.pnPast=!panelOpen.pnPast;renderParentNotes()};
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const n=state.parentNotes.find(x=>x.id===tr.dataset.id); if(!n)return;
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
@@ -3821,10 +3842,18 @@ function renderSpecials(){
   const t=document.getElementById("spTable");
   state.specialTimes??=[];
   const list=[...state.specialTimes].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象（学年 or こども）</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
-    list.map(x=>{
+  /* 済んだ日の設定は既定で畳む（並びは新しい日が上なので、過去の行は表の下に固まる）。
+     入力が足りていない行は直してほしい行なので、過去でも必ず出す */
+  const today=todayStr();
+  const spHalf=x=>{
+    const byKid=(x.childIds||[]).length>0||x.mode==="kids";
+    return !x.date||!x.school||!x.time||(byKid?!(x.childIds||[]).length:!(x.grades||[]).length);
+  };
+  const isPast=x=>!!x.date&&x.date<today&&!spHalf(x);
+  const past=list.filter(isPast), rest=list.filter(x=>!isPast(x));
+  const row=x=>{
       const byKid=(x.childIds||[]).length>0||x.mode==="kids";
-      const half=!x.date||!x.school||!x.time||(byKid?!(x.childIds||[]).length:!(x.grades||[]).length);
+      const half=spHalf(x);
       const cand=state.children.filter(c=>!(x.childIds||[]).includes(c.id));
       return `<tr data-id="${x.id}" style="${half?"background:var(--warn-soft)":""}">
       <td><input type="date" value="${esc(x.date||"")}" data-f="date" ${x.date?"":'style="border-color:var(--warn)"'}></td>
@@ -3875,8 +3904,13 @@ function renderSpecials(){
       </td>
       <td><input type="time" value="${esc(x.time||"")}" data-f="time" ${x.time?"":'style="border-color:var(--warn)"'}></td>
       <td><input type="text" value="${esc(x.memo||"")}" data-f="memo" style="width:13em" placeholder="例：冷房設備故障"></td>
-      <td><button class="del" data-del>✕</button></td></tr>`}).join("")
-    ||'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'}</tbody>`;
+      <td><button class="del" data-del>✕</button></td></tr>`};
+  t.innerHTML=`<thead><tr><th>日付</th><th>学校</th><th>対象（学年 or こども）</th><th>下校時刻</th><th>メモ（通知の内容）</th><th></th></tr></thead><tbody>${
+    (rest.map(row).join("")
+      ||(past.length?"":'<tr><td colspan="6" style="color:var(--muted)">登録なし</td></tr>'))
+    +(past.length?pastBar(past.length,6,panelOpen.spPast,"spPast")+(panelOpen.spPast?past.map(row).join(""):""):"")}</tbody>`;
+  const pb=t.querySelector("[data-past]");
+  if(pb)pb.onclick=()=>{panelOpen.spPast=!panelOpen.spPast;renderSpecials()};
   t.querySelectorAll("tr[data-id]").forEach(tr=>{
     const x=state.specialTimes.find(v=>v.id===tr.dataset.id); if(!x)return;
     tr.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{x[el.dataset.f]=el.value;
